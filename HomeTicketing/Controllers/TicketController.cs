@@ -36,41 +36,32 @@ namespace HomeTicketing.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTicket()
         {
-            var data = await _context.Tickets.ToListAsync();
+            var data = await (from t in _context.Tickets
+                              join c in _context.Categories
+                              on t.Category equals c.Id
+                              select new
+                              {
+                                  Id = t.Id,
+                                  Title = t.Title,
+                                  Time = t.Time,
+                                  Category = c.Name,
+                                  Status = t.Status,
+                                  Reference = t.Reference
+                              }).ToListAsync();
 
-            TicketHeader[] tickets = new TicketHeader[data.Count];
-            for(int i = 0; i < data.Count; i++)
-            {
-                tickets[i] = new TicketHeader();
-                tickets[i].Id = data[i].Id;
-                tickets[i].Reference = data[i].Reference;
-                tickets[i].Status = data[i].Status;
-                tickets[i].Time = data[i].Time;
-                tickets[i].Title = data[i].Title;
-
-                var category = await _context.Categories.SingleOrDefaultAsync(s => s.Id == data[i].Category);
-
-                if (category == null)
-                    tickets[i].Category = null;
-                else
-                    tickets[i].Category = category.Name;
-            }
-
-            data = null;
-
-            return Ok(tickets);
+            return Ok(data);
         }
 
         /*---------------------------------------------------------------------------------------*/
         /* Properties:                                                                           */
         /* -----------                                                                           */
-        /* Type: GET /ticket/filter                                                              */
+        /* Type: POST /ticket/filter                                                             */
         /*                                                                                       */
         /* Description:                                                                          */
         /* ------------                                                                          */
         /* This method listing all existing ticket and return the caller the output              */
         /*---------------------------------------------------------------------------------------*/
-        [HttpGet("filter")]
+        [HttpPost("filter")]
         public async Task<IActionResult> GetFilteredTicket(TicketReq _input)
         {
             /*--- Set default values, if null is specified ---*/
@@ -223,7 +214,8 @@ namespace HomeTicketing.Controllers
                               {
                                   Summary = l.Summary,
                                   Details = l.Details,
-                                  Time = l.Time
+                                  Time = l.Time,
+                                  Id = l.Id
                               }).OrderBy(x => x.Time).ToListAsync();
 
             /*--- There should not exist ticket without log, so no need to handle exception ---*/
@@ -234,6 +226,7 @@ namespace HomeTicketing.Controllers
                 data.Logs[i].Details = logs[i].Details;
                 data.Logs[i].Summary = logs[i].Summary;
                 data.Logs[i].Time = logs[i].Time;
+                data.Logs[i].Id = logs[i].Id;
             }
 
             return Ok(data);
@@ -280,7 +273,8 @@ namespace HomeTicketing.Controllers
                 input.Category = category.Id;
 
                 /*--- Check for mandatory fields ---*/
-                if (_input.Category == null || _input.Reference == null || _input.Summary == null || _input.Title == null)
+                if (_input.Category == null || _input.Reference == null || _input.Summary == null || _input.Title == null ||
+                    _input.Category == "" || _input.Reference == "" || _input.Summary == "" || _input.Title == "")
                 {
                     ErrorMessage ret = new ErrorMessage();
                     ret.Message = "At least one of the following fields are null: Category, Reference, Summary, Title";
@@ -317,8 +311,21 @@ namespace HomeTicketing.Controllers
 
                 await transaction.CommitAsync();
 
-                var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(record.Id));
-                return Ok(data);
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories
+                                  on t.Category equals c.Id
+                                  where t.Id.Equals(record.Id)
+                                  select new
+                                  {
+                                      Id = t.Id,
+                                      Title = t.Title,
+                                      Time = t.Time,
+                                      Category = c.Name,
+                                      Status = t.Status,
+                                      Reference = t.Reference
+                                  }).ToListAsync();
+
+                return Ok(data[0]);
             }
             catch(Exception ex)
             {
@@ -460,7 +467,21 @@ namespace HomeTicketing.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(record);
+            var data = await (from t in _context.Tickets
+                              join c in _context.Categories
+                              on t.Category equals c.Id
+                              where t.Id.Equals(record.Id)
+                              select new
+                              {
+                                  Id = t.Id,
+                                  Title = t.Title,
+                                  Time = t.Time,
+                                  Category = c.Name,
+                                  Status = t.Status,
+                                  Reference = t.Reference
+                              }).ToListAsync();
+
+            return Ok(data[0]);
         }
     }
 }
