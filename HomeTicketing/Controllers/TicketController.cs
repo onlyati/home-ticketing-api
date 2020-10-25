@@ -56,6 +56,8 @@ namespace HomeTicketing.Controllers
                     tickets[i].Category = category.Name;
             }
 
+            data = null;
+
             return Ok(tickets);
         }
 
@@ -250,66 +252,81 @@ namespace HomeTicketing.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateTicket(TicketReq _input)
         {
-            /*--- Prepare the Ticket object for database ---*/
-            Ticket input = new Ticket();
-            input.Id = _input.Id;
-            input.Reference = _input.Reference;
-            input.Status = _input.Status;
-            input.Time = _input.Time;
-            input.Title = _input.Title;
+            var transaction = await _context.Database.BeginTransactionAsync();
 
-            input.Id = Guid.NewGuid();
-            input.Status = "Open";
-            input.Time = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-            /*--- Check that category exist ---*/
-            var category = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(_input.Category));
-            if(category == null)
+            try
             {
-                ErrorMessage ret = new ErrorMessage();
-                ret.Message = $"Invalid category name: {_input.Category}";
-                return BadRequest(ret);
-            }
+                /*--- Prepare the Ticket object for database ---*/
+                Ticket input = new Ticket();
+                input.Id = _input.Id;
+                input.Reference = _input.Reference;
+                input.Status = _input.Status;
+                input.Time = _input.Time;
+                input.Title = _input.Title;
 
-            input.Category = category.Id;
+                input.Id = Guid.NewGuid();
+                input.Status = "Open";
+                input.Time = DateTime.Now.ToString("yyyyMMddHHmmss");
 
-            /*--- Check for mandatory fields ---*/
-            if(_input.Category == null || _input.Reference == null || _input.Summary == null || _input.Title == null)
-            {
-                ErrorMessage ret = new ErrorMessage();
-                ret.Message = "At least one of the following fields are null: Category, Reference, Summary, Title";
-                return BadRequest(ret);
-            }
+                /*--- Check that category exist ---*/
+                var category = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(_input.Category));
+                if (category == null)
+                {
+                    ErrorMessage ret = new ErrorMessage();
+                    ret.Message = $"Invalid category name: {_input.Category}";
+                    return BadRequest(ret);
+                }
 
-            /*--- If not open, then create ---*/
-            var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open"));
+                input.Category = category.Id;
 
-            if(record == null)
-            {
-                await _context.AddAsync(input);
+                /*--- Check for mandatory fields ---*/
+                if (_input.Category == null || _input.Reference == null || _input.Summary == null || _input.Title == null)
+                {
+                    ErrorMessage ret = new ErrorMessage();
+                    ret.Message = "At least one of the following fields are null: Category, Reference, Summary, Title";
+                    return BadRequest(ret);
+                }
+
+                /*--- If not open, then create ---*/
+                var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open"));
+
+                if (record == null)
+                {
+                    await _context.AddAsync(input);
+                    await _context.SaveChangesAsync();
+                }
+
+                record = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open"));
+
+                /*--- Update log entry ---*/
+                Log new_log = new Log();
+                new_log.Summary = _input.Summary;
+                new_log.Ticket = record;
+
+                new_log.Time = DateTime.Now.ToString("yyyyMMddHHmmss");
+
+                if (_input.Details == null)
+                    new_log.Details = _input.Summary;
+                else
+                    new_log.Details = _input.Details;
+
+                await _context.AddAsync(new_log);
+
+                /*--- Save everything, then return with 200 ---*/
                 await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(record.Id));
+                return Ok(data);
             }
-
-            record = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open"));
-
-            /*--- Update log entry ---*/
-            Log new_log = new Log();
-            new_log.Summary = _input.Summary;
-            new_log.Ticket = record;
-
-            new_log.Time = DateTime.Now.ToString("yyyyMMddHHmmss");
-
-            if (_input.Details == null)
-                new_log.Details = _input.Summary;
-            else
-                new_log.Details = _input.Details;
-
-            await _context.AddAsync(new_log);            
-
-            /*--- Save everything, then return with 200 ---*/
-            await _context.SaveChangesAsync();
-            var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(record.Id));
-            return Ok(data);
+            catch(Exception ex)
+            {
+                await transaction.RollbackAsync();
+                ErrorMessage ret = new ErrorMessage();
+                ret.Message = $"Interal error on server: {ex.Message}";
+                return StatusCode(500, ret);
+            }
         }
 
         /*---------------------------------------------------------------------------------------*/
