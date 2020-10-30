@@ -49,7 +49,7 @@ namespace HomeTicketing.Controllers
         /* ------------                                                                          */
         /* Add new category with specified {name} value.                                         */
         /*---------------------------------------------------------------------------------------*/
-        [HttpPost("add/{name}")]
+        [HttpPost("{name}")]
         public async Task<IActionResult> CategoryAdd(string name)
         {
             Category new_cat = new Category();
@@ -78,7 +78,7 @@ namespace HomeTicketing.Controllers
         /* ------------                                                                          */
         /* Delete category if exist with {name} value                                            */
         /*---------------------------------------------------------------------------------------*/
-        [HttpPost("delete/{name}")]
+        [HttpPut("delete/{name}")]
         public async Task<IActionResult> CategoryDelete(string name)
         {
             var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
@@ -102,7 +102,7 @@ namespace HomeTicketing.Controllers
         /* ------------                                                                          */
         /* This method change group name                                                         */
         /*---------------------------------------------------------------------------------------*/
-        [HttpPost("change/{current}/{to}")]
+        [HttpPut("change/{current}/{to}")]
         public async Task<IActionResult> CategoryChange(string current, string to)
         {
             /*--- Check that current exist ---*/

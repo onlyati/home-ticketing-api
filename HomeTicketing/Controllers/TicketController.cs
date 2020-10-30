@@ -242,7 +242,7 @@ namespace HomeTicketing.Controllers
         /* ------------                                                                          */
         /* It open a new ticket or update and existing one.                                      */
         /*---------------------------------------------------------------------------------------*/
-        [HttpPost("create")]
+        [HttpPost]
         public async Task<IActionResult> CreateTicket(TicketReq _input)
         {
             var transaction = await _context.Database.BeginTransactionAsync();
@@ -343,57 +343,56 @@ namespace HomeTicketing.Controllers
         /*                                                                                       */
         /* Description:                                                                          */
         /* ------------                                                                          */
-        /* This method close ticket based on ID, if it can.                                      */
+        /* This method close ticket based on ID or reference value, if it can.                   */
         /*---------------------------------------------------------------------------------------*/
-        [HttpPost("close/id/{id}")]
-        public async Task<IActionResult> CloseTicketById(string id)
+        [HttpPut("close/{type}/{value}")]
+        public async Task<IActionResult> CloseTicket(string type, string value)
         {
-            /*--- Looking for open tickets ---*/
-            var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(new Guid(id)) && s.Status.Equals("Open"));
+            
+            if (type == "id")
+            {
+                /*--- Looking for open tickets ---*/
+                var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(new Guid(value)) && s.Status.Equals("Open"));
 
-            /*--- If ticket not found, then error ---*/
-            if(data == null)
+                /*--- If ticket not found, then error ---*/
+                if (data == null)
+                {
+                    ErrorMessage ret = new ErrorMessage();
+                    ret.Message = $"Not found opened incident with ID: {value}";
+                    return NotFound(ret);
+                }
+
+                /*--- If found, then put into close ---*/
+                data.Status = "Closed";
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            else if (type == "rv")
+            {
+                /*---Looking for ticket based on refefence value-- - */
+                var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(value) && s.Status.Equals("Open"));
+
+                /*--- If ticket not found, then error ---*/
+                if (data == null)
+                {
+                    ErrorMessage ret = new ErrorMessage();
+                    ret.Message = $"Not found opened incident with reference value: {value}";
+                    return NotFound(ret);
+                }
+
+                /*--- If found, then put into close ---*/
+                data.Status = "Closed";
+                await _context.SaveChangesAsync();
+
+                return Ok();
+            }
+            else
             {
                 ErrorMessage ret = new ErrorMessage();
-                ret.Message = $"Not found opened incident with ID: {id}";
-                return NotFound(ret);
+                ret.Message = $"Invalid type: {type}";
+                return BadRequest(ret);
             }
-
-            /*--- If found, then put into close ---*/
-            data.Status = "Closed";
-            await _context.SaveChangesAsync();
-
-            return Ok();
-        }
-
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: POST /ticket/close/rv/{reference}                                               */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* It close ticket based on reference value.                                             */
-        /*---------------------------------------------------------------------------------------*/
-        [HttpPost("close/rv/{reference}")]
-        public async Task<IActionResult> CloseTicketByRv(string reference)
-        {
-            /*--- Looking for ticket based on refefence value ---*/
-            var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(reference) && s.Status.Equals("Open"));
-
-            /*--- If not found, then return with error ---*/
-            if (data == null)
-            {
-                ErrorMessage ret = new ErrorMessage();
-                ret.Message = $"Not found opened incident with refence value: {reference}";
-                return NotFound(ret);
-            }
-
-            /*--- If found, then put into close ---*/
-            data.Status = "Closed";
-            await _context.SaveChangesAsync();
-
-            return Ok();
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -406,7 +405,7 @@ namespace HomeTicketing.Controllers
         /* ------------                                                                          */
         /* It can change ticket header: Category, Title and Reference                            */
         /*---------------------------------------------------------------------------------------*/
-        [HttpPost("change")]
+        [HttpPut("change")]
         public async Task<IActionResult> ChangeTicket(TicketHeader _input)
         {
             string update_text = "Changed values:\n";
