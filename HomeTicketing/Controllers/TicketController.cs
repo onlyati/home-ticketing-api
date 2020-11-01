@@ -398,7 +398,7 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Properties:                                                                           */
         /* -----------                                                                           */
-        /* Type: POST /ticket/change                                                             */
+        /* Type: PUT  /ticket/change                                                             */
         /* Assigned JSON: contains the values for "to" status. ID is mandatory.                  */
         /*                                                                                       */
         /* Description:                                                                          */
