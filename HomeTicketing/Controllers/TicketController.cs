@@ -179,10 +179,10 @@ namespace HomeTicketing.Controllers
         /* This method collect the main Ticket and the assigned Log entries for a specified id.  */
         /*---------------------------------------------------------------------------------------*/
         [HttpGet("details/id/{id}")]
-        public async Task<IActionResult> GetDetails(string id)
+        public async Task<IActionResult> GetDetails(int id)
         {
             /*--- Looking for ticket by ID ---*/
-            var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(new Guid(id)));
+            var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Id == id);
 
             /*--- If not found, then return with error ---*/
             if(record == null)
@@ -257,7 +257,6 @@ namespace HomeTicketing.Controllers
                 input.Time = _input.Time;
                 input.Title = _input.Title;
 
-                input.Id = Guid.NewGuid();
                 input.Status = "Open";
                 input.Time = DateTime.Now.ToString("yyyyMMddHHmmss");
 
@@ -352,7 +351,7 @@ namespace HomeTicketing.Controllers
             if (type == "id")
             {
                 /*--- Looking for open tickets ---*/
-                var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(new Guid(value)) && s.Status.Equals("Open"));
+                var data = await _context.Tickets.SingleOrDefaultAsync(s => s.Id == Convert.ToInt32(value) && s.Status.Equals("Open"));
 
                 /*--- If ticket not found, then error ---*/
                 if (data == null)
@@ -411,7 +410,7 @@ namespace HomeTicketing.Controllers
             string update_text = "Changed values:\n";
             bool update_flag = false;
             /*--- If ID is missing, then error ---*/
-            if(_input.Id == null)
+            if(_input.Id == 0)
             {
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = "ID is missing";

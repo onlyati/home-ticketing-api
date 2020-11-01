@@ -8,7 +8,7 @@ namespace HomeTicketing.Model
     /* Model to read inputs for ticket creation */
     public class TicketReq
     {
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public string Summary { get; set; }
         public string Category { get; set; }
         public string Reference { get; set; }
