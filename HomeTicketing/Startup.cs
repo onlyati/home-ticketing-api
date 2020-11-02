@@ -25,6 +25,10 @@ namespace HomeTicketing
             string connString = Configuration.GetValue<string>("ConnectionString:Db"); ;
             services.AddDbContext<DataContext>(opts => opts.UseMySql(connString));
             services.AddControllers();
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Open", builder => builder.AllowAnyOrigin().AllowAnyHeader());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +42,8 @@ namespace HomeTicketing
             //app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("Open");
 
             app.UseAuthorization();
 
