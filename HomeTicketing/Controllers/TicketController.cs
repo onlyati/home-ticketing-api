@@ -4,13 +4,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HomeTicketing.Model;
+using Microsoft.AspNetCore.Http;
 
 namespace HomeTicketing.Controllers
 {
     /*********************************************************************************************/
     /* This file has been made to handle those requests, which are related to Tickets and Logs   */
     /*********************************************************************************************/
-    [Route("[controller]")]
+    [Produces("application/json")]
+    [Route("ticket")]
     [ApiController]
     public class TicketController : ControllerBase
     {
@@ -24,15 +26,15 @@ namespace HomeTicketing.Controllers
             _context = context;
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: GET /ticket                                                                     */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* This method listing all existing ticket and return the caller the output              */
-        /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// List all ticket
+        /// </summary>
+        /// <remarks>
+        /// This request list all existing ticket without any filter
+        /// </remarks>
+        /// <returns>JSON array about the tickets</returns>
+        /// <response code="200">Request is completed</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
         public async Task<IActionResult> GetTicket()
         {
@@ -52,17 +54,20 @@ namespace HomeTicketing.Controllers
             return Ok(data);
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: POST /ticket/filter                                                             */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* This method listing all existing ticket and return the caller the output              */
-        /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// List ticket with filter
+        /// </summary>
+        /// <remarks>
+        /// This request filtering the tickts based on the input and return with the list.
+        /// </remarks>
+        /// <param name="_input">Filters in JSON</param>
+        /// <returns>JSON array about the tickets</returns>
+        /// <response code="200">Request is completed</response>
+        /// <response code="404">No ticket was found based on filters</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPost("filter")]
-        public async Task<IActionResult> GetFilteredTicket(TicketReq _input)
+        public async Task<IActionResult> GetFilteredTicket(TicketFilter _input)
         {
             /*--- Set default values, if null is specified ---*/
             Ticket input = new Ticket();
@@ -168,16 +173,18 @@ namespace HomeTicketing.Controllers
             }
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: GET /ticket/details/id/{id}                                                     */
-        /* Assigned JSON: filter informations                                                    */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* This method collect the main Ticket and the assigned Log entries for a specified id.  */
-        /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// Details about a ticket
+        /// </summary>
+        /// <remarks>
+        /// This request is coming back with a fully detailed ticket, whoch contains the header and all log entries
+        /// </remarks>
+        /// <param name="id">Ticket ID</param>
+        /// <returns>Reutnr with ticket details</returns>
+        /// <response code="200">Request is completed</response>
+        /// <response code="404">No ticket was found with specified ID</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("details/id/{id}")]
         public async Task<IActionResult> GetDetails(int id)
         {
@@ -232,18 +239,22 @@ namespace HomeTicketing.Controllers
             return Ok(data);
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: POST /ticket/create                                                             */
-        /* Assigned JSON: information about the ticket                                           */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* It open a new ticket or update and existing one.                                      */
-        /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// Create ticket
+        /// </summary>
+        /// <remarks>
+        /// This request has purpose the generate a new ticket or add a new log for an already exist ticket
+        /// </remarks>
+        /// <param name="_input"></param>
+        /// <returns>With the generated ticket header</returns>
+        /// <response code="200">REquest is completed</response>
+        /// <response code="400">Mandatory filed missing or category does not exist</response>
+        /// <response code="500">Internal API error, ticket creation was unsuccessful</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> CreateTicket(TicketReq _input)
+        public async Task<IActionResult> CreateTicket(TicketCreateHeader _input)
         {
             var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -251,10 +262,7 @@ namespace HomeTicketing.Controllers
             {
                 /*--- Prepare the Ticket object for database ---*/
                 Ticket input = new Ticket();
-                input.Id = _input.Id;
                 input.Reference = _input.Reference;
-                input.Status = _input.Status;
-                input.Time = _input.Time;
                 input.Title = _input.Title;
 
                 input.Status = "Open";
@@ -335,15 +343,21 @@ namespace HomeTicketing.Controllers
             }
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: POST /close/id/{id}                                                             */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* This method close ticket based on ID or reference value, if it can.                   */
-        /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// Close ticket
+        /// </summary>
+        /// <remarks>
+        /// This request is good to close ticket based on ID or reference value
+        /// </remarks>
+        /// <param name="type">Can be 'id' or 'rv'</param>
+        /// <param name="value">Specified ID or reference value</param>
+        /// <returns>With 200 if OK else with error message</returns>
+        /// <response code="200">Request is completed</response>
+        /// <response code="400">Type is neither 'id' nor 'rv'</response>
+        /// <response code="404">Not ticket found with the specified value</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status405MethodNotAllowed)]
         [HttpPut("close/{type}/{value}")]
         public async Task<IActionResult> CloseTicket(string type, string value)
         {
@@ -404,8 +418,22 @@ namespace HomeTicketing.Controllers
         /* ------------                                                                          */
         /* It can change ticket header: Category, Title and Reference                            */
         /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// Change ticket parameters
+        /// </summary>
+        /// <remarks>
+        /// By this request some parameter can be chanegd for a specified ticket. Parameter's values like: title, reference and category
+        /// </remarks>
+        /// <param name="_input"></param>
+        /// <returns>With the modified ticket JSON if OK, else error message</returns>
+        /// <response code="200">Change is completed</response>
+        /// <response code="400">ID is missing</response>
+        /// <response code="404">Ticket did not found with the specified ID</response>
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("change")]
-        public async Task<IActionResult> ChangeTicket(TicketHeader _input)
+        public async Task<IActionResult> ChangeTicket(TicketChangeData _input)
         {
             string update_text = "Changed values:\n";
             bool update_flag = false;
@@ -424,7 +452,7 @@ namespace HomeTicketing.Controllers
             {
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Ticket did not found for specified ID: {_input.Id.ToString()}";
-                return BadRequest(ret);
+                return NotFound(ret);
             }
 
             /*--- Change the required variables ---*/

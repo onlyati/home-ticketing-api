@@ -12,7 +12,7 @@ namespace HomeTicketing.Controllers
     /*********************************************************************************************/
     /* This file is made for health check of API                                                 */
     /*********************************************************************************************/
-    [Route("[controller]")]
+    [Route("health")]
     [ApiController]
     public class HealthController : ControllerBase
     {
@@ -26,16 +26,16 @@ namespace HomeTicketing.Controllers
             _context = context;
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: GET /health                                                                     */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* This function send back and OK message. It can be used as health check of API.        */
-        /*---------------------------------------------------------------------------------------*/
+        /// <summary>
+        /// Check that API is alive or not
+        /// </summary>
+        /// <remarks>
+        /// This request is good to check that API is alive
+        /// </remarks>
+        /// <returns>Alive message</returns>
+        /// <response code="200">API is alive</response>
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult HealthCheck()
         {
             ErrorMessage OkMsg = new ErrorMessage();

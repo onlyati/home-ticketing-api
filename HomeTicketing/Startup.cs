@@ -6,6 +6,10 @@ using Microsoft.Extensions.Hosting;
 using Pomelo.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using HomeTicketing.Model;
+using System;
+using System.Reflection;
+using System.IO;
+using Microsoft.OpenApi.Models;
 
 namespace HomeTicketing
 {
@@ -29,6 +33,25 @@ namespace HomeTicketing
             {
                 options.AddPolicy("Open", builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("1.0", new OpenApiInfo
+                {
+                    Version = "1.0",
+                    Title = "Ticketing API Swagger UI",
+                    Description = "This is a place where the API can be try.",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Attila Molnár",
+                        Email = "molnar.attila28@gmail.com"
+                    }
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });    
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,6 +63,13 @@ namespace HomeTicketing
             }
 
             //app.UseHttpsRedirection();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("./swagger/1.0/swagger.json", "Ticketing API Swagger UI");
+                c.RoutePrefix = string.Empty;
+            });
 
             app.UseRouting();
 
