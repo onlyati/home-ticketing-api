@@ -408,16 +408,6 @@ namespace HomeTicketing.Controllers
             }
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* -----------                                                                           */
-        /* Type: PUT  /ticket/change                                                             */
-        /* Assigned JSON: contains the values for "to" status. ID is mandatory.                  */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* It can change ticket header: Category, Title and Reference                            */
-        /*---------------------------------------------------------------------------------------*/
         /// <summary>
         /// Change ticket parameters
         /// </summary>
