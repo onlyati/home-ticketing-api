@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HomeTicketing.Model;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace HomeTicketing.Controllers
 {
@@ -20,10 +21,12 @@ namespace HomeTicketing.Controllers
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
         private readonly DataContext _context;
+        private readonly ILogger _logger;
 
-        public TicketController(DataContext context)
+        public TicketController(DataContext context, ILogger<TicketController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -38,6 +41,7 @@ namespace HomeTicketing.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTicket()
         {
+            _logger.LogInformation("Get all ticket is requested");
             var data = await (from t in _context.Tickets
                               join c in _context.Categories
                               on t.Category equals c.Id
@@ -50,7 +54,7 @@ namespace HomeTicketing.Controllers
                                   Status = t.Status,
                                   Reference = t.Reference
                               }).ToListAsync();
-
+            _logger.LogInformation("All ticket has been sent");
             return Ok(data);
         }
 
@@ -69,6 +73,7 @@ namespace HomeTicketing.Controllers
         [HttpPost("filter")]
         public async Task<IActionResult> GetFilteredTicket(TicketFilter _input)
         {
+            _logger.LogInformation($"Ticket list with filter is requested: {_input.Category}, {_input.Reference}, {_input.Status}, {_input.Title}");
             /*--- Set default values, if null is specified ---*/
             Ticket input = new Ticket();
 
@@ -108,12 +113,13 @@ namespace HomeTicketing.Controllers
                 /*--- If none found, return with 404, else return with 200 ---*/
                 if (records.Count == 0)
                 {
+                    _logger.LogWarning($"No entry found for the filter: {_input.Category}, {_input.Reference}, {_input.Status}, {_input.Title}");
                     ErrorMessage ret = new ErrorMessage();
                     ret.Message = "No entry if found for filters";
                     return NotFound(ret);
                 }
 
-                /*--- Need to change due to group trasnlation ---*/
+                /*--- Need to change due to group translation ---*/
                 TicketHeader[] tickets = new TicketHeader[records.Count];
                 for (int i = 0; i < records.Count; i++)
                 {
@@ -145,6 +151,7 @@ namespace HomeTicketing.Controllers
                 /*--- If none found, return with 404, else return with 200 ---*/
                 if (records.Count == 0)
                 {
+                    _logger.LogWarning($"No entry found for the filter: {_input.Category}, {_input.Reference}, {_input.Status}, {_input.Title}");
                     ErrorMessage ret = new ErrorMessage();
                     ret.Message = "No entry if found for filters";
                     return NotFound(ret);
@@ -169,6 +176,7 @@ namespace HomeTicketing.Controllers
                         tickets[i].Category = act_categpry.Name;
                 }
 
+                _logger.LogInformation($"Ticket with filter has been sent back: {_input.Category}, {_input.Reference}, {_input.Status}, {_input.Title}");
                 return Ok(tickets);
             }
         }
@@ -188,12 +196,14 @@ namespace HomeTicketing.Controllers
         [HttpGet("details/id/{id}")]
         public async Task<IActionResult> GetDetails(int id)
         {
+            _logger.LogInformation($"Details about {id} is requested");
             /*--- Looking for ticket by ID ---*/
             var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Id == id);
 
             /*--- If not found, then return with error ---*/
             if(record == null)
             {
+                _logger.LogWarning($"Ticket {id} did not found, no details send back");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Ticket did not found based on ID: {id}";
                 return NotFound(ret);
@@ -236,6 +246,7 @@ namespace HomeTicketing.Controllers
                 data.Logs[i].Id = logs[i].Id;
             }
 
+            _logger.LogInformation($"Details about {id} is sent back");
             return Ok(data);
         }
 
@@ -256,6 +267,7 @@ namespace HomeTicketing.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTicket(TicketCreateHeader _input)
         {
+            _logger.LogInformation($"Ticket creation request has come: {_input.Category}, {_input.Reference}, {_input.Summary}, {_input.Title}");
             var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -272,6 +284,7 @@ namespace HomeTicketing.Controllers
                 var category = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(_input.Category));
                 if (category == null)
                 {
+                    _logger.LogWarning($"Ticket creation failed, invalid category name: {_input.Category}");
                     ErrorMessage ret = new ErrorMessage();
                     ret.Message = $"Invalid category name: {_input.Category}";
                     return BadRequest(ret);
@@ -332,10 +345,13 @@ namespace HomeTicketing.Controllers
                                       Reference = t.Reference
                                   }).ToListAsync();
 
+                _logger.LogInformation($"Ticket is created: {_input.Category}, {_input.Reference}, {_input.Summary}, {_input.Title}");
                 return Ok(data[0]);
             }
             catch(Exception ex)
             {
+                _logger.LogError($"Ticket creation is failed, due to server error: {_input.Category}, {_input.Reference}, {_input.Summary}, {_input.Title}");
+                _logger.LogError($"Ticket creation is failed, error message {ex.Message}");
                 await transaction.RollbackAsync();
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Interal error on server: {ex.Message}";
@@ -361,7 +377,7 @@ namespace HomeTicketing.Controllers
         [HttpPut("close/{type}/{value}")]
         public async Task<IActionResult> CloseTicket(string type, string value)
         {
-            
+            _logger.LogInformation($"Ticket close request is requested: {type}/{value}");            
             if (type == "id")
             {
                 /*--- Looking for open tickets ---*/
@@ -370,6 +386,7 @@ namespace HomeTicketing.Controllers
                 /*--- If ticket not found, then error ---*/
                 if (data == null)
                 {
+                    _logger.LogWarning($"Ticket close failed, due to invalid ID: {value}");
                     ErrorMessage ret = new ErrorMessage();
                     ret.Message = $"Not found opened incident with ID: {value}";
                     return NotFound(ret);
@@ -389,6 +406,7 @@ namespace HomeTicketing.Controllers
                 /*--- If ticket not found, then error ---*/
                 if (data == null)
                 {
+                    _logger.LogWarning($"Ticket close is failed due to invalid refrence value: {value}");
                     ErrorMessage ret = new ErrorMessage();
                     ret.Message = $"Not found opened incident with reference value: {value}";
                     return NotFound(ret);
@@ -398,10 +416,12 @@ namespace HomeTicketing.Controllers
                 data.Status = "Closed";
                 await _context.SaveChangesAsync();
 
+                _logger.LogInformation($"Ticket is close: {type}/{value}");
                 return Ok();
             }
             else
             {
+                _logger.LogWarning($"Ticket close is failed due to invalid type: {type}");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Invalid type: {type}";
                 return BadRequest(ret);
@@ -425,11 +445,13 @@ namespace HomeTicketing.Controllers
         [HttpPut("change")]
         public async Task<IActionResult> ChangeTicket(TicketChangeData _input)
         {
+            _logger.LogInformation($"Change ticket request has come: {_input.Category}, {_input.Id}, {_input.Reference}, {_input.Title}");
             string update_text = "Changed values:\n";
             bool update_flag = false;
             /*--- If ID is missing, then error ---*/
             if(_input.Id == 0)
             {
+                _logger.LogWarning($"Ticket change failed, due to missing ID");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = "ID is missing";
                 return BadRequest(ret);
@@ -440,6 +462,7 @@ namespace HomeTicketing.Controllers
 
             if(record == null)
             {
+                _logger.LogWarning($"Ticket change failed, due to not found ID: {_input.Id}");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Ticket did not found for specified ID: {_input.Id.ToString()}";
                 return NotFound(ret);
@@ -497,6 +520,7 @@ namespace HomeTicketing.Controllers
                                   Reference = t.Reference
                               }).ToListAsync();
 
+            _logger.LogInformation($"Ticket change is done: {_input.Category}, {_input.Id}, {_input.Reference}, {_input.Title}");
             return Ok(data[0]);
         }
     }

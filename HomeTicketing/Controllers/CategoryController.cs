@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using HomeTicketing.Model;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace HomeTicketing.Controllers
 {
@@ -20,10 +21,12 @@ namespace HomeTicketing.Controllers
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
         private readonly DataContext _context;
+        private readonly ILogger _logger;
 
-        public CategoryController(DataContext context)
+        public CategoryController(DataContext context, ILogger<CategoryController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -38,7 +41,9 @@ namespace HomeTicketing.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCategories()
         {
+            _logger.LogDebug("GET categories are requested");
             var data = await _context.Categories.ToListAsync();
+            _logger.LogInformation("GET categories are completed");
             return Ok(data);
         }
 
@@ -57,6 +62,7 @@ namespace HomeTicketing.Controllers
         [HttpPost("{name}")]
         public async Task<IActionResult> CategoryAdd(string name)
         {
+            _logger.LogDebug($"New category ({name}) is requested");
             Category new_cat = new Category();
             new_cat.Name = name;
 
@@ -64,13 +70,18 @@ namespace HomeTicketing.Controllers
 
             if(record != null)                               /* If category already exist, error */
             {
+                _logger.LogWarning($"Category ({name}) is already existing");
                 return BadRequest();
             }
 
             await _context.AddAsync(new_cat);
             await _context.SaveChangesAsync();
 
+            _logger.LogDebug($"New category ({name}) has been added");
+
             var data = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
+            _logger.LogInformation($"New category ({name}) request is completed");
+
             return Ok(data);
         }
 
@@ -89,16 +100,18 @@ namespace HomeTicketing.Controllers
         [HttpDelete("{name}")]
         public async Task<IActionResult> CategoryDelete(string name)
         {
+            _logger.LogDebug($"Delete category request ({name}) is requested");
             var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
 
             if(record == null)                              /* If category does not exist, error */
             {
+                _logger.LogWarning($"Category ({name}) does not exist");
                 return BadRequest();
             }
 
             _context.Remove(record);
             await _context.SaveChangesAsync();
-
+            _logger.LogInformation($"Category ({name}) has been deleted");
             return Ok();
         }
 
@@ -128,21 +141,25 @@ namespace HomeTicketing.Controllers
         [HttpPut("change/{current}/{to}")]
         public async Task<IActionResult> CategoryChange(string current, string to)
         {
+            _logger.LogDebug($"Change category ({current} -> {to}) is requested");
             /*--- Check that current exist ---*/
             var category = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(current));
 
             if(category == null)
             {
+                _logger.LogWarning($"Category ({current}) does not exist");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Category did not found: {current}";
                 return NotFound(ret);
             }
 
+            _logger.LogDebug($"Check that category exist: {to}");
             /*--- Check that the new name is not exist yet ---*/
             var category2 = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(to));
 
             if(category2 != null)
             {
+                _logger.LogWarning($"New category name ({to}) is already exist");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = $"Category already exist: {to}";
                 return BadRequest(ret);
@@ -152,7 +169,7 @@ namespace HomeTicketing.Controllers
             category.Name = to;
 
             await _context.SaveChangesAsync();
-
+            _logger.LogInformation($"Change vategory ({current} -> {to}) has been done");
             return Ok(category);
         }
     }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using HomeTicketing.Model;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HomeTicketing.Controllers
 {
@@ -20,10 +21,12 @@ namespace HomeTicketing.Controllers
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
         private readonly DataContext _context;
+        private readonly ILogger _logger;
 
-        public HealthController(DataContext context)
+        public HealthController(DataContext context, ILogger<HealthController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -40,6 +43,7 @@ namespace HomeTicketing.Controllers
         {
             ErrorMessage OkMsg = new ErrorMessage();
             OkMsg.Message = "I am still alive";
+            _logger.LogInformation("Health checking was successfully");
             return Ok(OkMsg);
         }
     }
