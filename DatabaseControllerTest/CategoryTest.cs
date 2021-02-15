@@ -99,6 +99,10 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.OK, response2.MessageType, "Final: Category change is done");
         }
 
+        /// <summary>
+        /// Category change is failed due to new category already exist
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task Change_Category_NOK_1()
         {
@@ -113,6 +117,10 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.NOK, response2.MessageType, "Final: Category was renamed to an already exist category");
         }
 
+        /// <summary>
+        /// Category change is failed due to current category does not exist
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task Change_Category_NOK_2()
         {
@@ -122,6 +130,10 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.NOK, response2.MessageType, "Final: Non-exist categry have been renamed");
         }
 
+        /// <summary>
+        /// Delete category based on name should work
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task Delete_Category1_OK()
         {
@@ -133,6 +145,10 @@ namespace DatabaseControllerTest
             Assert.AreEqual(response2.MessageType, MessageType.OK, "Final: Category deletion is OK");
         }
 
+        /// <summary>
+        /// Delete category failed due to category did not exist
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task Delete_Category1_NOK()
         {
@@ -141,6 +157,10 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.NOK, response.MessageType, "Final: Category could be deleted which was non-existed");
         }
 
+        /// <summary>
+        /// Delete category based on ID should work
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task Delete_Category2_OK()
         {
@@ -161,6 +181,10 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.OK, response3.MessageType, "Final: Category deletion by ID was unsuccessful");
         }
 
+        /// <summary>
+        /// Delete category should failed due to ID did not exist
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task Delete_Category2_NOK()
         {
