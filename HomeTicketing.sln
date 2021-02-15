@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeTicketing", "HomeTicketing\HomeTicketing.csproj", "{1189C068-76C7-4A6F-8957-3AC8711371EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeTicketing", "HomeTicketing\HomeTicketing.csproj", "{1189C068-76C7-4A6F-8957-3AC8711371EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseController", "DatabaseController\DatabaseController.csproj", "{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseControllerTest", "DatabaseControllerTest\DatabaseControllerTest.csproj", "{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{1189C068-76C7-4A6F-8957-3AC8711371EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1189C068-76C7-4A6F-8957-3AC8711371EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1189C068-76C7-4A6F-8957-3AC8711371EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
