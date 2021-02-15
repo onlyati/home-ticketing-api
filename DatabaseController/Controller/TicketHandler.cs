@@ -278,5 +278,271 @@ namespace DatabaseController.Controller
             return hc;
         }
         #endregion
+
+        #region TicketStuff
+        /// <summary>
+        /// This method list all ticket from the database without any filtering
+        /// </summary>
+        /// <returns>With a TicketHeader list</returns>
+        public async Task<List<TicketHeader>> ListTickets()
+        {
+            var data = await (from t in _context.Tickets 
+                              join c in _context.Categories on t.Category equals c.Id 
+                              select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                             .ToListAsync();
+            return data;
+        }
+
+        /// <summary>
+        /// Return with a list from ticket without any filter, but in limtied row numbers
+        /// </summary>
+        /// <param name="from">Skip value</param>
+        /// <param name="count">Take value</param>
+        /// <returns>With a TicketHeader list</returns>
+        public async Task<List<TicketHeader>> ListTickets(int from, int count)
+        {
+            var data = await (from t in _context.Tickets 
+                              join c in _context.Categories on t.Category equals c.Id 
+                              select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                             .Skip(from)
+                             .Take(count)
+                             .ToListAsync();
+            return data;
+        }
+
+        /// <summary>
+        /// List tickets by filtered with input template
+        /// </summary>
+        /// <remarks>
+        /// Possible filter options:
+        /// <list type="bullet">
+        /// <item>Category (exact match)</item>
+        /// <item>Reference (contains)</item>
+        /// <item>Status (exact match)</item>
+        /// <item>Title (contains)</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="filter">Filter object</param>
+        /// <returns>With a TicketHeader list</returns>
+        public async Task<List<TicketHeader>> ListTickets(TicketFilterTemplate filter)
+        {
+            if (filter.Category != "" && filter.Status != "")
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .ToListAsync();
+                return data;
+            }
+            else if (filter.Category != "" && filter.Status == "")
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .ToListAsync();
+                return data;
+            }
+            else if (filter.Category == "" && filter.Status != "")
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .ToListAsync();
+                return data;
+            }
+            else
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .ToListAsync();
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// List tickets by filtered with input template with specified limit number
+        /// </summary>
+        /// <remarks>
+        /// Possible filter options:
+        /// <list type="bullet">
+        /// <item>Category (exact match)</item>
+        /// <item>Reference (contains)</item>
+        /// <item>Status (exact match)</item>
+        /// <item>Title (contains)</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="filter">Filter object</param>
+        /// <returns>With a TicketHeader list</returns>
+        public async Task<List<TicketHeader>> ListTickets(int from, int count, TicketFilterTemplate filter)
+        {
+            if (filter.Category != "" && filter.Status != "")
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .Skip(from)
+                                 .Take(count)
+                                 .ToListAsync();
+                return data;
+            }
+            else if (filter.Category != "" && filter.Status == "")
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .Skip(from)
+                                 .Take(count)
+                                 .ToListAsync();
+                return data;
+            }
+            else if (filter.Category == "" && filter.Status != "")
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .Skip(from)
+                                 .Take(count)
+                                 .ToListAsync();
+                return data;
+            }
+            else
+            {
+                var data = await (from t in _context.Tickets
+                                  join c in _context.Categories on t.Category equals c.Id
+                                  where t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
+                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
+                                 .Skip(from)
+                                 .Take(count)
+                                 .ToListAsync();
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// Method to creat ticket
+        /// </summary>
+        /// <remarks>
+        /// Following information are mandatory to create ticket:
+        /// <list type="bullet">
+        /// <item>Summary</item>
+        /// <item>Category</item>
+        /// <item>Rerence</item>
+        /// <item>Details (optional)</item>
+        /// <item>Title</item>
+        /// </list>
+        /// </remarks>
+        /// <param name="input">Input object</param>
+        /// <returns>OK or a NOK message</returns>
+        public async Task<Message> CreateTicket(TicketCreationTemplate input)
+        {
+            // Create object for respond message
+            Message respond = new Message();
+
+            // Validates data from the request
+            string missing = "";
+
+            if (input.Category == "")
+                missing += $"Category;";
+            if (input.Details == "")
+                input.Details = input.Summary;
+            if(input.Reference == "")
+                missing += $"Reference;";
+            if(input.Summary == "")
+                missing += $"Summary;";
+            if(input.Title == "")
+                missing += $"Summary;";
+
+            if(missing != "")
+            {
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Missing values: {missing}";
+                return respond;
+            }
+
+            // Make a lock for database
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            // Validate and looking for category number
+            var categories = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(input.Category));
+            if(categories == null)
+            {
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Specified group ({input.Category}) did not find";
+                transaction.Rollback();
+                return respond;
+            }
+
+            // Everything seems OK, let us create TicketData and Log entries
+            TicketData newTicketData = new TicketData()
+            {
+                Category = categories.Id,
+                Reference = input.Reference,
+                Status = "Open",
+                Title = input.Title
+            };
+            Log newLog = new Log()
+            {
+                 Details = input.Details,
+                 Summary = input.Summary,
+                 Ticket = newTicketData,   
+            };
+
+            // Check that it is an update. If does, then change Ticket of log
+            var existTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open"));
+
+            if(existTicket != null)
+            {
+                // Ticket for this case is already opened, insert log only
+                newLog.Ticket = existTicket;
+                await _context.Logs.AddAsync(newLog);
+            }
+            else
+            {
+                // Ticket for this case is not opened, insert log and ticket data too
+                await _context.Tickets.AddAsync(newTicketData);
+                await _context.Logs.AddAsync(newLog);
+            }
+
+            // Save changes
+            await _context.SaveChangesAsync();
+
+            // Change is done, release the lock
+            transaction.Commit();
+
+            // Assemble OK message and send back
+            respond.MessageType = MessageType.OK;
+            respond.MessageText = "Ticket has been opened";
+
+            return respond;
+        }
+
+        public async Task<Message> CloseTicket(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Message> CloseTicket(string referenceValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Message> ChangeTicket(TicketChangeTemplate newValues)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Message> GetDetails(int id)
+        {
+            throw new NotImplementedException();
+        }
+        #endregion
     }
 }

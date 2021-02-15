@@ -31,7 +31,7 @@ namespace DatabaseController.Model
         /// <summary>
         /// Ticket where it belongs
         /// </summary>
-        public Ticket Ticket { get; set; }
+        public TicketData Ticket { get; set; }
 
         /// <summary>
         /// Time when log was created

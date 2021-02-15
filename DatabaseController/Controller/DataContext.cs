@@ -13,7 +13,7 @@ namespace DatabaseController.Controller
         {
 
         }
-        public DbSet<Ticket> Tickets { get; set; }
+        public DbSet<TicketData> Tickets { get; set; }
         public DbSet<Log> Logs { get; set; }
         public DbSet<Category> Categories { get; set; }
     }

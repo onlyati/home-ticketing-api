@@ -1,48 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DatabaseController.Model
 {
     /// <summary>
-    ///  Model for Tickets database table
+    /// Model to create JSON when details request is got
     /// </summary>
     public class Ticket
     {
         /// <summary>
-        /// Unique ID 
+        /// Contains the base summary and the meta data
         /// </summary>
-        /// <example>1</example>
-        public int Id { get; set; }
-
+        public TicketHeader Header { get; set; }
         /// <summary>
-        /// Category where the ticket belongs
+        /// List about the logs which belongs to ticket
         /// </summary>
-        /// <example>Test</example>
-        public int Category { get; set; }
-
-        /// <summary>
-        /// Reference value of a ticket
-        /// </summary>
-        /// <example>test_01</example>
-        public string Reference { get; set; }
-
-        /// <summary>
-        /// Status, can be Open or Close
-        /// </summary>
-        /// <example></example>
-        public string Status { get; set; }
-
-        /// <summary>
-        /// Time when ticket was created
-        /// </summary>
-        public string Time { get; set; }
-
-        /// <summary>
-        /// Title of ticket about its topic
-        /// </summary>
-        /// <example>Test ticket</example>
-        public string Title { get; set; }
+        public Log[] Logs { get; set; }
     }
 }
