@@ -18,6 +18,6 @@ namespace DatabaseController.Model
         /// <summary>
         /// List about the logs which belongs to ticket
         /// </summary>
-        public Log[] Logs { get; set; }
+        public List<Log> Logs { get; set; }
     }
 }

@@ -15,24 +15,24 @@ namespace DatabaseController.Model
         /// ID which shows which ticket will be changed
         /// </summary>
         /// <example>1</example>
-        public int Id { get; set; }
+        public int Id { get; set; } = -1;
 
         /// <summary>
         /// Filter based on category name
         /// </summary>
         /// <example>Application</example>
-        string Category { get; set; }
+        public string Category { get; set; } = "";
 
         /// <summary>
         /// Filter based on title
         /// </summary>
         /// <example>Brand new title</example>
-        string Title { get; set; }
+        public string Title { get; set; } = "";
 
         /// <summary>
         /// Filter based on refernce value
         /// </summary>
         /// <example>new_ref_val</example>
-        string Refernce { get; set; }
+        public string Refernce { get; set; } = "";
     }
 }

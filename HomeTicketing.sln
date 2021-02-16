@@ -5,9 +5,14 @@ VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HomeTicketing", "HomeTicketing\HomeTicketing.csproj", "{1189C068-76C7-4A6F-8957-3AC8711371EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseController", "DatabaseController\DatabaseController.csproj", "{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseController", "DatabaseController\DatabaseController.csproj", "{79DE059A-A3AF-4D03-B94F-E6CC8CE125FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseControllerTest", "DatabaseControllerTest\DatabaseControllerTest.csproj", "{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseControllerTest", "DatabaseControllerTest\DatabaseControllerTest.csproj", "{D06A7C90-9B99-450F-A1FD-EF8F10E81D56}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8372B9D1-4ACA-4DBD-8568-0810D564AF71}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

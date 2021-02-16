@@ -22,22 +22,22 @@ namespace DatabaseController.Interface
 
         Task<Message> DeleteCategoryAsync(int id);
 
-        Task<List<TicketHeader>> ListTickets();
+        Task<List<TicketHeader>> ListTicketsAsync();
 
-        Task<List<TicketHeader>> ListTickets(int from, int count);
+        Task<List<TicketHeader>> ListTicketsAsync(int from, int count);
 
-        Task<List<TicketHeader>> ListTickets(TicketFilterTemplate filter);
+        Task<List<TicketHeader>> ListTicketsAsync(TicketFilterTemplate filter);
 
-        Task<List<TicketHeader>> ListTickets(int from, int count, TicketFilterTemplate filter);
+        Task<List<TicketHeader>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter);
 
-        Task<Message> CreateTicket(TicketCreationTemplate input);
+        Task<Message> CreateTicketAsync(TicketCreationTemplate input);
 
-        Task<Message> CloseTicket(int id);
+        Task<Message> CloseTicketAsync(int id);
 
-        Task<Message> CloseTicket(string referenceValue);
+        Task<Message> CloseTicketAsync(string referenceValue);
 
-        Task<Message> ChangeTicket(TicketChangeTemplate newValues);
+        Task<Message> ChangeTicketAsync(TicketChangeTemplate newValues);
 
-        Task<Message> GetDetails(int id);
+        Task<Ticket> GetDetailsAsync(int id);
     }
 }
