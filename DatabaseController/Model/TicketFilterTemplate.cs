@@ -33,6 +33,12 @@ namespace DatabaseController.Model
         /// Filter based on refernce value
         /// </summary>
         /// <example>new_ref_val</example>
-        public string Refernce { get; set; } = "";
+        public string Reference { get; set; } = "";
+
+        /// <summary>
+        /// System name where the ticket belongs
+        /// </summary>
+        /// <example>atihome.local</example>
+        public string System { get; set; } = "";
     }
 }

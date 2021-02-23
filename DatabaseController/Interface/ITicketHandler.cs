@@ -12,32 +12,40 @@ namespace DatabaseController.Interface
 
         string GetConnectionString();
 
-        Task<List<Category>> ListCategoriesAsync();
+        Task<Message> AddSystemAsync(string sysname);
 
-        Task<Message> AddCategoryAsync(string category);
+        Task<DataModel.System> GetSystemAsync(string sysname);
 
-        Task<Message> RenameCategoryAsync(string from, string to);
+        Task<List<DataModel.System>> GetSystemsAsync();
 
-        Task<Message> DeleteCategoryAsync(string name);
+        Task<Message> RemoveSystemAsync(string sysname);
+
+        Task<List<DataModel.Category>> ListCategoriesAsync();
+
+        Task<Message> AddCategoryAsync(string category, string sysname);
+
+        Task<Message> RenameCategoryAsync(string from, string to, string sysname);
+
+        Task<Message> DeleteCategoryAsync(string name, string sysname);
 
         Task<Message> DeleteCategoryAsync(int id);
 
-        Task<List<TicketHeader>> ListTicketsAsync();
+        Task<List<DataModel.Ticket>> ListTicketsAsync();
 
-        Task<List<TicketHeader>> ListTicketsAsync(int from, int count);
+        Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count);
 
-        Task<List<TicketHeader>> ListTicketsAsync(TicketFilterTemplate filter);
+        Task<List<DataModel.Ticket>> ListTicketsAsync(TicketFilterTemplate filter);
 
-        Task<List<TicketHeader>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter);
+        Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter);
 
         Task<Message> CreateTicketAsync(TicketCreationTemplate input);
 
         Task<Message> CloseTicketAsync(int id);
 
-        Task<Message> CloseTicketAsync(string referenceValue);
+        Task<Message> CloseTicketAsync(string referenceValue, string sysname);
 
         Task<Message> ChangeTicketAsync(TicketChangeTemplate newValues);
 
-        Task<Ticket> GetDetailsAsync(int id);
+        Task<TicketDetails> GetDetailsAsync(int id);
     }
 }

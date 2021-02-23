@@ -5,13 +5,14 @@ using System.Linq;
 using DatabaseController.Interface;
 using DatabaseController.Model;
 using System.Threading.Tasks;
+using DatabaseController.DataModel;
 
 namespace DatabaseController.Controller
 {
     public class TicketHandler : ITicketHandler
     {
         private string _connectionString;
-        private DataContext _context;
+        private TicketDatabase _context;
 
         #region Constructor
         /// <summary>
@@ -20,16 +21,27 @@ namespace DatabaseController.Controller
         /// <param name="connectionString">Database connection string, used by EF</param>
         public TicketHandler(string connectionString)
         {
+            // Read input string and try to establish a connection
             if(connectionString == "")
             {
                 throw new NullReferenceException("Connection string is missing in the constructor");
             }
 
             _connectionString = connectionString;
+            var optionsBuilder = new DbContextOptionsBuilder<TicketDatabase>();
+            optionsBuilder.UseNpgsql(connectionString);
+            _context = new TicketDatabase(optionsBuilder.Options);
 
-            var optionsBuilder = new DbContextOptionsBuilder<DataContext>();
-            optionsBuilder.UseMySql(connectionString);
-            _context = new DataContext(optionsBuilder.Options);
+            // Validate the connection
+            try
+            {
+                _context.Database.OpenConnection();
+                _context.Database.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException(ex.Message);
+            }
         }
         #endregion
 
@@ -40,6 +52,124 @@ namespace DatabaseController.Controller
         public string GetConnectionString()
         {
             return _connectionString;
+        }
+        #endregion
+
+        #region System stuff
+
+        /// <summary>
+        /// This method can be used to add new system
+        /// </summary>
+        /// <remarks>
+        /// It returns with OK if system did not exist and add action has been successfully ended. Else it return with a NOK message.
+        /// </remarks>
+        /// <param name="sysname">New system name</param>
+        /// <returns>OK or a NOK message</returns>
+        public async Task<Message> AddSystemAsync(string sysname)
+        {
+            // Message which will be sent back
+            Message response = new Message();
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                // Check that ticket already exist
+                var record = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+                if(record != null)
+                {
+                    // It is already exist, send back message
+                    transaction.Rollback();
+                    response.MessageType = MessageType.NOK;
+                    response.MessageText = $"System already defined into database with id={record.Id}";
+                    return response;
+                }
+
+                // Add new system
+                DataModel.System newSys = new DataModel.System();
+                newSys.Name = sysname;
+
+                _context.Add(newSys);
+                _context.SaveChanges();
+
+                // Everything was fine
+                transaction.Commit();
+
+                response.MessageType = MessageType.OK;
+                response.MessageText = $"System ({sysname}) has been added";
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Method to check that system is exist
+        /// </summary>
+        /// <param name="sysname">System name</param>
+        /// <returns>Null if record does not exist, else with object</returns>
+        public async Task<DataModel.System> GetSystemAsync(string sysname)
+        {
+            return await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+        }
+
+        /// <summary>
+        /// Method to list all defined systems
+        /// </summary>
+        /// <returns>List about the defined system</returns>
+        public async Task<List<DataModel.System>> GetSystemsAsync()
+        {
+            return await _context.Systems.ToListAsync();
+        }
+
+        public async Task<Message> RemoveSystemAsync(string sysname)
+        {
+            // Create object which will return
+            Message respond = new Message();
+
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                // Check that system exist
+                var record = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+                if(record == null)
+                {
+                    // No exist, thus cannot be deleted
+                    transaction.Rollback();
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = $"System not defined into database";
+                    return respond;
+                }
+
+                // Remove from database
+                _context.Systems.Remove(record);
+                _context.SaveChanges();
+
+                // It run OK
+                transaction.Commit();
+
+                respond.MessageType = MessageType.OK;
+                respond.MessageText = $"System ({sysname}) has been removed";
+
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Internal error: {ex.Message}";
+                return respond;
+                throw;
+            }
         }
         #endregion
 
@@ -58,7 +188,7 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="category">Name of category</param>
         /// <returns>With OK message if created, else with NOK message with explanation</returns>
-        public async Task<Message> AddCategoryAsync(string category)
+        public async Task<Message> AddCategoryAsync(string category, string sysname)
         {
             // Message which will be sent back
             Message response = new Message();
@@ -66,33 +196,52 @@ namespace DatabaseController.Controller
             // Make lock for database to prevent changes meanwhile it works
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
-            // Create a new category
-            Category new_cat = new Category();
-            new_cat.Name = category;
-
-            // Check if it already exist
-            var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(category));
-
-            if (record != null)                               /* If category already exist, error */
+            try
             {
-                // If it does, then throw back error message
-                response.MessageType = MessageType.NOK;
-                response.MessageText = "Category already exist";
-                transaction.Rollback();
+                // Check if already exist
+                var record = await (from c in _context.Categories
+                                    join s in _context.Systems on c.SystemId equals s.Id
+                                    select new DataModel.Category
+                                    {
+                                        Id = c.Id,
+                                        Name = c.Name,
+                                        System = s,
+                                        SystemId = c.SystemId
+                                    }).SingleOrDefaultAsync(s => s.Name == category && s.System.Name == sysname);
+
+                if(record != null)
+                {
+                    response.MessageType = MessageType.NOK;
+                    response.MessageText = $"Category ({category}) is already exist on {sysname} system";
+                    transaction.Rollback();
+                    return response;
+                }
+
+                // Create a new category
+                DataModel.Category new_cat = new DataModel.Category();
+                new_cat.Name = category;
+                new_cat.System = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+
+                // Add the category to database
+                await _context.AddAsync(new_cat);
+                await _context.SaveChangesAsync();
+
+                // Complete the transaction, so other request can reach it
+                transaction.Commit();
+
+                response.MessageType = MessageType.OK;
+                response.MessageText = $"Category ({category}) has been added for {sysname} system";
+
                 return response;
             }
-
-            // if it does not, then add the category to database
-            await _context.AddAsync(new_cat);
-            await _context.SaveChangesAsync();
-
-            // Complete the transaction, so other request can reach it
-            transaction.Commit();
-
-            response.MessageType = MessageType.OK;
-            response.MessageText = $"Category ({category}) has been added";
-
-            return response;
+            catch(Exception ex)
+            {
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
         }
 
         /// <summary>
@@ -111,7 +260,7 @@ namespace DatabaseController.Controller
         /// <param name="from">Existing category name</param>
         /// <param name="to">Non-existing category name</param>
         /// <returns>OK or a NOK message</returns>
-        public async Task<Message> RenameCategoryAsync(string from, string to)
+        public async Task<Message> RenameCategoryAsync(string from, string to, string sysname)
         {
             // Object for return value
             Message respond = new Message();
@@ -119,41 +268,70 @@ namespace DatabaseController.Controller
             // Start a transaction, so nothing else will change the table while we are working
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
-            // Query the 'from' category name
-            var fromRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(from));
-
-            // If 'from' does not exist, return with error
-            if(fromRecord == null)
+            try
             {
-                respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"The specified category ({from}) does not exist, thus not possible to rename it";
-                transaction.Rollback();
+                // Check that category exist
+                var fromRecord = await (from c in _context.Categories
+                                        join s in _context.Systems on c.SystemId equals s.Id
+                                        select new DataModel.Category
+                                        {
+                                            Id = c.Id,
+                                            Name = c.Name,
+                                            SystemId = c.SystemId,
+                                            System = s
+                                        }).SingleOrDefaultAsync(s => s.Name == from && s.System.Name == sysname);
+
+                // If 'from' does not exist, return with error
+                if (fromRecord == null)
+                {
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = $"The specified category ({from}) does not exist for {sysname} system, thus not possible to rename it";
+                    transaction.Rollback();
+                    return respond;
+                }
+
+                // Query the 'to' category name
+                var toRecord = await (from c in _context.Categories
+                                      join s in _context.Systems on c.SystemId equals s.Id
+                                      select new DataModel.Category
+                                      {
+                                          Id = c.Id,
+                                          Name = c.Name,
+                                          SystemId = c.SystemId,
+                                          System = s
+                                      }).SingleOrDefaultAsync(s => s.Name == to && s.System.Name == sysname);
+
+                // if 'to' does exist, return with error
+                if (toRecord != null)
+                {
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = $"The specified new name ({to}) is already exist for {sysname} system";
+                    transaction.Rollback();
+                    return respond;
+                }
+
+                var changeRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Name == from && s.SystemId == fromRecord.System.Id);
+
+                // Update the fromRecord, then save the changes
+                changeRecord.Name = to;
+                await _context.SaveChangesAsync();
+
+                // Commit the transaction, then send the OK message 
+                transaction.Commit();
+
+                respond.MessageType = MessageType.OK;
+                respond.MessageText = $"Category rename from '{from}' to '{to}' is done";
+
                 return respond;
             }
-
-            // Query the 'to' category name
-            var toRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(to));
-
-            // if 'to' does exist, return with error
-            if(toRecord != null)
+            catch (Exception ex)
             {
-                respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"The specified new name ({to}) is already exist";
                 transaction.Rollback();
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Internal error: {ex.Message}";
                 return respond;
+                throw;
             }
-
-            // Update the fromRecord, then save the changes
-            fromRecord.Name = to;
-            await _context.SaveChangesAsync();
-
-            // Commit the transaction, then send the OK message 
-            transaction.Commit();
-
-            respond.MessageType = MessageType.OK;
-            respond.MessageText = $"Category rename from '{from}' to '{to}' is done";
-
-            return respond;
         }
 
         /// <summary>
@@ -170,7 +348,7 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="name">Name of category</param>
         /// <returns>OK or a NOK Message</returns>
-        public async Task<Message> DeleteCategoryAsync(string name)
+        public async Task<Message> DeleteCategoryAsync(string name, string sysname)
         {
             // Message for response
             Message respond = new Message();
@@ -178,31 +356,53 @@ namespace DatabaseController.Controller
             // Make lock for database to prevent changes meanwhile it works
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
-            // Query based on category name
-            var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
-
-            // If specified category did not exist, return with NOK message
-            if(record == null)
+            try
             {
-                respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"Specified category, by '{name}' name, did not exist";
-                transaction.Rollback();
+                var sys = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+                var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name == name && s.SystemId == sys.Id);
+
+                /*
+                var record = await (from c in _context.Categories
+                                    join s in _context.Systems on c.SystemId equals s.Id
+                                    select new Category
+                                    {
+                                        Id = c.Id,
+                                        Name = c.Name,
+                                        SystemId = c.SystemId,
+                                        System = s
+                                    }).SingleOrDefaultAsync(s => s.Name == name && s.System.Name == sysname);
+                */
+                // If specified category did not exist, return with NOK message
+                if (record == null)
+                {
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = $"Specified category, by '{name}' name, did not exist";
+                    transaction.Rollback();
+                    return respond;
+                }
+
+                // Else save information about record and perform remove and save
+                string cat_name = $"{record.Id} - {record.Name}";
+                _context.Categories.Remove(record);
+                await _context.SaveChangesAsync();
+
+                // Release the lock, commit the changes
+                transaction.Commit();
+
+                // Everything is fine, let us send an OK message
+                respond.MessageType = MessageType.OK;
+                respond.MessageText = $"Category ({cat_name}) has been deleted on {sysname}";
+
                 return respond;
             }
-
-            // Else save information about record and perform remove and save
-            string cat_name = $"{record.Id} - {record.Name}";
-            _context.Categories.Remove(record);
-            await _context.SaveChangesAsync();
-
-            // Release the lock, commit the changes
-            transaction.Commit();
-
-            // Everything is fine, let us send an OK message
-            respond.MessageType = MessageType.OK;
-            respond.MessageText = $"Category ({cat_name}) has been deleted";
-
-            return respond;
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Internal error: {ex.Message}";
+                return respond;
+                throw;
+            }
         }
 
         /// <summary>
@@ -227,40 +427,60 @@ namespace DatabaseController.Controller
             // Make lock for database to prevent changes meanwhile it works
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
-            // Query based on category name
-            var record = await _context.Categories.SingleOrDefaultAsync(s => s.Id == id);
-
-            // If specified category did not exist, return with NOK message
-            if (record == null)
+            try
             {
-                respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"Specified category, by '{id}' ID, did not exist";
-                transaction.Rollback();
+                // Query based on category name
+                var record = await _context.Categories.SingleOrDefaultAsync(s => s.Id == id);
+
+                // If specified category did not exist, return with NOK message
+                if (record == null)
+                {
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = $"Specified category, by '{id}' ID, did not exist";
+                    transaction.Rollback();
+                    return respond;
+                }
+
+                // Else save information about record and perform remove and save
+                string cat_name = $"{record.Id} - {record.Name}";
+                _context.Categories.Remove(record);
+                await _context.SaveChangesAsync();
+
+                // Release the lock, commit the changes
+                transaction.Commit();
+
+                // Everything is fine, let us send an OK message
+                respond.MessageType = MessageType.OK;
+                respond.MessageText = $"Category ({cat_name}) has been deleted";
+
                 return respond;
             }
-
-            // Else save information about record and perform remove and save
-            string cat_name = $"{record.Id} - {record.Name}";
-            _context.Categories.Remove(record);
-            await _context.SaveChangesAsync();
-
-            // Release the lock, commit the changes
-            transaction.Commit();
-
-            // Everything is fine, let us send an OK message
-            respond.MessageType = MessageType.OK;
-            respond.MessageText = $"Category ({cat_name}) has been deleted";
-
-            return respond;
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Internal error: {ex.Message}";
+                return respond;
+                throw;
+            }
         }
 
         /// <summary>
         /// Create a list about the existing categories
         /// </summary>
         /// <returns>List about categories</returns>
-        public async Task<List<Category>> ListCategoriesAsync()
+        public async Task<List<DataModel.Category>> ListCategoriesAsync()
         {
-            return await _context.Categories.ToListAsync();
+            return await (from c in _context.Categories
+                          join s in _context.Systems on c.SystemId equals s.Id
+                          orderby c.Id ascending
+                          select new DataModel.Category
+                          {
+                              Id = c.Id,
+                              Name = c.Name,
+                              SystemId = c.SystemId,
+                              System = s
+                          }).ToListAsync();
         }
         #endregion
 
@@ -284,14 +504,25 @@ namespace DatabaseController.Controller
         /// This method list all ticket from the database without any filtering
         /// </summary>
         /// <returns>With a TicketHeader list</returns>
-        public async Task<List<TicketHeader>> ListTicketsAsync()
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync()
         {
-            var data = await (from t in _context.Tickets 
-                              join c in _context.Categories on t.Category equals c.Id
-                              orderby t.Id ascending
-                              select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                             .ToListAsync();
-            return data;
+            return await (from t in _context.Tickets
+                          join c in _context.Categories on t.CategoryId equals c.Id
+                          join u in _context.Users on t.UserId equals u.Id into uj
+                          from allu in uj.DefaultIfEmpty()
+                          join s in _context.Systems on t.SystemId equals s.Id
+                          orderby t.Id ascending
+                          select new DataModel.Ticket
+                          {
+                              Id = t.Id,
+                              Category = c,
+                              Reference = t.Reference,
+                              Status = t.Status,
+                              Time = t.Time,
+                              Title = t.Title,
+                              User = allu,
+                              System = s
+                          }).ToListAsync();
         }
 
         /// <summary>
@@ -300,16 +531,25 @@ namespace DatabaseController.Controller
         /// <param name="from">Skip value</param>
         /// <param name="count">Take value</param>
         /// <returns>With a TicketHeader list</returns>
-        public async Task<List<TicketHeader>> ListTicketsAsync(int from, int count)
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count)
         {
-            var data = await (from t in _context.Tickets 
-                              join c in _context.Categories on t.Category equals c.Id
-                              orderby t.Id ascending
-                              select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                             .Skip(from)
-                             .Take(count)
-                             .ToListAsync();
-            return data;
+            return await (from t in _context.Tickets
+                          join c in _context.Categories on t.CategoryId equals c.Id
+                          join u in _context.Users on t.UserId equals u.Id into uj
+                          from allu in uj.DefaultIfEmpty()
+                          join s in _context.Systems on t.SystemId equals s.Id
+                          orderby t.Id ascending
+                          select new DataModel.Ticket
+                          {
+                              Id = t.Id,
+                              Category = c,
+                              Reference = t.Reference,
+                              Status = t.Status,
+                              Time = t.Time,
+                              Title = t.Title,
+                              User = allu,
+                              System = s
+                          }).Skip(from).Take(count).ToListAsync();
         }
 
         /// <summary>
@@ -326,47 +566,91 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="filter">Filter object</param>
         /// <returns>With a TicketHeader list</returns>
-        public async Task<List<TicketHeader>> ListTicketsAsync(TicketFilterTemplate filter)
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(TicketFilterTemplate filter)
         {
             if (filter.Category != "" && filter.Status != "")
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).ToListAsync();
             }
             else if (filter.Category != "" && filter.Status == "")
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).ToListAsync();
             }
             else if (filter.Category == "" && filter.Status != "")
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).ToListAsync();
             }
             else
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).ToListAsync();
             }
         }
 
@@ -384,55 +668,91 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="filter">Filter object</param>
         /// <returns>With a TicketHeader list</returns>
-        public async Task<List<TicketHeader>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter)
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter)
         {
             if (filter.Category != "" && filter.Status != "")
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .Skip(from)
-                                 .Take(count)
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).Skip(from).Take(count).ToListAsync();
             }
             else if (filter.Category != "" && filter.Status == "")
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .Skip(from)
-                                 .Take(count)
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).Skip(from).Take(count).ToListAsync();
             }
             else if (filter.Category == "" && filter.Status != "")
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where t.Reference.Contains(filter.Refernce) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .Skip(from)
-                                 .Take(count)
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).Skip(from).Take(count).ToListAsync();
             }
             else
             {
-                var data = await (from t in _context.Tickets
-                                  join c in _context.Categories on t.Category equals c.Id
-                                  where t.Reference.Contains(filter.Refernce) && t.Title.Contains(filter.Title)
-                                  orderby t.Id ascending
-                                  select new TicketHeader { Id = t.Id, Title = t.Title, Time = t.Time, Category = c.Name, Status = t.Status, Reference = t.Reference })
-                                 .Skip(from)
-                                 .Take(count)
-                                 .ToListAsync();
-                return data;
+                return await (from t in _context.Tickets
+                              join c in _context.Categories on t.CategoryId equals c.Id
+                              join u in _context.Users on t.UserId equals u.Id into uj
+                              from allu in uj.DefaultIfEmpty()
+                              join s in _context.Systems on t.SystemId equals s.Id
+                              where t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
+                              orderby t.Id ascending
+                              select new DataModel.Ticket
+                              {
+                                  Id = t.Id,
+                                  Category = c,
+                                  Reference = t.Reference,
+                                  Status = t.Status,
+                                  Time = t.Time,
+                                  Title = t.Title,
+                                  User = allu,
+                                  System = s
+                              }).Skip(from).Take(count).ToListAsync();
             }
         }
 
@@ -469,6 +789,8 @@ namespace DatabaseController.Controller
                 missing += $"Summary;";
             if(input.Title == "")
                 missing += $"Summary;";
+            if (input.System == "")
+                missing += $"System";
 
             if(missing != "")
             {
@@ -490,11 +812,19 @@ namespace DatabaseController.Controller
 
 
             // Validate and looking for category number
-            var categories = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(input.Category));
+            var categories = await (from c in _context.Categories
+                                    join s in _context.Systems on c.SystemId equals s.Id
+                                    select new DataModel.Category
+                                    {
+                                        Id = c.Id,
+                                        Name = c.Name,
+                                        SystemId = c.SystemId,
+                                        System = s
+                                    }).SingleOrDefaultAsync(s => s.Name == input.Category && s.System.Name == input.System);
             if(categories == null)
             {
                 respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"Specified group ({input.Category}) did not find";
+                respond.MessageText = $"Specified group ({input.Category}) did not find for {input.System} system";
 
                 if(release)
                     transaction.Rollback();
@@ -503,24 +833,22 @@ namespace DatabaseController.Controller
             }
 
             // Everything seems OK, let us create TicketData and Log entries
-            TicketData newTicketData = new TicketData()
-            {
-                Category = categories.Id,
-                Reference = input.Reference,
-                Status = "Open",
-                Title = input.Title,
-                Time = DateTime.Now.ToString("yyyyMMddHHmmss")
-            };
-            Log newLog = new Log()
-            {
-                 Details = input.Details,
-                 Summary = input.Summary,
-                 Ticket = newTicketData,   
-                 Time = DateTime.Now.ToString("yyyyMMddHHmmss")
-            };
+            DataModel.Ticket newTicket = new DataModel.Ticket();
+            newTicket.CategoryId = categories.Id;
+            newTicket.Reference = input.Reference;
+            newTicket.Status = "Open";
+            newTicket.Title = input.Title;
+            newTicket.Time = DateTime.Now;
+            newTicket.System = await _context.Systems.SingleOrDefaultAsync(s => s.Id == categories.System.Id);
+            newTicket.User = null;
+
+            DataModel.Log newLog = new DataModel.Log();
+            newLog.Details = input.Details;
+            newLog.Summary = input.Summary;
+            newLog.Time = DateTime.Now;
 
             // Check that it is an update. If does, then change Ticket of log
-            var existTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open"));
+            var existTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open") && s.SystemId == categories.System.Id);
 
             if(existTicket != null)
             {
@@ -531,7 +859,9 @@ namespace DatabaseController.Controller
             else
             {
                 // Ticket for this case is not opened, insert log and ticket data too
-                await _context.Tickets.AddAsync(newTicketData);
+                await _context.Tickets.AddAsync(newTicket);
+                await _context.SaveChangesAsync();
+                newLog.Ticket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(newTicket.Reference) && s.Status.Equals("Open") && s.SystemId == categories.System.Id);
                 await _context.Logs.AddAsync(newLog);
             }
 
@@ -597,13 +927,15 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="referenceValue">Reference value</param>
         /// <returns>OK or a NOK message</returns>
-        public async Task<Message> CloseTicketAsync(string referenceValue)
+        public async Task<Message> CloseTicketAsync(string referenceValue, string sysname)
         {
             // Return value
             Message respond = new Message();
 
+            var sys = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+
             // Check that ID is opened
-            var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference == referenceValue && s.Status == "Open");
+            var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference == referenceValue && s.Status == "Open" && s.SystemId == sys.Id);
 
             // If there is no opened ticket, then return NOK message
             if (record == null)
@@ -657,7 +989,25 @@ namespace DatabaseController.Controller
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             // Check that ticket exist with specified ID
-            var record = await _context.Tickets.SingleOrDefaultAsync(s => s.Id == newValues.Id && s.Status == "Open");
+            var record = await (from t in _context.Tickets
+                                join c in _context.Categories on t.CategoryId equals c.Id
+                                join u in _context.Users on t.UserId equals u.Id into uj
+                                from allu in uj.DefaultIfEmpty()
+                                join s in _context.Systems on t.SystemId equals s.Id
+                                select new DataModel.Ticket
+                                {
+                                    Id = t.Id,
+                                    Category = c,
+                                    CategoryId = t.CategoryId,
+                                    Reference = t.Reference,
+                                    Status = t.Status,
+                                    Time = t.Time,
+                                    Title = t.Title,
+                                    User = allu,
+                                    System = s
+                                }).SingleOrDefaultAsync(s => s.Id == newValues.Id && s.Status == "Open");
+
+            var updRecord = await _context.Tickets.SingleOrDefaultAsync(s => s.Id == newValues.Id && s.Status == "Open");
 
             // If it does not, return with NOK message
             if(record == null)
@@ -673,7 +1023,7 @@ namespace DatabaseController.Controller
             if(newValues.Category != "")
             {
                 // Check that category exist
-                var catRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Name == newValues.Category);
+                var catRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Name == newValues.Category && s.SystemId == record.System.Id);
                 
                 if(catRecord == null)
                 {
@@ -686,27 +1036,31 @@ namespace DatabaseController.Controller
                 // Do the change
                 ticketCategory = catRecord.Name;
                 changeLog += $"Category from {record.Category} to {newValues.Category}{Environment.NewLine}";
-                record.Category = catRecord.Id;
+                updRecord.CategoryId = catRecord.Id;
             }
 
             if(newValues.Refernce != "")
             {
                 changeLog += $"Refernce is changed from {record.Reference} to {newValues.Refernce}{Environment.NewLine}";
-                record.Reference = newValues.Refernce;
+                updRecord.Reference = newValues.Refernce;
             }
 
             if(newValues.Title != "")
             {
                 changeLog += $"Title is changed from '{record.Title}' to '{newValues.Title}'{Environment.NewLine}";
+                updRecord.Title = newValues.Title;
             }
 
-            // Now ticket header is updated, put a new log udner this
+            _context.SaveChanges();
+
+            // Now ticket header is updated, put a new log under this
             TicketCreationTemplate newLog = new TicketCreationTemplate();
             newLog.Category = ticketCategory;
             newLog.Details = changeLog;
             newLog.Reference = record.Reference;
             newLog.Summary = "Ticket has been adjusted";
             newLog.Title = record.Title;
+            newLog.System = record.System.Name;
 
             // Add the log entry for the ticket
             Message crtTicket = await CreateTicketAsync(newLog);
@@ -739,40 +1093,46 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="id"></param>
         /// <returns>With Ticket is OK, else with null</returns>
-        public async Task<Ticket> GetDetailsAsync(int id)
+        public async Task<TicketDetails> GetDetailsAsync(int id)
         {
-            // Create the return value
-            Ticket respond = new Ticket();
-
-            // Check that ID exist
-            var header = await (from t in _context.Tickets
-                                where t.Id == id
-                                select new TicketData { Category = t.Category, Id = t.Id, Reference = t.Reference, Status = t.Status, Time = t.Time, Title = t.Title })
-                               .SingleOrDefaultAsync();
-
-            if(header == null)
+            TicketDetails respond = new TicketDetails();
+            // Looking for ticket
+            respond.Header = await (from t in _context.Tickets
+                                    join c in _context.Categories on t.CategoryId equals c.Id
+                                    join u in _context.Users on t.UserId equals u.Id into uj
+                                    from allu in uj.DefaultIfEmpty()
+                                    join s in _context.Systems on t.SystemId equals s.Id
+                                    select new DataModel.Ticket
+                                    {
+                                        Id = t.Id,
+                                        Category = c,
+                                        Reference = t.Reference,
+                                        Status = t.Status,
+                                        Time = t.Time,
+                                        Title = t.Title,
+                                        User = allu,
+                                        System = s
+                                    }).SingleOrDefaultAsync(s => s.Id == id);
+            if(respond.Header == null)
             {
                 return null;
             }
 
-            // Query logs
-            var logs = await (from l in _context.Logs
-                              where l.Ticket == header
-                              select new Log { Details = l.Details, Id = l.Id, Summary = l.Summary, Ticket = l.Ticket, Time = l.Time })
-                            .ToListAsync();
-
-            // Create the return object
-            respond.Logs = logs;
-
-            respond.Header = new TicketHeader();
-            respond.Header.Id = header.Id;
-            respond.Header.Reference = header.Reference;
-            respond.Header.Status = header.Status;
-            respond.Header.Time = header.Time;
-            respond.Header.Title = header.Title;
-
-            var catRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Id == header.Category);
-            respond.Header.Category = catRecord.Name;
+            respond.Logs = await (from l in _context.Logs
+                                  join t in _context.Tickets on l.TicketId equals t.Id
+                                  join u in _context.Users on l.UserId equals u.Id into uj
+                                  from allu in uj.DefaultIfEmpty()
+                                  where l.TicketId == respond.Header.Id
+                                  orderby l.Id ascending
+                                  select new DataModel.Log
+                                  {
+                                      Id = l.Id,
+                                      Summary = l.Summary,
+                                      Ticket = t,
+                                      Details = l.Details,
+                                      Time = l.Time,
+                                      User = allu
+                                  }).ToListAsync();
 
             return respond;
         }

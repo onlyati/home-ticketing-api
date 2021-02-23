@@ -26,7 +26,7 @@ namespace DatabaseControllerTest
         [ExpectedException(typeof(System.ArgumentException))]
         public void Invalid_Constructor()
         {
-            TicketHandler ticket = new TicketHandler("asd");
+            TicketHandler ticket = new TicketHandler("kjsdfklfjsdfklé");
             Assert.ThrowsException<System.ArgumentException>(() => ticket);
         }
 
@@ -36,7 +36,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public void Normal_Constructor()
         {
-            TicketHandler ticket = new TicketHandler("server=atihome.local;user=ati;password=abcd;database=test_entity_exist2;");
+            TicketHandler ticket = new TicketHandler("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test");
             Message test = ticket.HealthCheck();
 
             Message exptected = new Message();
@@ -53,9 +53,9 @@ namespace DatabaseControllerTest
         [TestMethod]
         public void Get_Connection_String()
         {
-            TicketHandler ticket = new TicketHandler("server=atihome.local;user=ati;password=abcd;database=test_entity_exist2;");
+            TicketHandler ticket = new TicketHandler("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test");
 
-            Assert.AreEqual("server=atihome.local;user=ati;password=abcd;database=test_entity_exist2;", ticket.GetConnectionString());
+            Assert.AreEqual("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test", ticket.GetConnectionString());
         }
     }
 }

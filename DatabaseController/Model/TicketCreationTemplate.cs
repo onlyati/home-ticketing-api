@@ -36,5 +36,10 @@ namespace DatabaseController.Model
         /// </summary>
         /// <example>Test ticket</example>
         public string Title { get; set; } = "";
+        /// <summary>
+        /// System name where the ticket belongs
+        /// </summary>
+        /// <example>atihome.local</example>
+        public string System { get; set; } = "";
     }
 }
