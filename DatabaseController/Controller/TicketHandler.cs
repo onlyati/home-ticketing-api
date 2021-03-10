@@ -56,17 +56,37 @@ namespace DatabaseController.Controller
             return _connectionString;
         }
 
-        public async Task<Message> AssignCategoryToSystemAsync(Category category, DataModel.System sysname)
+        public async Task<Message> AssignUserToCategory(Category category, User user)
         {
             // Object which will return
             Message response = new Message();
 
-            // At this point the database is eligible for adding new user, let's try it
+            // Check that either category and user exist
+            var waitCat = _context.Categories.SingleOrDefaultAsync(s => s.Equals(category));
+            var waitkUsr = _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
+
+            var checkCat = await waitCat;
+            var checkUsr = await waitkUsr;
+
+            if(checkCat == null || checkUsr == null)
+            {
+                response.MessageText = "User and/or category did not found";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // At this point the database is eligible for assigment, let's try it
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
-                
+                Usercategory newUsrCat = new Usercategory();
+                newUsrCat.CategoryId = category.Id;
+                newUsrCat.UserId = user.Id;
+
+                _context.Usercategories.Add(newUsrCat);
+                _context.SaveChanges();
+
                 // Everything was, commit then return with OK value
                 transaction.Commit();
 
@@ -85,17 +105,28 @@ namespace DatabaseController.Controller
             }
         }
 
-        public async Task<Message> UnassignCategoryToSystemAsync(Category category, DataModel.System sysname)
+        public async Task<Message> UnassignUserToCategory(Category category, User user)
         {
             // Object which will return
             Message response = new Message();
+
+            // Check that assigment exist
+            var checkRel = await _context.Usercategories.SingleOrDefaultAsync(s => s.CategoryId.Equals(category.Id) && s.UserId.Equals(user.Id));
+            if(checkRel == null)
+            {
+                response.MessageText = "Relationship does not exist";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
 
             // At this point the database is eligible for adding new user, let's try it
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
-
+                var delRel = await _context.Usercategories.SingleOrDefaultAsync(s => s.CategoryId.Equals(category.Id) && s.UserId.Equals(user.Id));
+                _context.Usercategories.Remove(delRel);
+                _context.SaveChanges();
                 // Everything was, commit then return with OK value
                 transaction.Commit();
 
@@ -119,12 +150,40 @@ namespace DatabaseController.Controller
             // Object which will return
             Message response = new Message();
 
+            // Check that things exist
+            var waitUser = _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
+            var waitTicket = _context.Tickets.SingleOrDefaultAsync(s => s.Equals(ticket));
+            var waitCat = _context.Categories.SingleOrDefaultAsync(s => s.Id.Equals(ticket.CategoryId));
+
+            var checkUser = await waitUser;
+            var checkTicket = await waitTicket;
+
+            if(checkUser == null || checkTicket == null)
+            {
+                response.MessageText = "User or ticket does not exist";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // Check that user has access for the category
+            var checkCat = await waitCat;
+
+            var checkUsrCat = await _context.Usercategories.SingleOrDefaultAsync(s => s.UserId.Equals(checkUser.Id) && s.CategoryId.Equals(checkCat.Id));
+            if(checkUsrCat == null)
+            {
+                response.MessageText = "User is not member of category where the ticket actually assigned";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
             // At this point the database is eligible for adding new user, let's try it
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
-
+                var changeTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Equals(ticket));
+                changeTicket.UserId = user.Id;
+                _context.SaveChanges();
                 // Everything was, commit then return with OK value
                 transaction.Commit();
 
@@ -146,7 +205,7 @@ namespace DatabaseController.Controller
         /// <summary>
         /// This function performa SHA512 on the specified password and return with its hexa values
         /// </summary>
-        /// <param name="pw"></param>
+        /// <param name="pw">Original password</param>
         /// <returns></returns>
         public static string HashPassword(string pw)
         {

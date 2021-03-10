@@ -14,9 +14,9 @@ namespace DatabaseController.Interface
 
         string GetConnectionString();
 
-        Task<Message> AssignCategoryToSystemAsync(Category category, DataModel.System sysname);
+        Task<Message> AssignUserToCategory(Category category, User user);
 
-        Task<Message> UnassignCategoryToSystemAsync(Category category, DataModel.System sysname);
+        Task<Message> UnassignUserToCategory(Category category, User user);
 
         Task<Message> AssignUserToTicketAsync(User user, Ticket ticket);
 
