@@ -44,6 +44,10 @@ namespace DatabaseController.Interface
         Task<Message> DeleteCategoryAsync(string name, string sysname);
 
         Task<Message> DeleteCategoryAsync(int id);
+
+        Task<Category> GetCategoryAsync(int id, string sysname);
+
+        Task<Category> GetCategoryAsync(string name, string sysname);
         #endregion
 
         #region Ticket stuff
@@ -54,6 +58,8 @@ namespace DatabaseController.Interface
         Task<List<DataModel.Ticket>> ListTicketsAsync(TicketFilterTemplate filter);
 
         Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter);
+
+        Task<DataModel.Ticket> GetTicketAsync(int id);
 
         Task<Message> CreateTicketAsync(TicketCreationTemplate input);
 

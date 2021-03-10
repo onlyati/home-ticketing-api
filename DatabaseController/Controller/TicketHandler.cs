@@ -675,6 +675,47 @@ namespace DatabaseController.Controller
                               System = s
                           }).ToListAsync();
         }
+
+        /// <summary>
+        /// Return with a Category record based on ID and system name
+        /// </summary>
+        /// <param name="id">Category ID number</param>
+        /// <param name="sysname">System name</param>
+        /// <returns>Category object or null</returns>
+        public async Task<Category> GetCategoryAsync(int id, string sysname)
+        {
+            return await (from c in _context.Categories 
+                          join s in _context.Systems on c.SystemId equals s.Id
+                          where c.Id == id && s.Name == sysname
+                          select new Category
+                          {
+                              Id = c.Id,
+                              Name = c.Name,
+                              SystemId = c.SystemId,
+                              System = s
+                          }).SingleOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// Return with a Category record based on its name and system name
+        /// </summary>
+        /// <param name="name">Category name</param>
+        /// <param name="sysname">System name</param>
+        /// <returns>Category object or null</returns>
+        public async Task<Category> GetCategoryAsync(string name, string sysname)
+        {
+            return await (from c in _context.Categories
+                          join s in _context.Systems on c.SystemId equals s.Id
+                          where c.Name == name && s.Name == sysname
+                          select new Category
+                          {
+                              Id = c.Id,
+                              Name = c.Name,
+                              SystemId = c.SystemId,
+                              System = s
+                          }).SingleOrDefaultAsync();
+        }
+
         #endregion
 
         #region HealtCheck
@@ -1329,6 +1370,18 @@ namespace DatabaseController.Controller
 
             return respond;
         }
+        
+        /// <summary>
+        /// This method return with a Ticket header based on its ID
+        /// </summary>
+        /// <param name="id">Ticket ID</param>
+        /// <returns></returns>
+        public async Task<Ticket> GetTicketAsync(int id)
+        {
+            return await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(id));
+        }
+
+
         #endregion
 
         #region User stuff
