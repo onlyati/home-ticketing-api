@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using DatabaseController.Model;
+using DatabaseController.DataModel;
 
 namespace DatabaseController.Interface
 {
@@ -12,6 +13,8 @@ namespace DatabaseController.Interface
 
         string GetConnectionString();
 
+        #region System stuff
+
         Task<Message> AddSystemAsync(string sysname);
 
         Task<DataModel.System> GetSystemAsync(string sysname);
@@ -20,6 +23,9 @@ namespace DatabaseController.Interface
 
         Task<Message> RemoveSystemAsync(string sysname);
 
+        #endregion
+
+        #region Category stuff
         Task<List<DataModel.Category>> ListCategoriesAsync();
 
         Task<Message> AddCategoryAsync(string category, string sysname);
@@ -29,7 +35,9 @@ namespace DatabaseController.Interface
         Task<Message> DeleteCategoryAsync(string name, string sysname);
 
         Task<Message> DeleteCategoryAsync(int id);
+        #endregion
 
+        #region Ticket stuff
         Task<List<DataModel.Ticket>> ListTicketsAsync();
 
         Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count);
@@ -47,5 +55,28 @@ namespace DatabaseController.Interface
         Task<Message> ChangeTicketAsync(TicketChangeTemplate newValues);
 
         Task<TicketDetails> GetDetailsAsync(int id);
+        #endregion
+
+        #region User stuff
+        Task<Message> RegisterUserAsync(User user);
+
+        Task<Message> RemoveUserAsync(int id);
+
+        Task<Message> RemoveUserAsync(string username);
+
+        Task<Message> ChangeUserAsync(int id, User user);
+
+        Task<Message> ChangeUserAsync(string username, User user);
+
+        Task<string> GetHashedPasswordAsync(int id);
+
+        Task<string> GetHashedPasswordAsync(string username);
+
+        Task<User> GetUserAsync(string username);
+
+        Task<User> GetUserAsync(int id);
+
+        Task<List<User>> GetUsersAsync();
+        #endregion
     }
 }

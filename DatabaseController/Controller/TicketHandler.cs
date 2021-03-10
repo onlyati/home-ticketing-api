@@ -6,6 +6,8 @@ using DatabaseController.Interface;
 using DatabaseController.Model;
 using System.Threading.Tasks;
 using DatabaseController.DataModel;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace DatabaseController.Controller
 {
@@ -45,13 +47,35 @@ namespace DatabaseController.Controller
         }
         #endregion
 
-        #region Attributes
+        #region Attributes and utilities
         /// <summary>
         /// This function returns with the specified connection string
         /// </summary>
         public string GetConnectionString()
         {
             return _connectionString;
+        }
+
+        /// <summary>
+        /// This function performa SHA512 on the specified password and return with its hexa values
+        /// </summary>
+        /// <param name="pw"></param>
+        /// <returns></returns>
+        public static string HashPassword(string pw)
+        {
+            var origPwBytes = Encoding.UTF8.GetBytes(pw);
+
+            SHA512 hashPw = new SHA512Managed();
+            var hashPwBytes = hashPw.ComputeHash(origPwBytes);
+
+            // Size is 128 because SHA512, 512 bit which is 64 bytes, but due to hexa it is doubled
+            var hashHexa = new StringBuilder(128);
+            foreach (var b in hashPwBytes)
+            {
+                hashHexa.Append(b.ToString("X2"));
+            }
+
+            return hashHexa.ToString();
         }
         #endregion
 
@@ -129,6 +153,11 @@ namespace DatabaseController.Controller
             return await _context.Systems.ToListAsync();
         }
 
+        /// <summary>
+        /// Method to delete a system
+        /// </summary>
+        /// <param name="sysname">System name which need to be removed</param>
+        /// <returns>OK or a NOK message</returns>
         public async Task<Message> RemoveSystemAsync(string sysname)
         {
             // Create object which will return
@@ -173,7 +202,7 @@ namespace DatabaseController.Controller
         }
         #endregion
 
-        #region Category Stuff
+        #region Category stuff
         /// <summary>
         /// Add new category if not exist yet
         /// </summary>
@@ -499,7 +528,7 @@ namespace DatabaseController.Controller
         }
         #endregion
 
-        #region TicketStuff
+        #region Ticket stuff
         /// <summary>
         /// This method list all ticket from the database without any filtering
         /// </summary>
@@ -1135,6 +1164,404 @@ namespace DatabaseController.Controller
                                   }).ToListAsync();
 
             return respond;
+        }
+        #endregion
+
+        #region User stuff
+
+        /// <summary>
+        /// Register a new user
+        /// </summary>
+        /// <param name="user">User object which must contains every data</param>
+        /// <returns>OK or NOK message</returns>
+        public async Task<Message> RegisterUserAsync(User user)
+        {
+            // Object which will return
+            Message response = new Message();
+            response.MessageText = "";
+
+            // Check that all values are provided and return with NOK if something missing
+            if (string.IsNullOrEmpty(user.Username) || string.IsNullOrWhiteSpace(user.Username))
+                response.MessageText += "Username value is missing; ";
+
+            if (string.IsNullOrEmpty(user.Email) || string.IsNullOrWhiteSpace(user.Email))
+                response.MessageText += "Email value is missing;";
+
+            if (string.IsNullOrEmpty(user.Password) || string.IsNullOrWhiteSpace(user.Password))
+                response.MessageText += "Password value is missing";
+
+            if(response.MessageText != "")
+            {
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // Check if user already exist
+            var testUser = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(user.Username));
+            if(testUser != null)
+            {
+                response.MessageText = "Username already reserved";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // At this point the database is eligible for adding new user, let's try it
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                // Create password hash
+                user.Password = HashPassword(user.Password);
+
+                await _context.AddAsync(user);
+                _context.SaveChanges();
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Remove user based on user ID number
+        /// </summary>
+        /// <param name="id">ID of user</param>
+        /// <returns>OK or a NOK message</returns>
+        public async Task<Message> RemoveUserAsync(int id)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // Check that user exist
+            var testUser = await _context.Users.SingleOrDefaultAsync(s => s.Id.Equals(id));
+            if(testUser == null)
+            {
+                response.MessageText = "User does not exist";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // At this point, database is eligible to remove the user
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                // Delete the user
+                var delUser = await _context.Users.SingleOrDefaultAsync(s => s.Id.Equals(id));
+                _context.Users.Remove(delUser);
+                _context.SaveChanges();
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Remove used based on its username
+        /// </summary>
+        /// <param name="username">User's name</param>
+        /// <returns>OK or NOK message</returns>
+        public async Task<Message> RemoveUserAsync(string username)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // Check that user exist
+            var testUser = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(username));
+            if (testUser == null)
+            {
+                response.MessageText = "User does not exist";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // At this point, database is eligible to remove the user
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                // Delete the user
+                var delUser = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(username));
+                _context.Users.Remove(delUser);
+                _context.SaveChanges();
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Change user data: email or password. Username must not be changed.
+        /// </summary>
+        /// <param name="id">ID of the user where needs to change</param>
+        /// <param name="user">Contains the new values</param>
+        /// <returns>OK or a NOK message</returns>
+        public async Task<Message> ChangeUserAsync(int id, User user)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // Check that user exist
+            var testUser = await _context.Users.SingleOrDefaultAsync(s => s.Id.Equals(id));
+            if (testUser == null)
+            {
+                response.MessageText = "User does not exist";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // At this point, database is eligible to remove the user
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                var changeUser = await _context.Users.SingleOrDefaultAsync(s => s.Id.Equals(id));
+                if(!string.IsNullOrEmpty(user.Email) && !string.IsNullOrWhiteSpace(user.Email))
+                {
+                    changeUser.Email = user.Email;
+                }
+
+                if(!string.IsNullOrEmpty(user.Password) && !string.IsNullOrWhiteSpace(user.Password))
+                {
+                    changeUser.Password = HashPassword(user.Password);
+                }
+
+                _context.SaveChanges();
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        public async Task<Message> ChangeUserAsync(string username, User user)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // Check that user exist
+            var testUser = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(username));
+            if (testUser == null)
+            {
+                response.MessageText = "User does not exist";
+                response.MessageType = MessageType.NOK;
+                return response;
+            }
+
+            // At this point, database is eligible to remove the user
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                var changeUser = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(username));
+                if (!string.IsNullOrEmpty(user.Email) && !string.IsNullOrWhiteSpace(user.Email))
+                {
+                    changeUser.Email = user.Email;
+                }
+
+                if (!string.IsNullOrEmpty(user.Password) && !string.IsNullOrWhiteSpace(user.Password))
+                {
+                    changeUser.Password = HashPassword(user.Password);
+                }
+
+                _context.SaveChanges();
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// This function returns with the hashed password of the user
+        /// </summary>
+        /// <param name="id">User's ID number</param>
+        /// <returns>With hash as string or null in case of error</returns>
+        public async Task<string> GetHashedPasswordAsync(int id)
+        {
+            // Object which will return
+            string hashedPw = null;
+
+            try
+            {
+                // Query user, if does not exist return with error
+                var user = await _context.Users.SingleOrDefaultAsync(s => s.Id.Equals(id));
+                if (user == null)
+                    return hashedPw;
+
+                // Everything was OK
+                hashedPw = user.Password;
+                return hashedPw;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                return hashedPw;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// This function returns with the hashed password of the user
+        /// </summary>
+        /// <param name="username">User name</param>
+        /// <returns>Witht hash as string or null in case of error</returns>
+        public async Task<string> GetHashedPasswordAsync(string username)
+        {
+            // Object which will return
+            string hashedPw = null;
+
+            try
+            {
+                var user = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(username));
+                if (user == null)
+                    return hashedPw;
+
+                // Everything was OK
+                hashedPw = user.Password;
+                return hashedPw;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                return hashedPw;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Return with all deatil of a user
+        /// </summary>
+        /// <param name="username">User's name</param>
+        /// <returns>If OK then User object, else null</returns>
+        public async Task<User> GetUserAsync(string username)
+        {
+            // Object which will return
+            User respond = null;
+
+            try
+            {
+                respond = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(username));
+                // Everything was OK
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                return null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Return with all deatil of a user
+        /// </summary>
+        /// <param name="id">User's ID number</param>
+        /// <returns>If OK then User object, else null</returns>
+        public async Task<User> GetUserAsync(int id)
+        {
+            // Object which will return
+            User respond = null;
+
+            try
+            {
+                respond = await _context.Users.SingleOrDefaultAsync(s => s.Id.Equals(id));
+                // Everything was OK
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                return null;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Provide list of all user with their data
+        /// </summary>
+        /// <returns>List or null</returns>
+        public async Task<List<User>> GetUsersAsync()
+        {
+            // Object which will return
+            List<User> respond = null;
+
+            try
+            {
+                respond = await _context.Users.ToListAsync();
+                if (respond == null)
+                    respond = new List<User>();
+                // Everything was OK
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                return null;
+                throw;
+            }
         }
         #endregion
     }
