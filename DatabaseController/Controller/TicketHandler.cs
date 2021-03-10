@@ -56,6 +56,12 @@ namespace DatabaseController.Controller
             return _connectionString;
         }
 
+        /// <summary>
+        /// This function helps to create relationship between user and category
+        /// </summary>
+        /// <param name="category">Category record</param>
+        /// <param name="user">user record</param>
+        /// <returns>With OK or NOK message</returns>
         public async Task<Message> AssignUserToCategory(Category category, User user)
         {
             // Object which will return
@@ -105,6 +111,12 @@ namespace DatabaseController.Controller
             }
         }
 
+        /// <summary>
+        /// This function helps to remove relationship between user and category
+        /// </summary>
+        /// <param name="category">Category record</param>
+        /// <param name="user">User record</param>
+        /// <returns>With OK or NOK message</returns>
         public async Task<Message> UnassignUserToCategory(Category category, User user)
         {
             // Object which will return
@@ -145,6 +157,12 @@ namespace DatabaseController.Controller
             }
         }
 
+        /// <summary>
+        /// This function helps to assing user to a ticket
+        /// </summary>
+        /// <param name="user">User record</param>
+        /// <param name="ticket">Ticket record</param>
+        /// <returns></returns>
         public async Task<Message> AssignUserToTicketAsync(User user, Ticket ticket)
         {
             // Object which will return
