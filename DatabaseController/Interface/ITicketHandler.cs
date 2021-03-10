@@ -9,9 +9,18 @@ namespace DatabaseController.Interface
 {
     public interface ITicketHandler
     {
+        #region Attribures and utilities
         Message HealthCheck();
 
         string GetConnectionString();
+
+        Task<Message> AssignCategoryToSystemAsync(Category category, DataModel.System sysname);
+
+        Task<Message> UnassignCategoryToSystemAsync(Category category, DataModel.System sysname);
+
+        Task<Message> AssignUserToTicketAsync(User user, Ticket ticket);
+
+        #endregion
 
         #region System stuff
 

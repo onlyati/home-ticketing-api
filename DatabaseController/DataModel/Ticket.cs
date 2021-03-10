@@ -12,6 +12,9 @@ namespace DatabaseController.DataModel
             Logs = new HashSet<Log>();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Properties                                                                            */
+        /*---------------------------------------------------------------------------------------*/
         /// <summary>
         /// ID of ticket, value used by database
         /// </summary>
@@ -58,5 +61,40 @@ namespace DatabaseController.DataModel
         public virtual System System { get; set; }
         public virtual User User { get; set; }
         public virtual ICollection<Log> Logs { get; set; }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Methods                                                                               */
+        /*---------------------------------------------------------------------------------------*/
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Ticket);
+        }
+
+        public bool Equals(Ticket other)
+        {
+            if (Id != other.Id)
+                return false;
+            if (CategoryId != other.CategoryId)
+                return false;
+            if (Reference != other.Reference)
+                return false;
+            if (Status != other.Status)
+                return false;
+            if (Time != other.Time)
+                return false;
+            if (Title != other.Title)
+                return false;
+            if (UserId != other.UserId)
+                return false;
+            if (SystemId != other.SystemId)
+                return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, CategoryId, Reference, Status, Time, Title, UserId, SystemId);
+        }
     }
 }

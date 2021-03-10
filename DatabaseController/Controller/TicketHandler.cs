@@ -56,6 +56,93 @@ namespace DatabaseController.Controller
             return _connectionString;
         }
 
+        public async Task<Message> AssignCategoryToSystemAsync(Category category, DataModel.System sysname)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // At this point the database is eligible for adding new user, let's try it
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        public async Task<Message> UnassignCategoryToSystemAsync(Category category, DataModel.System sysname)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // At this point the database is eligible for adding new user, let's try it
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
+        public async Task<Message> AssignUserToTicketAsync(User user, Ticket ticket)
+        {
+            // Object which will return
+            Message response = new Message();
+
+            // At this point the database is eligible for adding new user, let's try it
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+
+                // Everything was, commit then return with OK value
+                transaction.Commit();
+
+                response.MessageText = "New user has been added";
+                response.MessageType = MessageType.OK;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened
+                transaction.Rollback();
+                response.MessageType = MessageType.NOK;
+                response.MessageText = $"Internal error: {ex.Message}";
+                return response;
+                throw;
+            }
+        }
+
         /// <summary>
         /// This function performa SHA512 on the specified password and return with its hexa values
         /// </summary>

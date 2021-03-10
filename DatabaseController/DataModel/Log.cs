@@ -7,6 +7,9 @@ namespace DatabaseController.DataModel
 {
     public partial class Log
     {
+        /*---------------------------------------------------------------------------------------*/
+        /* Properties                                                                            */
+        /*---------------------------------------------------------------------------------------*/
         /// <summary>
         /// ID of the log, valuse used by database
         /// </summary>
@@ -42,5 +45,36 @@ namespace DatabaseController.DataModel
 
         public virtual Ticket Ticket { get; set; }
         public virtual User User { get; set; }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Methods                                                                               */
+        /*---------------------------------------------------------------------------------------*/
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Log);
+        }
+
+        public bool Equals(Log other)
+        {
+            if (Id != other.Id)
+                return false;
+            if (Summary != other.Summary)
+                return false;
+            if (TicketId != other.TicketId)
+                return false;
+            if (Details != other.Details)
+                return false;
+            if (Time != other.Time)
+                return false;
+            if (UserId != other.UserId)
+                return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Summary, TicketId, Details, Time, UserId);
+        }
     }
 }

@@ -14,6 +14,9 @@ namespace DatabaseController.DataModel
             Usercategories = new HashSet<Usercategory>();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Properties                                                                            */
+        /*---------------------------------------------------------------------------------------*/
         /// <summary>
         /// ID of user entry, used by database
         /// </summary>
@@ -40,5 +43,32 @@ namespace DatabaseController.DataModel
         public virtual ICollection<Log> Logs { get; set; }
         public virtual ICollection<Ticket> Tickets { get; set; }
         public virtual ICollection<Usercategory> Usercategories { get; set; }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Methods                                                                               */
+        /*---------------------------------------------------------------------------------------*/
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as User);
+        }
+
+        public bool Equals(User other)
+        {
+            if (Id != other.Id)
+                return false;
+            if (Username != other.Username)
+                return false;
+            if (Password != other.Password)
+                return false;
+            if (Email != other.Email)
+                return false;
+
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Username, Password, Email);
+        }
     }
 }
