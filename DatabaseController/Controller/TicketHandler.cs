@@ -381,10 +381,19 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="category">Name of category</param>
         /// <returns>With OK message if created, else with NOK message with explanation</returns>
-        public async Task<Message> AddCategoryAsync(string category, string sysname)
+        public async Task<Message> AddCategoryAsync(string category, DataModel.System system)
         {
             // Message which will be sent back
             Message response = new Message();
+
+            // Check that system exist
+            var checkSys = await _context.Systems.SingleOrDefaultAsync(s => s.Equals(system));
+            if(checkSys == null)
+            {
+                response.MessageType = MessageType.NOK;
+                response.MessageText = "Specified system record does not exist";
+                return response;
+            }
 
             // Make lock for database to prevent changes meanwhile it works
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
@@ -400,12 +409,12 @@ namespace DatabaseController.Controller
                                         Name = c.Name,
                                         System = s,
                                         SystemId = c.SystemId
-                                    }).SingleOrDefaultAsync(s => s.Name == category && s.System.Name == sysname);
+                                    }).SingleOrDefaultAsync(s => s.Name == category && s.System.Name == system.Name);
 
                 if(record != null)
                 {
                     response.MessageType = MessageType.NOK;
-                    response.MessageText = $"Category ({category}) is already exist on {sysname} system";
+                    response.MessageText = $"Category ({category}) is already exist on {system.Name} system";
                     transaction.Rollback();
                     return response;
                 }
@@ -413,7 +422,7 @@ namespace DatabaseController.Controller
                 // Create a new category
                 DataModel.Category new_cat = new DataModel.Category();
                 new_cat.Name = category;
-                new_cat.System = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
+                new_cat.System = await _context.Systems.SingleOrDefaultAsync(s => s.Name == system.Name);
 
                 // Add the category to database
                 await _context.AddAsync(new_cat);
@@ -423,7 +432,7 @@ namespace DatabaseController.Controller
                 transaction.Commit();
 
                 response.MessageType = MessageType.OK;
-                response.MessageText = $"Category ({category}) has been added for {sysname} system";
+                response.MessageText = $"Category ({category}) has been added for {system.Name} system";
 
                 return response;
             }
@@ -453,10 +462,19 @@ namespace DatabaseController.Controller
         /// <param name="from">Existing category name</param>
         /// <param name="to">Non-existing category name</param>
         /// <returns>OK or a NOK message</returns>
-        public async Task<Message> RenameCategoryAsync(string from, string to, string sysname)
+        public async Task<Message> RenameCategoryAsync(string from, string to, DataModel.System system)
         {
             // Object for return value
             Message respond = new Message();
+
+            // Check that system exist
+            var checkSys = await _context.Systems.SingleOrDefaultAsync(s => s.Equals(system));
+            if (checkSys == null)
+            {
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = "Specified system record does not exist";
+                return respond;
+            }
 
             // Start a transaction, so nothing else will change the table while we are working
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
@@ -472,13 +490,13 @@ namespace DatabaseController.Controller
                                             Name = c.Name,
                                             SystemId = c.SystemId,
                                             System = s
-                                        }).SingleOrDefaultAsync(s => s.Name == from && s.System.Name == sysname);
+                                        }).SingleOrDefaultAsync(s => s.Name == from && s.System.Name == system.Name);
 
                 // If 'from' does not exist, return with error
                 if (fromRecord == null)
                 {
                     respond.MessageType = MessageType.NOK;
-                    respond.MessageText = $"The specified category ({from}) does not exist for {sysname} system, thus not possible to rename it";
+                    respond.MessageText = $"The specified category ({from}) does not exist for {system.Name} system, thus not possible to rename it";
                     transaction.Rollback();
                     return respond;
                 }
@@ -492,13 +510,13 @@ namespace DatabaseController.Controller
                                           Name = c.Name,
                                           SystemId = c.SystemId,
                                           System = s
-                                      }).SingleOrDefaultAsync(s => s.Name == to && s.System.Name == sysname);
+                                      }).SingleOrDefaultAsync(s => s.Name == to && s.System.Name == system.Name);
 
                 // if 'to' does exist, return with error
                 if (toRecord != null)
                 {
                     respond.MessageType = MessageType.NOK;
-                    respond.MessageText = $"The specified new name ({to}) is already exist for {sysname} system";
+                    respond.MessageText = $"The specified new name ({to}) is already exist for {system.Name} system";
                     transaction.Rollback();
                     return respond;
                 }
@@ -541,18 +559,26 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="name">Name of category</param>
         /// <returns>OK or a NOK Message</returns>
-        public async Task<Message> DeleteCategoryAsync(string name, string sysname)
+        public async Task<Message> DeleteCategoryAsync(string name, DataModel.System system)
         {
             // Message for response
             Message respond = new Message();
+
+            // Check that system exist
+            var checkSys = await _context.Systems.SingleOrDefaultAsync(s => s.Equals(system));
+            if (checkSys == null)
+            {
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = "Specified system record does not exist";
+                return respond;
+            }
 
             // Make lock for database to prevent changes meanwhile it works
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
 
             try
             {
-                var sys = await _context.Systems.SingleOrDefaultAsync(s => s.Name == sysname);
-                var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name == name && s.SystemId == sys.Id);
+                var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name == name && s.SystemId == system.Id);
 
                 /*
                 var record = await (from c in _context.Categories
@@ -584,7 +610,7 @@ namespace DatabaseController.Controller
 
                 // Everything is fine, let us send an OK message
                 respond.MessageType = MessageType.OK;
-                respond.MessageText = $"Category ({cat_name}) has been deleted on {sysname}";
+                respond.MessageText = $"Category ({cat_name}) has been deleted on {system.Name}";
 
                 return respond;
             }
@@ -677,16 +703,99 @@ namespace DatabaseController.Controller
         }
 
         /// <summary>
+        /// Create a list about the categories based on the user
+        /// </summary>
+        /// <param name="user">User object</param>
+        /// <returns>With a list or null</returns>
+        public async Task<List<DataModel.Category>> ListCategoriesAsync(User user)
+        {
+            // Object which will return 
+            List<Category> respond = null;
+
+            // Check that user exist
+            var checkUsr = await _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
+            if(checkUsr == null)
+            {
+                return respond;
+            }
+
+            try
+            {
+                // At this point, everything looks OK, let's query the records
+                respond = await (from uc in _context.Usercategories
+                                 join c in _context.Categories on uc.CategoryId equals c.Id
+                                 join s in _context.Systems on c.SystemId equals s.Id
+                                 where uc.UserId == user.Id
+                                 select new Category
+                                 {
+                                     Id = c.Id,
+                                     Name = c.Name,
+                                     SystemId = c.SystemId,
+                                     System = s
+                                 }).ToListAsync();
+
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened, return null
+                return respond;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Create a list about the categories based on the system
+        /// </summary>
+        /// <param name="system">System object</param>
+        /// <returns>With a list or null</returns>
+        public async Task<List<DataModel.Category>> ListCategoriesAsync(DataModel.System system)
+        {
+            // Object which will return 
+            List<Category> respond = null;
+
+            // Check that system exist
+            var checkSys = await _context.Systems.SingleOrDefaultAsync(s => s.Equals(system));
+            if (checkSys == null)
+            {
+                return respond;
+            }
+
+            try
+            {
+                // At this point, everything looks OK, let's query the records
+                respond = await (from c in _context.Categories
+                                 join s in _context.Systems on c.SystemId equals s.Id
+                                 where s.Id == system.Id
+                                 select new Category
+                                 {
+                                     Id = c.Id,
+                                     Name = c.Name,
+                                     SystemId = c.SystemId,
+                                     System = s
+                                 }).ToListAsync();
+
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                // Something bad happened, return null
+                return respond;
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Return with a Category record based on ID and system name
         /// </summary>
         /// <param name="id">Category ID number</param>
         /// <param name="sysname">System name</param>
         /// <returns>Category object or null</returns>
-        public async Task<Category> GetCategoryAsync(int id, string sysname)
+        public async Task<Category> GetCategoryAsync(int id, DataModel.System system)
         {
             return await (from c in _context.Categories 
                           join s in _context.Systems on c.SystemId equals s.Id
-                          where c.Id == id && s.Name == sysname
+                          where c.Id == id && s.Name == system.Name
                           select new Category
                           {
                               Id = c.Id,
@@ -702,11 +811,11 @@ namespace DatabaseController.Controller
         /// <param name="name">Category name</param>
         /// <param name="sysname">System name</param>
         /// <returns>Category object or null</returns>
-        public async Task<Category> GetCategoryAsync(string name, string sysname)
+        public async Task<Category> GetCategoryAsync(string name, DataModel.System system)
         {
             return await (from c in _context.Categories
                           join s in _context.Systems on c.SystemId equals s.Id
-                          where c.Name == name && s.Name == sysname
+                          where c.Name == name && s.Name == system.Name
                           select new Category
                           {
                               Id = c.Id,

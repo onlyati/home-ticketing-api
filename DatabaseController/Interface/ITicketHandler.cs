@@ -37,17 +37,21 @@ namespace DatabaseController.Interface
         #region Category stuff
         Task<List<DataModel.Category>> ListCategoriesAsync();
 
-        Task<Message> AddCategoryAsync(string category, string sysname);
+        Task<List<DataModel.Category>> ListCategoriesAsync(User user);
 
-        Task<Message> RenameCategoryAsync(string from, string to, string sysname);
+        Task<List<DataModel.Category>> ListCategoriesAsync(DataModel.System system);
 
-        Task<Message> DeleteCategoryAsync(string name, string sysname);
+        Task<Message> AddCategoryAsync(string category, DataModel.System system);
+
+        Task<Message> RenameCategoryAsync(string from, string to, DataModel.System system);
+
+        Task<Message> DeleteCategoryAsync(string name, DataModel.System system);
 
         Task<Message> DeleteCategoryAsync(int id);
 
-        Task<Category> GetCategoryAsync(int id, string sysname);
+        Task<Category> GetCategoryAsync(int id, DataModel.System system);
 
-        Task<Category> GetCategoryAsync(string name, string sysname);
+        Task<Category> GetCategoryAsync(string name, DataModel.System system);
         #endregion
 
         #region Ticket stuff
