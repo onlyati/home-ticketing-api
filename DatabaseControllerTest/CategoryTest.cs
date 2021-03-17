@@ -193,5 +193,29 @@ namespace DatabaseControllerTest
             var response = await ticket.DeleteCategoryAsync(-1);
             Assert.AreEqual(MessageType.NOK, response.MessageType, "Final: Category could be deleted by non-existing ID");
         }
+
+        /// <summary>
+        /// Looking for categories based on user
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task List_Category_User()
+        {
+            TicketHandler ticket = new TicketHandler(connString);
+            var response = await ticket.ListCategoriesAsync(await ticket.GetUserAsync("Dispatcher"));
+            Assert.AreNotEqual(0, response.Count, "No categories was found");
+        }
+
+        /// <summary>
+        /// Looking for categories based on system
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task List_Category_System()
+        {
+            TicketHandler ticket = new TicketHandler(connString);
+            var response = await ticket.ListCategoriesAsync(await ticket.GetSystemAsync("atihome"));
+            Assert.AreNotEqual(0, response.Count, "No categories was found");
+        }
     }
 }

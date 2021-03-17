@@ -68,11 +68,8 @@ namespace DatabaseController.Controller
             Message response = new Message();
 
             // Check that either category and user exist
-            var waitCat = _context.Categories.SingleOrDefaultAsync(s => s.Equals(category));
-            var waitkUsr = _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
-
-            var checkCat = await waitCat;
-            var checkUsr = await waitkUsr;
+            var checkCat = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(category));
+            var checkUsr = await _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
 
             if(checkCat == null || checkUsr == null)
             {
@@ -169,14 +166,11 @@ namespace DatabaseController.Controller
             Message response = new Message();
 
             // Check that things exist
-            var waitUser = _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
-            var waitTicket = _context.Tickets.SingleOrDefaultAsync(s => s.Equals(ticket));
-            var waitCat = _context.Categories.SingleOrDefaultAsync(s => s.Id.Equals(ticket.CategoryId));
+            var checkUser = await _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
+            var checkTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Equals(ticket));
+            var checkCat = await _context.Categories.SingleOrDefaultAsync(s => s.Id.Equals(ticket.CategoryId));
 
-            var checkUser = await waitUser;
-            var checkTicket = await waitTicket;
-
-            if(checkUser == null || checkTicket == null)
+            if(checkUser == null || checkTicket == null || checkCat == null)
             {
                 response.MessageText = "User or ticket does not exist";
                 response.MessageType = MessageType.NOK;
@@ -184,8 +178,6 @@ namespace DatabaseController.Controller
             }
 
             // Check that user has access for the category
-            var checkCat = await waitCat;
-
             var checkUsrCat = await _context.Usercategories.SingleOrDefaultAsync(s => s.UserId.Equals(checkUser.Id) && s.CategoryId.Equals(checkCat.Id));
             if(checkUsrCat == null)
             {
@@ -864,7 +856,9 @@ namespace DatabaseController.Controller
                               Time = t.Time,
                               Title = t.Title,
                               User = allu,
-                              System = s
+                              System = s,
+                              CategoryId = t.CategoryId,
+                              SystemId = t.SystemId
                           }).ToListAsync();
         }
 
@@ -891,7 +885,9 @@ namespace DatabaseController.Controller
                               Time = t.Time,
                               Title = t.Title,
                               User = allu,
-                              System = s
+                              System = s,
+                              CategoryId = t.CategoryId,
+                              SystemId = t.SystemId
                           }).Skip(from).Take(count).ToListAsync();
         }
 
@@ -929,7 +925,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).ToListAsync();
             }
             else if (filter.Category != "" && filter.Status == "")
@@ -950,7 +948,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).ToListAsync();
             }
             else if (filter.Category == "" && filter.Status != "")
@@ -971,7 +971,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).ToListAsync();
             }
             else
@@ -992,7 +994,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).ToListAsync();
             }
         }
@@ -1031,7 +1035,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).Skip(from).Take(count).ToListAsync();
             }
             else if (filter.Category != "" && filter.Status == "")
@@ -1052,7 +1058,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).Skip(from).Take(count).ToListAsync();
             }
             else if (filter.Category == "" && filter.Status != "")
@@ -1073,7 +1081,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).Skip(from).Take(count).ToListAsync();
             }
             else
@@ -1094,7 +1104,9 @@ namespace DatabaseController.Controller
                                   Time = t.Time,
                                   Title = t.Title,
                                   User = allu,
-                                  System = s
+                                  System = s,
+                                  CategoryId = t.CategoryId,
+                                  SystemId = t.SystemId
                               }).Skip(from).Take(count).ToListAsync();
             }
         }
@@ -1506,6 +1518,13 @@ namespace DatabaseController.Controller
             Message response = new Message();
             response.MessageText = "";
 
+            if(user == null)
+            {
+                response.MessageType = MessageType.NOK;
+                response.MessageText = "Parameter must not null";
+                return response;
+            }
+
             // Check that all values are provided and return with NOK if something missing
             if (string.IsNullOrEmpty(user.Username) || string.IsNullOrWhiteSpace(user.Username))
                 response.MessageText += "Username value is missing; ";
@@ -1888,6 +1907,47 @@ namespace DatabaseController.Controller
                 return null;
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Provide list of all users who are connected for the specified category
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns>List or null</returns>
+        public async Task<List<User>> GetUsersAsync(Category category)
+        {
+            return await (from c in _context.Categories
+                          join uc in _context.Usercategories on c.Id equals uc.CategoryId
+                          join u in _context.Users on uc.UserId equals u.Id
+                          where c == category
+                          select new User
+                          {
+                              Username = u.Username,
+                              Email = u.Email,
+                              Password = u.Password,
+                              Id = u.Id
+                          }).Distinct().ToListAsync();
+        }
+
+        /// <summary>
+        /// provide list of all users which are assing for the selected system
+        /// </summary>
+        /// <param name="system"></param>
+        /// <returns></returns>
+        public async Task<List<User>> GetUsersAsync(DataModel.System system)
+        {
+            return await (from u in _context.Users
+                          join uc in _context.Usercategories on u.Id equals uc.UserId
+                          join c in _context.Categories on uc.CategoryId equals c.Id
+                          join s in _context.Systems on c.SystemId equals s.Id
+                          where s == system
+                          select new User
+                          {
+                              Username = u.Username,
+                              Id = u.Id,
+                              Email = u.Email,
+                              Password = u.Password
+                          }).Distinct().ToListAsync();
         }
         #endregion
     }

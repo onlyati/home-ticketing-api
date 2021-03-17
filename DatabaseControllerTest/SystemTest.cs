@@ -13,6 +13,10 @@ namespace DatabaseControllerTest
     {
         string connString = "Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test";
 
+        /// <summary>
+        /// Test system methods with good result
+        /// </summary>
+        /// <returns></returns>
         [TestMethod]
         public async Task SystemTest_Add_Del()
         {
@@ -33,6 +37,32 @@ namespace DatabaseControllerTest
 
             Message respond4 = await ticket.RemoveSystemAsync(newSystem);
             Assert.AreEqual(MessageType.OK, respond4.MessageType, "New system could not be deleted");
+        }
+
+        /// <summary>
+        /// Check listing with not found result
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task SystemTest_Null()
+        {
+            TicketHandler ticket = new TicketHandler(connString);
+
+            var respond = await ticket.GetSystemAsync(null);
+            Assert.AreEqual(null, respond);
+        }
+
+        /// <summary>
+        /// Check listing with not found result
+        /// </summary>
+        /// <returns></returns>
+        [TestMethod]
+        public async Task SystemTest_Null2()
+        {
+            TicketHandler ticket = new TicketHandler(connString);
+
+            var respond = await ticket.GetSystemAsync("sdfsdfds");
+            Assert.AreEqual(null, respond);
         }
     }
 }

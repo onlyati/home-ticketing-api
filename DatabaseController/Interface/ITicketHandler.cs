@@ -96,6 +96,10 @@ namespace DatabaseController.Interface
         Task<User> GetUserAsync(int id);
 
         Task<List<User>> GetUsersAsync();
+
+        Task<List<User>> GetUsersAsync(Category category);
+
+        Task<List<User>> GetUsersAsync(DataModel.System system);
         #endregion
     }
 }

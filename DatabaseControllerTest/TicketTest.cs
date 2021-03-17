@@ -32,20 +32,6 @@ namespace DatabaseControllerTest
         }
 
         [TestMethod]
-        public async Task List_Ticket_3()
-        {
-            TicketHandler ticket = new TicketHandler(connString);
-            TicketFilterTemplate empty = new TicketFilterTemplate();
-            empty.System = "atihome";
-
-            // Testing without any filter
-            var respond11 = await ticket.ListTicketsAsync();
-            var respond12 = await ticket.ListTicketsAsync(empty);
-
-            Assert.AreEqual(respond11.Count, respond12.Count, "Final #1: List all ticket and list with empty filter are not same");
-        }
-
-        [TestMethod]
         public async Task List_Ticket_4()
         {
             TicketHandler ticket = new TicketHandler(connString);
