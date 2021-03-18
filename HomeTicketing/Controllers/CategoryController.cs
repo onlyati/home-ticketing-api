@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using HomeTicketing.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using DatabaseController.Model;
+using DatabaseController.Interface;
 
 namespace HomeTicketing.Controllers
 {
@@ -20,17 +19,17 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
-        private readonly DataContext _context;
+        private readonly ITicketHandler _ticket;
         private readonly ILogger _logger;
 
-        public CategoryController(DataContext context, ILogger<CategoryController> logger)
+        public CategoryController(ITicketHandler ticket, ILogger<CategoryController> logger)
         {
-            _context = context;
+            _ticket = ticket;
             _logger = logger;
         }
 
         /// <summary>
-        /// List categoires
+        /// List categories
         /// </summary>
         /// <remarks>
         /// This request is good to list all existing categories
@@ -42,8 +41,58 @@ namespace HomeTicketing.Controllers
         public async Task<IActionResult> GetCategories()
         {
             _logger.LogDebug("GET categories are requested");
-            var data = await _context.Categories.ToListAsync();
+            var data = await _ticket.ListCategoriesAsync();
             _logger.LogInformation("GET categories are completed");
+            return Ok(data);
+        }
+
+        /// <summary>
+        /// List categories based on system name
+        /// </summary>
+        /// <param name="system">Selected system</param>
+        /// <returns>List or error message in JSON</returns>
+        /// <response code="200">Request is completed</response>
+        /// <response code="400">Request is failed</response>
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("system/{system}")]
+        public async Task<IActionResult> GetCategoriesBySystem(string system)
+        {
+            _logger.LogDebug($"GET categories/system/{system} is completed");
+            var data = await _ticket.ListCategoriesAsync(await _ticket.GetSystemAsync(system));
+            if(data == null)
+            {
+                _logger.LogDebug($"GET categories/system/{system} is failed");
+                ErrorMessage ret = new ErrorMessage();
+                ret.Message = "List is failed";
+                return BadRequest(ret);
+            }
+            _logger.LogDebug($"GET categories/system/{system} is completed");
+            return Ok(data);
+        }
+
+        /// <summary>
+        /// List categories based on username
+        /// </summary>
+        /// <param name="system">Selected system</param>
+        /// <returns>List or error message in JSON</returns>
+        /// <response code="200">Request is completed</response>
+        /// <response code="400">Request is failed</response>
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("user/{user}")]
+        public async Task<IActionResult> GetCategoriesByUser(string user)
+        {
+            _logger.LogDebug($"GET categories/system/{user} is completed");
+            var data = await _ticket.ListCategoriesAsync(await _ticket.GetUserAsync(user));
+            if (data == null)
+            {
+                _logger.LogDebug($"GET categories/system/{user} is failed");
+                ErrorMessage ret = new ErrorMessage();
+                ret.Message = "List is failed";
+                return BadRequest(ret);
+            }
+            _logger.LogDebug($"GET categories/system/{user} is completed");
             return Ok(data);
         }
 
@@ -53,33 +102,27 @@ namespace HomeTicketing.Controllers
         /// <remarks>
         /// This request create a new category.
         /// </remarks>
+        /// <param name="system">System where the category must be created</param>
         /// <param name="name">New category name</param>
         /// <returns>With the created category</returns>
         /// <response code="200">Category is created</response>
         /// <response code="400">Category already exist</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpPost("{name}")]
-        public async Task<IActionResult> CategoryAdd(string name)
+        [HttpPost("{system}/{name}")]
+        public async Task<IActionResult> CategoryAdd(string system, string name)
         {
             _logger.LogDebug($"New category ({name}) is requested");
-            Category new_cat = new Category();
-            new_cat.Name = name;
-
-            var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
-
-            if(record != null)                               /* If category already exist, error */
+            var sysrec = await _ticket.GetSystemAsync(system);
+            var respond = await _ticket.AddCategoryAsync(name, sysrec);
+            if(respond.MessageType == MessageType.NOK)
             {
-                _logger.LogWarning($"Category ({name}) is already existing");
-                return BadRequest();
+                _logger.LogWarning($"{respond.MessageText}");
+                ErrorMessage ret = new ErrorMessage();
+                ret.Message = respond.MessageText;
+                return BadRequest(ret);
             }
-
-            await _context.AddAsync(new_cat);
-            await _context.SaveChangesAsync();
-
-            _logger.LogDebug($"New category ({name}) has been added");
-
-            var data = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
+            var data = await _ticket.GetCategoryAsync(name, sysrec);
             _logger.LogInformation($"New category ({name}) request is completed");
 
             return Ok(data);
@@ -91,26 +134,24 @@ namespace HomeTicketing.Controllers
         /// <remarks>
         /// This delete a category 
         /// </remarks>
+        /// <param name="system">System name where category needs to be located</param>
         /// <param name="name">Category for delete</param>
         /// <returns></returns>
         /// <response code="200">Category is deleted</response>
         /// <response code="400">Category did not exist</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [HttpDelete("{name}")]
-        public async Task<IActionResult> CategoryDelete(string name)
+        [HttpDelete("{system}/{name}")]
+        public async Task<IActionResult> CategoryDelete(string system, string name)
         {
             _logger.LogDebug($"Delete category request ({name}) is requested");
-            var record = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(name));
-
-            if(record == null)                              /* If category does not exist, error */
+            var sysrec = await _ticket.GetSystemAsync(system);
+            var respond = await _ticket.DeleteCategoryAsync(name, sysrec);
+            if(respond.MessageType == MessageType.NOK)                              /* If category does not exist, error */
             {
                 _logger.LogWarning($"Category ({name}) does not exist");
                 return BadRequest();
             }
-
-            _context.Remove(record);
-            await _context.SaveChangesAsync();
             _logger.LogInformation($"Category ({name}) has been deleted");
             return Ok();
         }
@@ -129,8 +170,9 @@ namespace HomeTicketing.Controllers
         /// <remarks>
         /// Change the group name for a non-exist new name
         /// </remarks>
+        /// <param name="system">System where category can be located</param>
         /// <param name="current">Current category name</param>
-        /// <param name="to">NBew category name</param>
+        /// <param name="to">New category name</param>
         /// <returns>With the modified category</returns>
         /// <response code="200">Category is renamed</response>
         /// <response code="400">New category already exist</response>
@@ -138,39 +180,23 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("change/{current}/{to}")]
-        public async Task<IActionResult> CategoryChange(string current, string to)
+        [HttpPut("change/{system}/{current}/{to}")]
+        public async Task<IActionResult> CategoryChange(string system, string current, string to)
         {
             _logger.LogDebug($"Change category ({current} -> {to}) is requested");
-            /*--- Check that current exist ---*/
-            var category = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(current));
-
-            if(category == null)
+            var sysrec = await _ticket.GetSystemAsync(system);
+            var respond = await _ticket.RenameCategoryAsync(current, to, sysrec);
+            if(respond.MessageType == MessageType.NOK)
             {
-                _logger.LogWarning($"Category ({current}) does not exist");
+                _logger.LogWarning(respond.MessageText);
                 ErrorMessage ret = new ErrorMessage();
-                ret.Message = $"Category did not found: {current}";
-                return NotFound(ret);
-            }
-
-            _logger.LogDebug($"Check that category exist: {to}");
-            /*--- Check that the new name is not exist yet ---*/
-            var category2 = await _context.Categories.SingleOrDefaultAsync(s => s.Name.Equals(to));
-
-            if(category2 != null)
-            {
-                _logger.LogWarning($"New category name ({to}) is already exist");
-                ErrorMessage ret = new ErrorMessage();
-                ret.Message = $"Category already exist: {to}";
+                ret.Message = respond.MessageText;
                 return BadRequest(ret);
             }
 
             /*--- Change the category and return with 200 ---*/
-            category.Name = to;
-
-            await _context.SaveChangesAsync();
-            _logger.LogInformation($"Change vategory ({current} -> {to}) has been done");
-            return Ok(category);
+            _logger.LogInformation($"Change category ({current} -> {to}) has been done");
+            return Ok(await _ticket.GetCategoryAsync(to, sysrec));
         }
     }
 }

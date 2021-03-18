@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -13,37 +14,46 @@ namespace DatabaseController.DataModel
         /// <summary>
         /// ID of the log, valuse used by database
         /// </summary>
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         /// <summary>
         /// Ticket short summary
         /// </summary>
         /// <example>This is a short summary</example>
+        [JsonPropertyName("summary")]
         public string Summary { get; set; }
 
         /// <summary>
         /// Used as foreign key to recognize which ticket its belongs
         /// </summary>
         /// <example>1</example>
+        [JsonPropertyName("ticket_id")]
         public int TicketId { get; set; }
 
         /// <summary>
         /// Longer description about the problem
         /// </summary>
         /// <example>This is a loooooooooooooooooonger description</example>
+        [JsonPropertyName("details")]
         public string Details { get; set; }
 
         /// <summary>
         /// Timestamp when the log was recorded
         /// </summary>
+        [JsonPropertyName("time")]
         public DateTime? Time { get; set; }
 
         /// <summary>
         /// Point, that by who created the log entry
         /// </summary>
+        [JsonPropertyName("user_id")]
         public int? UserId { get; set; }
 
+        [JsonIgnore]
         public virtual Ticket Ticket { get; set; }
+
+        [JsonIgnore]
         public virtual User User { get; set; }
 
         /*---------------------------------------------------------------------------------------*/

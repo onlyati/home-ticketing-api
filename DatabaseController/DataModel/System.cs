@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 #nullable disable
 
@@ -20,15 +21,20 @@ namespace DatabaseController.DataModel
         /// ID of systems, value used by database
         /// </summary>
         /// <example>1</example>
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         /// <summary>
         /// Name of the system
         /// </summary>
         /// <example>atihome</example>
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<Category> Categories { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Ticket> Tickets { get; set; }
 
         /*---------------------------------------------------------------------------------------*/

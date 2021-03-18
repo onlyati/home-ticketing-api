@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using DatabaseController.Model;
 
 #nullable disable
@@ -22,33 +23,43 @@ namespace DatabaseController.DataModel
         /// ID of user entry, used by database
         /// </summary>
         /// <example>1</example>
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         /// <summary>
         /// Name of the user
         /// </summary>
         /// <example>ati</example>
+        [JsonPropertyName("username")]
         public string Username { get; set; }
 
         /// <summary>
         /// Password has stored on 512 bytes
         /// </summary>
+        [JsonIgnore]
         public string Password { get; set; }
 
         /// <summary>
         /// Email address of user
         /// </summary>
         /// <example>ati@atihome.local</example>
+        [JsonPropertyName("email")]
         public string Email { get; set; }
 
         /// <summary>
         /// Enum type for user role
         /// </summary>
         /// <example>Admin</example>
+        [JsonPropertyName("role")]
         public UserRole Role { get; set; }
 
+        [JsonIgnore]
         public virtual ICollection<Log> Logs { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Ticket> Tickets { get; set; }
+
+        [JsonIgnore]
         public virtual ICollection<Usercategory> Usercategories { get; set; }
 
         /*---------------------------------------------------------------------------------------*/

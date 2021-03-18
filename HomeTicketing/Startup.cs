@@ -3,18 +3,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Pomelo.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-using HomeTicketing.Model;
 using System;
 using System.Reflection;
 using System.IO;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Logging.EventSource;
-using Microsoft.Extensions.Logging.TraceSource;
-using Microsoft.Extensions.Logging.Debug;
+using DatabaseController.Controller;
+using DatabaseController.Interface;
 
 namespace HomeTicketing
 {
@@ -32,7 +27,7 @@ namespace HomeTicketing
         {
             string dbConn = Configuration.GetSection("ConnectionString").GetSection("Db").Value;
             string connString = Configuration.GetValue<string>("ConnectionString:Db");
-            services.AddDbContext<DataContext>(opts => opts.UseMySql(connString));
+            services.AddScoped<ITicketHandler, TicketHandler>(s => new TicketHandler(connString));
             services.AddControllers();
             services.AddCors(options =>
             {
@@ -41,9 +36,9 @@ namespace HomeTicketing
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("1.0", new OpenApiInfo
+                c.SwaggerDoc("2.0", new OpenApiInfo
                 {
-                    Version = "1.0",
+                    Version = "2.0",
                     Title = "Ticketing API Swagger UI",
                     Description = "This is a place where the API can be try.",
                     Contact = new OpenApiContact
@@ -72,8 +67,8 @@ namespace HomeTicketing
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("./swagger/1.0/swagger.json", "Ticketing API Swagger UI");
-                c.RoutePrefix = string.Empty;
+                c.SwaggerEndpoint("./2.0/swagger.json", "Ticketing API Swagger UI");
+                c.RoutePrefix = "swagger";
             });
 
             loggerFactory.AddFile(Configuration.GetValue<string>("LogPath"));

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using HomeTicketing.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using DatabaseController.Interface;
 
 namespace HomeTicketing.Controllers
 {
@@ -20,12 +21,12 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
-        private readonly DataContext _context;
+        private readonly ITicketHandler _ticket;
         private readonly ILogger _logger;
 
-        public HealthController(DataContext context, ILogger<HealthController> logger)
+        public HealthController(ITicketHandler ticket, ILogger<HealthController> logger)
         {
-            _context = context;
+            _ticket = ticket;
             _logger = logger;
         }
 
