@@ -1585,10 +1585,10 @@ namespace DatabaseController.Controller
             }
 
             // Check if user already exist
-            var testUser = await _context.Users.SingleOrDefaultAsync(s => s.Username.Equals(user.Username));
+            var testUser = await _context.Users.FirstOrDefaultAsync(s => s.Username.Equals(user.Username) || s.Email.Equals(user.Email));
             if(testUser != null)
             {
-                response.MessageText = "Username already reserved";
+                response.MessageText = "Username or email is already reserved";
                 response.MessageType = MessageType.NOK;
                 return response;
             }

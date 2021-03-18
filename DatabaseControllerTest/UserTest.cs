@@ -117,6 +117,18 @@ namespace DatabaseControllerTest
             response = await ticket.RemoveUserAsync(user1.Id);
             Assert.AreEqual(MessageType.OK, response.MessageType, "User could not deleted");
         }
+        
+        [TestMethod]
+        public async Task Register_UsedEmail()
+        {
+            TicketHandler ticket = new TicketHandler(connString);
+            User usr = new User();
+            usr.Username = "valami";
+            usr.Password = "ize";
+            usr.Email = "test1@atihome.local";
+            var respond = await ticket.RegisterUserAsync(usr);
+            Assert.AreEqual(MessageType.NOK, respond.MessageType);
+        }
         #endregion
 
         #region Change test
