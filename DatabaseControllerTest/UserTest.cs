@@ -66,6 +66,10 @@ namespace DatabaseControllerTest
             var user2 = await ticket.GetUserAsync(user1.Id);
             Assert.AreEqual(user1, user2, "Difference getuser detected");
 
+            // Check user role
+            Assert.AreEqual(UserRole.User, user1.Role);
+            Assert.AreEqual("User", user1.Role.ToString());
+
             // Delete user, cleanup for the next run
             response = await ticket.RemoveUserAsync(user1.Id);
             Assert.AreEqual(MessageType.OK, response.MessageType, "User could not deleted");
@@ -311,6 +315,23 @@ namespace DatabaseControllerTest
             var response2 = await ticket.AssignUserToTicketAsync(disp, ticketList[0]);
             Assert.IsNotNull(response2);
             Assert.AreEqual(MessageType.OK, response2.MessageType);
+        }
+
+        [TestMethod]
+        public async Task Change_User_Role()
+        {
+            TicketHandler ticket = new TicketHandler(connString);
+            var user1 = await ticket.GetUserAsync("test-role");
+            Assert.AreEqual(UserRole.User, user1.Role);
+
+            var respond = await ticket.ChangeUserRole(user1, UserRole.Admin);
+            Assert.AreEqual(MessageType.OK, respond.MessageType);
+            var user2 = await ticket.GetUserAsync("test-role");
+            Assert.AreEqual(UserRole.Admin, user2.Role);
+
+            var respondd = await ticket.ChangeUserRole(user2, UserRole.User);
+            var user3 = await ticket.GetUserAsync("test-role");
+            Assert.AreEqual(UserRole.User, user3.Role);
         }
         #endregion
     }

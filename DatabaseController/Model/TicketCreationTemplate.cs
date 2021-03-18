@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DatabaseController.DataModel;
 
 namespace DatabaseController.Model
 {
@@ -20,7 +21,7 @@ namespace DatabaseController.Model
         /// Category where it will belongs
         /// </summary>
         /// <example>Test</example>
-        public string Category { get; set; } = "";
+        public Category Category { get; set; } = null;
         /// <summary>
         /// Reference value to decide update log or create new ticket
         /// </summary>
@@ -36,10 +37,5 @@ namespace DatabaseController.Model
         /// </summary>
         /// <example>Test ticket</example>
         public string Title { get; set; } = "";
-        /// <summary>
-        /// System name where the ticket belongs
-        /// </summary>
-        /// <example>atihome.local</example>
-        public string System { get; set; } = "";
     }
 }

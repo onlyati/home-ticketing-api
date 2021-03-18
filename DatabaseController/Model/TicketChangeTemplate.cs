@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DatabaseController.DataModel;
 
 namespace DatabaseController.Model
 {
@@ -21,7 +22,7 @@ namespace DatabaseController.Model
         /// Filter based on category name
         /// </summary>
         /// <example>Application</example>
-        public string Category { get; set; } = "";
+        public Category Category { get; set; } = null;
 
         /// <summary>
         /// Filter based on title

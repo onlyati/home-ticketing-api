@@ -98,12 +98,11 @@ namespace DatabaseControllerTest
 
             // Open ticket
             TicketCreationTemplate crt = new TicketCreationTemplate();
-            crt.Category = "Teszt";
+            crt.Category = await ticket.GetCategoryAsync("Teszt", await ticket.GetSystemAsync("atihome"));
             crt.Details = "Here is the details";
             crt.Reference = "unit-test-1";
             crt.Summary = "Test of ticket";
             crt.Title = "Test ticket";
-            crt.System = "atihome";
 
             var respond1 = await ticket.CreateTicketAsync(crt);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Final: Ticket could not be created");
@@ -120,12 +119,11 @@ namespace DatabaseControllerTest
 
             // Open ticket
             TicketCreationTemplate crt = new TicketCreationTemplate();
-            crt.Category = "Teszt";
+            crt.Category = await ticket.GetCategoryAsync("Teszt", await ticket.GetSystemAsync("atihome"));
             crt.Details = "Here is the details";
             crt.Reference = "unit-test-2";
             crt.Summary = "Test of ticket";
             crt.Title = "Test ticket";
-            crt.System = "atihome";
 
             var respond1 = await ticket.CreateTicketAsync(crt);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Final: Ticket could not be created");
@@ -153,12 +151,11 @@ namespace DatabaseControllerTest
 
             // Open ticket and send 2 further update
             TicketCreationTemplate crt = new TicketCreationTemplate();
-            crt.Category = "Teszt";
+            crt.Category = await ticket.GetCategoryAsync("Teszt", await ticket.GetSystemAsync("atihome"));
             crt.Details = "Here is the details";
             crt.Reference = "unit-test-3";
             crt.Summary = "Test of ticket";
             crt.Title = "Test ticket";
-            crt.System = "atihome";
 
             var respond1 = await ticket.CreateTicketAsync(crt);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Final: Ticket could not be created");
@@ -200,12 +197,11 @@ namespace DatabaseControllerTest
 
             // Open ticket and send 2 further update
             TicketCreationTemplate crt = new TicketCreationTemplate();
-            crt.Category = "Teszt";
+            crt.Category = await ticket.GetCategoryAsync("Teszt", await ticket.GetSystemAsync("atihome"));
             crt.Details = "Here is the details";
             crt.Reference = "unit-test-change-1";
             crt.Summary = "Test of ticket";
             crt.Title = "Test ticket";
-            crt.System = "atihome";
 
             var respond1 = await ticket.CreateTicketAsync(crt);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Preparation: Ticket could not be created");
@@ -222,7 +218,7 @@ namespace DatabaseControllerTest
             // Change the category to Tesztike
             TicketChangeTemplate chg = new TicketChangeTemplate();
             chg.Id = respond12[0].Id;
-            chg.Category = "Hardware";
+            chg.Category = await ticket.GetCategoryAsync("Hardware", await ticket.GetSystemAsync("atihome"));
 
             var respond2 = await ticket.ChangeTicketAsync(chg);
             Assert.AreEqual(MessageType.OK, respond2.MessageType, "Final: Ticket change was failed");
@@ -249,12 +245,11 @@ namespace DatabaseControllerTest
 
             // Open ticket and send 2 further update
             TicketCreationTemplate crt = new TicketCreationTemplate();
-            crt.Category = "Teszt";
+            crt.Category = await ticket.GetCategoryAsync("Teszt", await ticket.GetSystemAsync("atihome"));
             crt.Details = "Here is the details";
             crt.Reference = "unit-test-change-2";
             crt.Summary = "Test of ticket";
             crt.Title = "Test ticket";
-            crt.System = "atihome";
 
             var respond1 = await ticket.CreateTicketAsync(crt);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Preparation: Ticket could not be created");
@@ -271,7 +266,7 @@ namespace DatabaseControllerTest
             // Try to change for a non-existing category
             TicketChangeTemplate chg = new TicketChangeTemplate();
             chg.Id = respond12[0].Id;
-            chg.Category = "non-exist";
+            chg.Category = await ticket.GetCategoryAsync("non-exist", await ticket.GetSystemAsync("atihome"));
 
             var respond2 = await ticket.ChangeTicketAsync(chg);
             Assert.AreEqual(MessageType.NOK, respond2.MessageType, "Final: Ticket was changed to the a non-exist category");

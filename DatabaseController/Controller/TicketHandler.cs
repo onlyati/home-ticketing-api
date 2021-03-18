@@ -233,6 +233,51 @@ namespace DatabaseController.Controller
 
             return hashHexa.ToString();
         }
+
+        /// <summary>
+        /// This method can change the role of the user
+        /// </summary>
+        /// <param name="user">User record which must be changed</param>
+        /// <param name="role">New role of the user</param>
+        /// <returns>OK or a NOK message</returns>
+        public async Task<Message> ChangeUserRole(User user, UserRole role)
+        {
+            // Value which will return
+            Message respond = new Message();
+
+            // Check that user exist
+            var checkUsr = await _context.Users.SingleOrDefaultAsync(s => s.Equals(user));
+            if(checkUsr == null)
+            {
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = "User does not exist";
+                return respond;
+            }
+
+            // At this point pre-requsites are OK
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                checkUsr.Role = role;
+                _context.SaveChanges();
+
+                // Everythig was OK
+                transaction.Commit();
+
+                respond.MessageType = MessageType.OK;
+                respond.MessageText = "Role has been changed";
+                return respond;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Internal error: {ex.Message}";
+                return respond;
+                throw;
+            }
+        }
         #endregion
 
         #region System stuff
@@ -1134,7 +1179,7 @@ namespace DatabaseController.Controller
             // Validates data from the request
             string missing = "";
 
-            if (input.Category == "")
+            if (input.Category == null)
                 missing += $"Category;";
             if (input.Details == "")
                 input.Details = input.Summary;
@@ -1144,8 +1189,6 @@ namespace DatabaseController.Controller
                 missing += $"Summary;";
             if(input.Title == "")
                 missing += $"Summary;";
-            if (input.System == "")
-                missing += $"System";
 
             if(missing != "")
             {
@@ -1167,19 +1210,11 @@ namespace DatabaseController.Controller
 
 
             // Validate and looking for category number
-            var categories = await (from c in _context.Categories
-                                    join s in _context.Systems on c.SystemId equals s.Id
-                                    select new DataModel.Category
-                                    {
-                                        Id = c.Id,
-                                        Name = c.Name,
-                                        SystemId = c.SystemId,
-                                        System = s
-                                    }).SingleOrDefaultAsync(s => s.Name == input.Category && s.System.Name == input.System);
+            var categories = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(input.Category));
             if(categories == null)
             {
                 respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"Specified group ({input.Category}) did not find for {input.System} system";
+                respond.MessageText = $"Specified group ({input.Category.Name}) did not find for the system";
 
                 if(release)
                     transaction.Rollback();
@@ -1194,7 +1229,7 @@ namespace DatabaseController.Controller
             newTicket.Status = "Open";
             newTicket.Title = input.Title;
             newTicket.Time = DateTime.Now;
-            newTicket.System = await _context.Systems.SingleOrDefaultAsync(s => s.Id == categories.System.Id);
+            newTicket.SystemId = (int)categories.SystemId;
             newTicket.User = null;
 
             DataModel.Log newLog = new DataModel.Log();
@@ -1203,7 +1238,7 @@ namespace DatabaseController.Controller
             newLog.Time = DateTime.Now;
 
             // Check that it is an update. If does, then change Ticket of log
-            var existTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open") && s.SystemId == categories.System.Id);
+            var existTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open") && s.SystemId == categories.SystemId);
 
             if(existTicket != null)
             {
@@ -1216,7 +1251,7 @@ namespace DatabaseController.Controller
                 // Ticket for this case is not opened, insert log and ticket data too
                 await _context.Tickets.AddAsync(newTicket);
                 await _context.SaveChangesAsync();
-                newLog.Ticket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(newTicket.Reference) && s.Status.Equals("Open") && s.SystemId == categories.System.Id);
+                newLog.Ticket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(newTicket.Reference) && s.Status.Equals("Open") && s.SystemId == categories.SystemId);
                 await _context.Logs.AddAsync(newLog);
             }
 
@@ -1375,10 +1410,10 @@ namespace DatabaseController.Controller
 
             string ticketCategory = "";
             // Change the values and record them into a new log
-            if(newValues.Category != "")
+            if(newValues.Category != null)
             {
                 // Check that category exist
-                var catRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Name == newValues.Category && s.SystemId == record.System.Id);
+                var catRecord = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(newValues.Category));
                 
                 if(catRecord == null)
                 {
@@ -1410,12 +1445,11 @@ namespace DatabaseController.Controller
 
             // Now ticket header is updated, put a new log under this
             TicketCreationTemplate newLog = new TicketCreationTemplate();
-            newLog.Category = ticketCategory;
+            newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(newValues.Category));
             newLog.Details = changeLog;
             newLog.Reference = record.Reference;
             newLog.Summary = "Ticket has been adjusted";
             newLog.Title = record.Title;
-            newLog.System = record.System.Name;
 
             // Add the log entry for the ticket
             Message crtTicket = await CreateTicketAsync(newLog);
@@ -1535,7 +1569,7 @@ namespace DatabaseController.Controller
             if (string.IsNullOrEmpty(user.Password) || string.IsNullOrWhiteSpace(user.Password))
                 response.MessageText += "Password value is missing";
 
-            if(response.MessageText != "")
+            if (response.MessageText != "")
             {
                 response.MessageType = MessageType.NOK;
                 return response;
@@ -1557,6 +1591,7 @@ namespace DatabaseController.Controller
             {
                 // Create password hash
                 user.Password = HashPassword(user.Password);
+                user.Role = UserRole.User;
 
                 await _context.AddAsync(user);
                 _context.SaveChanges();

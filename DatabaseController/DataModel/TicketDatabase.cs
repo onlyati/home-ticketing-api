@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using DatabaseController.Model;
 
 #nullable disable
 
@@ -162,6 +163,15 @@ namespace DatabaseController.DataModel
                     .IsRequired()
                     .HasMaxLength(50)
                     .HasColumnName("username");
+
+                entity.Property(e => e.Role)
+                    .HasMaxLength(10)
+                    .HasColumnName("role")
+                    .HasConversion
+                    (
+                        v => v.ToString(),
+                        v => (UserRole)Enum.Parse(typeof(UserRole), v)
+                    );
             });
 
             modelBuilder.Entity<Usercategory>(entity =>

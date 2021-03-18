@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DatabaseController.Model;
 
 #nullable disable
 
@@ -39,6 +40,12 @@ namespace DatabaseController.DataModel
         /// </summary>
         /// <example>ati@atihome.local</example>
         public string Email { get; set; }
+
+        /// <summary>
+        /// Enum type for user role
+        /// </summary>
+        /// <example>Admin</example>
+        public UserRole Role { get; set; }
 
         public virtual ICollection<Log> Logs { get; set; }
         public virtual ICollection<Ticket> Tickets { get; set; }
