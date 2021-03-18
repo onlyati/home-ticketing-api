@@ -57,6 +57,15 @@ namespace DatabaseController.Controller
         }
 
         /// <summary>
+        /// Return with the database context
+        /// </summary>
+        /// <returns></returns>
+        public TicketDatabase GetConext()
+        {
+            return _context;
+        }
+
+        /// <summary>
         /// This function helps to create relationship between user and category
         /// </summary>
         /// <param name="category">Category record</param>

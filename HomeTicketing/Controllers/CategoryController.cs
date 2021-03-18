@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using DatabaseController.Model;
 using DatabaseController.Interface;
+using DatabaseController.Controller;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HomeTicketing.Controllers
 {
@@ -13,6 +15,7 @@ namespace HomeTicketing.Controllers
     /*********************************************************************************************/
     [Produces("application/json")]
     [Route("category")]
+    [Authorize]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -74,7 +77,7 @@ namespace HomeTicketing.Controllers
         /// <summary>
         /// List categories based on username
         /// </summary>
-        /// <param name="system">Selected system</param>
+        /// <param name="user">Selected system</param>
         /// <returns>List or error message in JSON</returns>
         /// <response code="200">Request is completed</response>
         /// <response code="400">Request is failed</response>
@@ -109,6 +112,7 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Category already exist</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [AllowAuthorized(UserRole.Admin)]
         [HttpPost("{system}/{name}")]
         public async Task<IActionResult> CategoryAdd(string system, string name)
         {
@@ -141,6 +145,7 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Category did not exist</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [AllowAuthorized(UserRole.Admin)]
         [HttpDelete("{system}/{name}")]
         public async Task<IActionResult> CategoryDelete(string system, string name)
         {
@@ -180,6 +185,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAuthorized(UserRole.Admin)]
         [HttpPut("change/{system}/{current}/{to}")]
         public async Task<IActionResult> CategoryChange(string system, string current, string to)
         {
