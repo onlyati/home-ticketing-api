@@ -51,17 +51,23 @@ namespace HomeTicketing.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody]UserLoginInfo user)
         {
+            // Create new user entry
             User regUser = new User();
             regUser.Username = user.Username;
             regUser.Password = user.Password;
             regUser.Email = user.Email;
+
+            // Register the user
             var respond = await _ticket.RegisterUserAsync(regUser);
             if(respond.MessageType == MessageType.NOK)
             {
+                // Send bad back if something wrong
+                _logger.LogDebug($"New user registration is failed: {user.Username}, {user.Email}");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = respond.MessageText;
                 return BadRequest(ret);
             }
+            _logger.LogDebug($"New user has been registered: {user.Username}, {user.Email}");
             return Ok();
         }
 
@@ -84,9 +90,10 @@ namespace HomeTicketing.Controllers
                 // Check that password hash are the same
                 if(TicketHandler.HashPassword(user.Password) == checkUsr.Password)
                 {
-                    // Get the role and create a token
+                    // Get the role
                     var role = checkUsr.Role.ToString();
 
+                    // Create claims
                     var authClaims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name, user.Username),
@@ -99,6 +106,7 @@ namespace HomeTicketing.Controllers
                         authClaims.Add(new Claim(ClaimTypes.Role, UserRole.User.ToString()));
                     }
                     
+                    // Create token
                     var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
                     var token = new JwtSecurityToken(
@@ -109,6 +117,8 @@ namespace HomeTicketing.Controllers
                         signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                         );
 
+                    // Return with the token
+                    _logger.LogDebug($"Login done for {user.Username}");
                     return Ok(new
                     {
                         token = new JwtSecurityTokenHandler().WriteToken(token),
@@ -116,12 +126,16 @@ namespace HomeTicketing.Controllers
                     });
                 }
 
+                // Login failed
+                _logger.LogDebug($"Login failed for {user.Username} due to wrong password");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = "Wrong password";
                 return Unauthorized(ret);
             }
             else
             {
+                // Login failed
+                _logger.LogDebug($"Login failed for {user.Username} due to user does not exist");
                 ErrorMessage ret = new ErrorMessage();
                 ret.Message = "User does not exist";
                 return Unauthorized(ret);
