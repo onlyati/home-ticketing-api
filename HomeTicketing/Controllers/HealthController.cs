@@ -42,7 +42,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult HealthCheck()
         {
-            ErrorMessage OkMsg = new ErrorMessage();
+            GeneralMessage OkMsg = new GeneralMessage();
             OkMsg.Message = "I am still alive";
             _logger.LogInformation("Health checking was successfully");
             return Ok(OkMsg);

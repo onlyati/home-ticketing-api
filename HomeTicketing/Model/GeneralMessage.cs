@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace HomeTicketing.Model
 {
-    public class ErrorMessage
+    public class GeneralMessage
     {
         public string Message { get; set; }
     }

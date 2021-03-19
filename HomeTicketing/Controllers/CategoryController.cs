@@ -52,21 +52,21 @@ namespace HomeTicketing.Controllers
         /// <summary>
         /// List categories based on system name
         /// </summary>
-        /// <param name="system">Selected system</param>
         /// <returns>List or error message in JSON</returns>
         /// <response code="200">Request is completed</response>
         /// <response code="400">Request is failed</response>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("system/{system}")]
-        public async Task<IActionResult> GetCategoriesBySystem(string system)
+        [HttpGet("system")]
+        public async Task<IActionResult> GetCategoriesBySystem(string value = "")
         {
+            string system = value;
             _logger.LogDebug($"GET categories/system/{system} is completed");
             var data = await _ticket.ListCategoriesAsync(await _ticket.GetSystemAsync(system));
             if(data == null)
             {
                 _logger.LogDebug($"GET categories/system/{system} is failed");
-                ErrorMessage ret = new ErrorMessage();
+                GeneralMessage ret = new GeneralMessage();
                 ret.Message = "List is failed";
                 return BadRequest(ret);
             }
@@ -77,21 +77,22 @@ namespace HomeTicketing.Controllers
         /// <summary>
         /// List categories based on username
         /// </summary>
-        /// <param name="user">Selected system</param>
+        /// <param name="value">Selected user</param>
         /// <returns>List or error message in JSON</returns>
         /// <response code="200">Request is completed</response>
         /// <response code="400">Request is failed</response>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("user/{user}")]
-        public async Task<IActionResult> GetCategoriesByUser(string user)
+        [HttpGet("user")]
+        public async Task<IActionResult> GetCategoriesByUser(string value = "")
         {
+            string user = value;
             _logger.LogDebug($"GET categories/system/{user} is completed");
             var data = await _ticket.ListCategoriesAsync(await _ticket.GetUserAsync(user));
             if (data == null)
             {
                 _logger.LogDebug($"GET categories/system/{user} is failed");
-                ErrorMessage ret = new ErrorMessage();
+                GeneralMessage ret = new GeneralMessage();
                 ret.Message = "List is failed";
                 return BadRequest(ret);
             }
@@ -113,7 +114,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [AllowAuthorized(UserRole.Admin)]
-        [HttpPost("{system}/{name}")]
+        [HttpPost("create")]
         public async Task<IActionResult> CategoryAdd(string system, string name)
         {
             _logger.LogDebug($"New category ({name}) is requested");
@@ -122,7 +123,7 @@ namespace HomeTicketing.Controllers
             if(respond.MessageType == MessageType.NOK)
             {
                 _logger.LogWarning($"{respond.MessageText}");
-                ErrorMessage ret = new ErrorMessage();
+                GeneralMessage ret = new GeneralMessage();
                 ret.Message = respond.MessageText;
                 return BadRequest(ret);
             }
@@ -146,7 +147,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [AllowAuthorized(UserRole.Admin)]
-        [HttpDelete("{system}/{name}")]
+        [HttpDelete("remove")]
         public async Task<IActionResult> CategoryDelete(string system, string name)
         {
             _logger.LogDebug($"Delete category request ({name}) is requested");
@@ -161,14 +162,6 @@ namespace HomeTicketing.Controllers
             return Ok();
         }
 
-        /*---------------------------------------------------------------------------------------*/
-        /* Properties:                                                                           */
-        /* Type: POST /category/change/{current}/{to}                                            */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /* ------------                                                                          */
-        /* This method change group name                                                         */
-        /*---------------------------------------------------------------------------------------*/
         /// <summary>
         /// Change group name
         /// </summary>
@@ -186,7 +179,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [AllowAuthorized(UserRole.Admin)]
-        [HttpPut("change/{system}/{current}/{to}")]
+        [HttpPut("change")]
         public async Task<IActionResult> CategoryChange(string system, string current, string to)
         {
             _logger.LogDebug($"Change category ({current} -> {to}) is requested");
@@ -195,7 +188,7 @@ namespace HomeTicketing.Controllers
             if(respond.MessageType == MessageType.NOK)
             {
                 _logger.LogWarning(respond.MessageText);
-                ErrorMessage ret = new ErrorMessage();
+                GeneralMessage ret = new GeneralMessage();
                 ret.Message = respond.MessageText;
                 return BadRequest(ret);
             }

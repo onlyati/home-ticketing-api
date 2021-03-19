@@ -51,6 +51,7 @@ namespace DatabaseController.DataModel
         /// </summary>
         /// <example>Admin</example>
         [JsonPropertyName("role")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
         public UserRole Role { get; set; }
 
         [JsonIgnore]
