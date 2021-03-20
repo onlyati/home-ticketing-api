@@ -22,29 +22,35 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
-        private readonly IDbHandler _ticket;
+        private readonly IDbHandler _dbHandler;
         private readonly ILogger _logger;
 
         public CategoryController(IDbHandler ticket, ILogger<CategoryController> logger)
         {
-            _ticket = ticket;
+            _dbHandler = ticket;
             _logger = logger;
         }
 
         /// <summary>
-        /// List categories
+        /// List all categories
         /// </summary>
         /// <remarks>
         /// This request is good to list all existing categories
         /// </remarks>
         /// <returns>List of categories in JSON</returns>
         /// <response code="200">Request is completed</response>
+        /// <response code="400">Request is failed</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpGet("list/all")]
         public async Task<IActionResult> GetCategories()
         {
             _logger.LogDebug("GET categories are requested");
-            var data = await _ticket.ListCategoriesAsync();
+            var data = await _dbHandler.ListCategoriesAsync();
+            if(data == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Listing has failed" });
+            }
             _logger.LogInformation("GET categories are completed");
             return Ok(data);
         }
@@ -57,12 +63,12 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Request is failed</response>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("system")]
+        [HttpGet("list/system")]
         public async Task<IActionResult> GetCategoriesBySystem(string value = "")
         {
             string system = value;
             _logger.LogDebug($"GET categories/system/{system} is completed");
-            var data = await _ticket.ListCategoriesAsync(await _ticket.GetSystemAsync(system));
+            var data = await _dbHandler.ListCategoriesAsync(await _dbHandler.GetSystemAsync(system));
             if(data == null)
             {
                 _logger.LogDebug($"GET categories/system/{system} is failed");
@@ -83,12 +89,12 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Request is failed</response>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet("user")]
+        [HttpGet("list/user")]
         public async Task<IActionResult> GetCategoriesByUser(string value = "")
         {
             string user = value;
             _logger.LogDebug($"GET categories/system/{user} is completed");
-            var data = await _ticket.ListCategoriesAsync(await _ticket.GetUserAsync(user));
+            var data = await _dbHandler.ListCategoriesAsync(await _dbHandler.GetUserAsync(user));
             if (data == null)
             {
                 _logger.LogDebug($"GET categories/system/{user} is failed");
@@ -118,8 +124,8 @@ namespace HomeTicketing.Controllers
         public async Task<IActionResult> CategoryAdd(string system, string name)
         {
             _logger.LogDebug($"New category ({name}) is requested");
-            var sysrec = await _ticket.GetSystemAsync(system);
-            var respond = await _ticket.AddCategoryAsync(name, sysrec);
+            var sysrec = await _dbHandler.GetSystemAsync(system);
+            var respond = await _dbHandler.AddCategoryAsync(name, sysrec);
             if(respond.MessageType == MessageType.NOK)
             {
                 _logger.LogWarning($"{respond.MessageText}");
@@ -127,7 +133,7 @@ namespace HomeTicketing.Controllers
                 ret.Message = respond.MessageText;
                 return BadRequest(ret);
             }
-            var data = await _ticket.GetCategoryAsync(name, sysrec);
+            var data = await _dbHandler.GetCategoryAsync(name, sysrec);
             _logger.LogInformation($"New category ({name}) request is completed");
 
             return Ok(data);
@@ -151,8 +157,8 @@ namespace HomeTicketing.Controllers
         public async Task<IActionResult> CategoryDelete(string system, string name)
         {
             _logger.LogDebug($"Delete category request ({name}) is requested");
-            var sysrec = await _ticket.GetSystemAsync(system);
-            var respond = await _ticket.DeleteCategoryAsync(name, sysrec);
+            var sysrec = await _dbHandler.GetSystemAsync(system);
+            var respond = await _dbHandler.DeleteCategoryAsync(name, sysrec);
             if(respond.MessageType == MessageType.NOK)                              /* If category does not exist, error */
             {
                 _logger.LogWarning($"Category ({name}) does not exist");
@@ -183,8 +189,8 @@ namespace HomeTicketing.Controllers
         public async Task<IActionResult> CategoryChange(string system, string current, string to)
         {
             _logger.LogDebug($"Change category ({current} -> {to}) is requested");
-            var sysrec = await _ticket.GetSystemAsync(system);
-            var respond = await _ticket.RenameCategoryAsync(current, to, sysrec);
+            var sysrec = await _dbHandler.GetSystemAsync(system);
+            var respond = await _dbHandler.RenameCategoryAsync(current, to, sysrec);
             if(respond.MessageType == MessageType.NOK)
             {
                 _logger.LogWarning(respond.MessageText);
@@ -195,7 +201,7 @@ namespace HomeTicketing.Controllers
 
             /*--- Change the category and return with 200 ---*/
             _logger.LogInformation($"Change category ({current} -> {to}) has been done");
-            return Ok(await _ticket.GetCategoryAsync(to, sysrec));
+            return Ok(await _dbHandler.GetCategoryAsync(to, sysrec));
         }
     }
 }

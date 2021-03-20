@@ -30,17 +30,20 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
-        private readonly IDbHandler _ticket;
+        private readonly IDbHandler _dbHandler;
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
 
         public UserController(IDbHandler ticket, ILogger<CategoryController> logger, IConfiguration config)
         {
-            _ticket = ticket;
+            _dbHandler = ticket;
             _logger = logger;
             _configuration = config;
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Endpoint functions                                                                    */
+        /*---------------------------------------------------------------------------------------*/
         /// <summary>
         /// This endpoint is repsonsible to register new users
         /// </summary>
@@ -60,7 +63,7 @@ namespace HomeTicketing.Controllers
             regUser.Email = user.Email;
 
             // Register the user
-            var respond = await _ticket.RegisterUserAsync(regUser);
+            var respond = await _dbHandler.RegisterUserAsync(regUser);
             if(respond.MessageType == MessageType.NOK)
             {
                 // Send bad back if something wrong
@@ -95,7 +98,7 @@ namespace HomeTicketing.Controllers
                 return Unauthorized(ret);
             }
 
-            var checkUsr = await _ticket.GetUserAsync(user.Username);
+            var checkUsr = await _dbHandler.GetUserAsync(user.Username);
             if(checkUsr != null)
             {
                 // Check that password hash are the same
@@ -204,7 +207,7 @@ namespace HomeTicketing.Controllers
                 // Create new tokens and return with them
                 var claims = authToken.Claims;
                 var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
-                var user = await _ticket.GetUserAsync(usernameClaim.Value);
+                var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
 
                 // User did not found, return with 404
                 if(user == null)
@@ -289,7 +292,7 @@ namespace HomeTicketing.Controllers
 
             var claims = token.Claims;
             var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
-            var user = await _ticket.GetUserAsync(usernameClaim.Value);
+            var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
 
             if(user == null)
             {
@@ -300,7 +303,7 @@ namespace HomeTicketing.Controllers
             if (username != null)
             {
                 if (user.Username == username || user.Role == UserRole.Admin)
-                    return Ok(await _ticket.GetUserAsync(username));
+                    return Ok(await _dbHandler.GetUserAsync(username));
                 else
                     return Unauthorized(new GeneralMessage() { Message = "Not authorized to list other users" });
             }
@@ -309,7 +312,7 @@ namespace HomeTicketing.Controllers
             if (id != -1)
             {
                 if (user.Id == id || user.Role == UserRole.Admin)
-                    return Ok(await _ticket.GetUserAsync(id));
+                    return Ok(await _dbHandler.GetUserAsync(id));
                 else
                     return Unauthorized(new GeneralMessage() { Message = "Not authorized to list other users" });
             }
@@ -342,7 +345,7 @@ namespace HomeTicketing.Controllers
 
             var claims = token.Claims;
             var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
-            var user = await _ticket.GetUserAsync(usernameClaim.Value);
+            var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
 
             if (user == null)
             {
@@ -354,7 +357,7 @@ namespace HomeTicketing.Controllers
             {
                 if (username == user.Username || user.Role == UserRole.Admin)
                 {
-                    await _ticket.RemoveUserAsync(username);
+                    await _dbHandler.RemoveUserAsync(username);
                     return Ok(new GeneralMessage() { Message = "User has been removed" });
                 }
                 else
@@ -369,7 +372,7 @@ namespace HomeTicketing.Controllers
             {
                 if (id == user.Id || user.Role == UserRole.Admin)
                 {
-                    await _ticket.RemoveUserAsync(id);
+                    await _dbHandler.RemoveUserAsync(id);
                     return Ok(new GeneralMessage() { Message = "User has been removed" });
                 }
                 else
@@ -389,18 +392,106 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Invlaid input</response>
         /// <response code="401">Not authorized</response>
         /// <response code="403">Not authorized</response>
-        [AllowAuthorized(UserRole.Admin)]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet("all")]
+        [HttpGet("list/all")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var ret = await _ticket.GetUsersAsync();
+            var ret = await _dbHandler.GetUsersAsync();
             if (ret == null)
                 return BadRequest(new GeneralMessage() { Message = "User listing has failed" });
             return Ok(ret);
+        }
+
+        /// <summary>
+        /// This endpoint is for listing user based on specified system
+        /// </summary>
+        /// <param name="name">System name</param>
+        /// <returns></returns>
+        /// <response code="200">User listing successfully</response>
+        /// <response code="400">Invlaid input</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("list/system")]
+        public async Task<IActionResult> GetUsersBySystem(string name = null)
+        {
+            // Check that input specified
+            if(name == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Missing system name" });
+            }
+
+            // Get the system
+            var checkSys = await _dbHandler.GetSystemAsync(name);
+            if (checkSys == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invlid system name" });
+            }
+
+            // Get the list and return
+            var response = await _dbHandler.GetUsersAsync(checkSys);
+            if(response == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "User listing is failed" });
+            }
+
+            return Ok(response);
+        }
+
+
+        /// <summary>
+        /// This endpoint is for listing user based on specified category
+        /// </summary>
+        /// <param name="name">Category name</param>
+        /// <param name="system">System name</param>
+        /// <returns></returns>
+        /// <response code="200">User listing successfully</response>
+        /// <response code="400">Invlaid input</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("list/category")]
+        public async Task<IActionResult> GetUsersBySystem(string name = null, string system = null)
+        {
+            // Check that input is specified
+            if(name == null || system == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Category name and system name must be specified" });
+            }
+
+            // Check that either category or system exist
+            var checkSys = await _dbHandler.GetSystemAsync(system);
+            if(checkSys == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Specified system does not exist" });
+            }
+
+            var checkCat = await _dbHandler.GetCategoryAsync(name, checkSys);
+            if(checkCat == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Specified category does not exist" });
+            }
+
+            // Everything seems fine, do the action
+            var response = await _dbHandler.GetUsersAsync(checkCat);
+            if(response == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "User listing is failed" });
+            }
+
+            return Ok(response);
         }
 
         /// <summary>
@@ -417,7 +508,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPut("modify")]
+        [HttpPut("change/general")]
         public async Task<IActionResult> ModifyUser([FromBody]UserLoginInfo changedUser)
         {
             // Check that new data is provided
@@ -436,7 +527,7 @@ namespace HomeTicketing.Controllers
 
             var claims = token.Claims;
             var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
-            var user = await _ticket.GetUserAsync(usernameClaim.Value);
+            var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
 
             // If user does not exist, then BadRequest
             if (user == null)
@@ -451,7 +542,7 @@ namespace HomeTicketing.Controllers
             }
 
             // Everything look cool, let change
-            var response = await _ticket.ChangeUserAsync(user.Id, new User() { Username = changedUser.Username, Email = changedUser.Email, Password = changedUser.Password });
+            var response = await _dbHandler.ChangeUserAsync(user.Id, new User() { Username = changedUser.Username, Email = changedUser.Email, Password = changedUser.Password });
             if(response.MessageType == MessageType.NOK)
             {
                 return BadRequest(new GeneralMessage() { Message = response.MessageText });
@@ -461,16 +552,26 @@ namespace HomeTicketing.Controllers
             return Ok(new GeneralMessage() { Message = "Values has been changed" });
         }
 
+        /// <summary>
+        /// This endpoint is to chaneging user role for Admin users
+        /// </summary>
+        /// <param name="username">User who needs to be adjusted</param>
+        /// <param name="role">New role of user, can be User or Admin</param>
+        /// <returns></returns>
+        /// <response code="200">Change was successfully</response>
+        /// <response code="400">Invlaid input</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         [AllowAuthorized(UserRole.Admin)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPut("modify/role")]
+        [HttpPut("change/role")]
         public async Task<IActionResult> ModifyUserRole(string username, string role)
         {
             // Check that specified user exist
-            var checkUsr = await _ticket.GetUserAsync(username);
+            var checkUsr = await _dbHandler.GetUserAsync(username);
             if(checkUsr == null)
             {
                 return BadRequest(new GeneralMessage() { Message = "User does not exist" });
@@ -486,7 +587,7 @@ namespace HomeTicketing.Controllers
             UserRole roleType = (UserRole)Enum.Parse(typeof(UserRole), role);
 
             // Do the change
-            var response = await _ticket.ChangeUserRole(checkUsr, roleType);
+            var response = await _dbHandler.ChangeUserRole(checkUsr, roleType);
             if(response.MessageType == MessageType.NOK)
             {
                 return BadRequest(new GeneralMessage() { Message = response.MessageText });
@@ -494,5 +595,7 @@ namespace HomeTicketing.Controllers
 
             return Ok(new GeneralMessage() { Message = "Role has been changed" });
         }
+
+
     }
 }
