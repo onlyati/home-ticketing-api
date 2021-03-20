@@ -64,5 +64,25 @@ namespace DatabaseControllerTest
             var respond = await ticket.GetSystemAsync("sdfsdfds");
             Assert.AreEqual(null, respond);
         }
+
+        [TestMethod]
+        public async Task SystemRename_Test()
+        {
+            DbHandler ticket = new DbHandler(connString);
+            var respond1 = await ticket.AddSystemAsync("test-rename-1");
+            Assert.AreEqual(MessageType.OK, respond1.MessageType);
+
+            var sys1 = await ticket.GetSystemAsync("test-rename-1");
+
+            var respond2 = await ticket.RenameSystemAsync("test-rename-1", "test-rename-2");
+            Assert.AreEqual(MessageType.OK, respond2.MessageType);
+
+            var sys2 = await ticket.GetSystemAsync("test-rename-2");
+
+            Assert.AreEqual(sys1.Id, sys2.Id);
+
+            await ticket.RemoveSystemAsync("test-rename-2");
+
+        }
     }
 }

@@ -102,7 +102,7 @@ namespace DatabaseController.Controller
                 // Everything was, commit then return with OK value
                 transaction.Commit();
 
-                response.MessageText = "New user has been added";
+                response.MessageText = "User has been assigned";
                 response.MessageType = MessageType.OK;
                 return response;
             }
@@ -148,7 +148,7 @@ namespace DatabaseController.Controller
                 // Everything was, commit then return with OK value
                 transaction.Commit();
 
-                response.MessageText = "New user has been added";
+                response.MessageText = "User has been unassigned";
                 response.MessageType = MessageType.OK;
                 return response;
             }
@@ -403,6 +403,50 @@ namespace DatabaseController.Controller
             catch (Exception ex)
             {
                 // Something bad happened
+                transaction.Rollback();
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"Internal error: {ex.Message}";
+                return respond;
+                throw;
+            }
+        }
+
+        public async Task<Message> RenameSystemAsync(string sysname, string newname)
+        {
+            // Object whic will return
+            Message respond = new Message();
+
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+
+            try
+            {
+                // Check that the system exist
+                var checkSys1 = await _context.Systems.SingleOrDefaultAsync(s => s.Name.Equals(sysname));
+                if (checkSys1 == null)
+                {
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = "Specified system name does not exist";
+                    return respond;
+                }
+
+                // Check that new name is not reserved already
+                var checkSys2 = await _context.Systems.SingleOrDefaultAsync(s => s.Name.Equals(newname));
+                if (checkSys2 != null)
+                {
+                    respond.MessageType = MessageType.NOK;
+                    respond.MessageText = "New system name is already defined";
+                }
+
+                checkSys1.Name = newname;
+                _context.SaveChanges();
+                transaction.Commit();
+
+                respond.MessageType = MessageType.OK;
+                respond.MessageText = $"System has been renamed";
+                return respond;
+            }
+            catch (Exception ex)
+            {
                 transaction.Rollback();
                 respond.MessageType = MessageType.NOK;
                 respond.MessageText = $"Internal error: {ex.Message}";

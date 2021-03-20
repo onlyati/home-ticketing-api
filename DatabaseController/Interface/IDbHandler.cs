@@ -34,6 +34,8 @@ namespace DatabaseController.Interface
 
         Task<Message> RemoveSystemAsync(string sysname);
 
+        Task<Message> RenameSystemAsync(string sysname, string newname);
+
         #endregion
 
         #region Category stuff

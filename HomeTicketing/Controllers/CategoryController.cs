@@ -40,8 +40,12 @@ namespace HomeTicketing.Controllers
         /// <returns>List of categories in JSON</returns>
         /// <response code="200">Request is completed</response>
         /// <response code="400">Request is failed</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpGet("list/all")]
         public async Task<IActionResult> GetCategories()
         {
@@ -61,8 +65,12 @@ namespace HomeTicketing.Controllers
         /// <returns>List or error message in JSON</returns>
         /// <response code="200">Request is completed</response>
         /// <response code="400">Request is failed</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpGet("list/system")]
         public async Task<IActionResult> GetCategoriesBySystem(string value = "")
         {
@@ -87,8 +95,12 @@ namespace HomeTicketing.Controllers
         /// <returns>List or error message in JSON</returns>
         /// <response code="200">Request is completed</response>
         /// <response code="400">Request is failed</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [HttpGet("list/user")]
         public async Task<IActionResult> GetCategoriesByUser(string value = "")
         {
@@ -117,8 +129,12 @@ namespace HomeTicketing.Controllers
         /// <returns>With the created category</returns>
         /// <response code="200">Category is created</response>
         /// <response code="400">Category already exist</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [AllowAuthorized(UserRole.Admin)]
         [HttpPost("create")]
         public async Task<IActionResult> CategoryAdd(string system, string name)
@@ -150,8 +166,12 @@ namespace HomeTicketing.Controllers
         /// <returns></returns>
         /// <response code="200">Category is deleted</response>
         /// <response code="400">Category did not exist</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [AllowAuthorized(UserRole.Admin)]
         [HttpDelete("remove")]
         public async Task<IActionResult> CategoryDelete(string system, string name)
@@ -180,10 +200,14 @@ namespace HomeTicketing.Controllers
         /// <returns>With the modified category</returns>
         /// <response code="200">Category is renamed</response>
         /// <response code="400">New category already exist</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
         /// <response code="404">Current category did not found</response>
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [AllowAuthorized(UserRole.Admin)]
         [HttpPut("change")]
         public async Task<IActionResult> CategoryChange(string system, string current, string to)
@@ -202,6 +226,114 @@ namespace HomeTicketing.Controllers
             /*--- Change the category and return with 200 ---*/
             _logger.LogInformation($"Change category ({current} -> {to}) has been done");
             return Ok(await _dbHandler.GetCategoryAsync(to, sysrec));
+        }
+
+        /// <summary>
+        /// This endpoint is made for assinging users to specified category-system pair
+        /// </summary>
+        /// <param name="userName">User's name</param>
+        /// <param name="categoryName">Category's name</param>
+        /// <param name="systemName">System's name</param>
+        /// <returns></returns>
+        /// <response code="200">Assing done</response>
+        /// <response code="400">New category already exist</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        [AllowAuthorized(UserRole.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPut("assign/user")]
+        public async Task<IActionResult> AssignUserToCategory(string userName = null, string categoryName = null, string systemName = null)
+        {
+            // Check input data
+            if(userName == null || categoryName == null || systemName == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "User, category and system names are mandatory" });
+            }
+
+            // Query the objects belongs to inputs
+            var recSys = await _dbHandler.GetSystemAsync(systemName);
+            if(recSys == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid system name" });
+            }
+
+            var recCat = await _dbHandler.GetCategoryAsync(categoryName, recSys);
+            if(recCat == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid category name" });
+            }
+
+            var recUsr = await _dbHandler.GetUserAsync(userName);
+            if(recUsr == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid user name" });
+            }
+
+            // Do the action and return with the result
+            var respond = await _dbHandler.AssignUserToCategory(recCat, recUsr);
+            if(respond.MessageType == MessageType.NOK)
+            {
+                return BadRequest(new GeneralMessage() { Message = respond.MessageText });
+            }
+
+            return Ok(new GeneralMessage() { Message = respond.MessageText });
+        }
+
+        /// <summary>
+        /// This endpoint is made for unassinging users to specified category-system pair
+        /// </summary>
+        /// <param name="userName">User's name</param>
+        /// <param name="categoryName">Category's name</param>
+        /// <param name="systemName">System's name</param>
+        /// <returns></returns>
+        /// <response code="200">Unassign done</response>
+        /// <response code="400">New category already exist</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        [AllowAuthorized(UserRole.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPut("unassign/user")]
+        public async Task<IActionResult> UnassignUserFromCategory(string userName = null, string categoryName = null, string systemName = null)
+        {
+            // Check input data
+            if (userName == null || categoryName == null || systemName == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "User, category and system names are mandatory" });
+            }
+
+            // Query the objects belongs to inputs
+            var recSys = await _dbHandler.GetSystemAsync(systemName);
+            if (recSys == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid system name" });
+            }
+
+            var recCat = await _dbHandler.GetCategoryAsync(categoryName, recSys);
+            if (recCat == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid category name" });
+            }
+
+            var recUsr = await _dbHandler.GetUserAsync(userName);
+            if (recUsr == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid user name" });
+            }
+
+            // Do the action and return with the result
+            var respond = await _dbHandler.UnassignUserToCategory(recCat, recUsr);
+            if (respond.MessageType == MessageType.NOK)
+            {
+                return BadRequest(new GeneralMessage() { Message = respond.MessageText });
+            }
+
+            return Ok(new GeneralMessage() { Message = respond.MessageText });
         }
     }
 }
