@@ -138,7 +138,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point the database is eligible for adding new user, let's try it
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -196,7 +196,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point the database is eligible for adding new user, let's try it
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -264,7 +264,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point pre-requsites are OK
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -373,7 +373,7 @@ namespace DatabaseController.Controller
             // Create object which will return
             Message respond = new Message();
 
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -567,7 +567,7 @@ namespace DatabaseController.Controller
             }
 
             // Start a transaction, so nothing else will change the table while we are working
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -664,7 +664,7 @@ namespace DatabaseController.Controller
             }
 
             // Make lock for database to prevent changes meanwhile it works
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -734,7 +734,7 @@ namespace DatabaseController.Controller
             Message respond = new Message();
 
             // Make lock for database to prevent changes meanwhile it works
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -1347,7 +1347,7 @@ namespace DatabaseController.Controller
             }
 
             // Make a lock for the table to prevent concurrent changes
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             // Change the status and update the database
             record.Status = "Close";
@@ -1389,7 +1389,7 @@ namespace DatabaseController.Controller
             }
 
             // Make a lock for the table to prevent concurrent changes
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             // Change the status and update the database
             record.Status = "Close";
@@ -1429,7 +1429,7 @@ namespace DatabaseController.Controller
             }
 
             // Make a lock to avoid concurrent changes
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             // Check that ticket exist with specified ID
             var record = await (from t in _context.Tickets
@@ -1687,7 +1687,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point, database is eligible to remove the user
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -1734,7 +1734,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point, database is eligible to remove the user
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -1782,7 +1782,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point, database is eligible to remove the user
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {
@@ -1817,6 +1817,12 @@ namespace DatabaseController.Controller
             }
         }
 
+        /// <summary>
+        /// Change user data: email or password. Username must not be changed.
+        /// </summary>
+        /// <param name="username">Name of the user where needs to change</param>
+        /// <param name="user">Contains the new values</param>
+        /// <returns>OK or a NOK message</returns>
         public async Task<Message> ChangeUserAsync(string username, User user)
         {
             // Object which will return
@@ -1832,7 +1838,7 @@ namespace DatabaseController.Controller
             }
 
             // At this point, database is eligible to remove the user
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.Serializable);
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
             try
             {

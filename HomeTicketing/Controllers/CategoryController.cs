@@ -15,7 +15,6 @@ namespace HomeTicketing.Controllers
     /*********************************************************************************************/
     [Produces("application/json")]
     [Route("category")]
-    [Authorize]
     [ApiController]
     public class CategoryController : ControllerBase
     {
@@ -42,6 +41,7 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Request is failed</response>
         /// <response code="401">Not authorized</response>
         /// <response code="403">Not authorized</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -67,6 +67,7 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Request is failed</response>
         /// <response code="401">Not authorized</response>
         /// <response code="403">Not authorized</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -97,6 +98,7 @@ namespace HomeTicketing.Controllers
         /// <response code="400">Request is failed</response>
         /// <response code="401">Not authorized</response>
         /// <response code="403">Not authorized</response>
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
