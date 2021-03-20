@@ -7,12 +7,10 @@ using DatabaseController.Model;
 using DatabaseController.Interface;
 using DatabaseController.Controller;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
 
 namespace HomeTicketing.Controllers
 {
-    /*********************************************************************************************/
-    /* This file is made to handle those request which are related to Categories table           */
-    /*********************************************************************************************/
     [Produces("application/json")]
     [Route("category")]
     [ApiController]
@@ -153,7 +151,6 @@ namespace HomeTicketing.Controllers
             }
             var data = await _dbHandler.GetCategoryAsync(name, sysrec);
             _logger.LogInformation($"New category ({name}) request is completed");
-
             return Ok(data);
         }
 
@@ -184,10 +181,10 @@ namespace HomeTicketing.Controllers
             if(respond.MessageType == MessageType.NOK)                              /* If category does not exist, error */
             {
                 _logger.LogWarning($"Category ({name}) does not exist");
-                return BadRequest();
+                return BadRequest(new GeneralMessage() { Message = respond.MessageText });
             }
             _logger.LogInformation($"Category ({name}) has been deleted");
-            return Ok();
+            return Ok(new GeneralMessage() { Message = respond.MessageText });
         }
 
         /// <summary>
@@ -224,10 +221,10 @@ namespace HomeTicketing.Controllers
                 ret.Message = respond.MessageText;
                 return BadRequest(ret);
             }
-
+            var data = await _dbHandler.GetCategoryAsync(to, sysrec);
             /*--- Change the category and return with 200 ---*/
             _logger.LogInformation($"Change category ({current} -> {to}) has been done");
-            return Ok(await _dbHandler.GetCategoryAsync(to, sysrec));
+            return Ok(data);
         }
 
         /// <summary>
@@ -336,6 +333,33 @@ namespace HomeTicketing.Controllers
             }
 
             return Ok(new GeneralMessage() { Message = respond.MessageText });
+        }
+
+        /// <summary>
+        /// This endpoint return with a Category record
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <response code="200">Ok</response>
+        /// <response code="400">Listing failed</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        [AllowAuthorized(UserRole.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("get")]
+        public async Task<IActionResult> GetCategory(int id = -1)
+        {
+            if (id == -1)
+                return BadRequest(new GeneralMessage() { Message = "ID is missing" });
+
+            var respond = await _dbHandler.GetCategoryAsync(id);
+            if (respond == null)
+                return BadRequest(new GeneralMessage() { Message = "Get category failed" });
+
+            return Ok(respond);
         }
     }
 }

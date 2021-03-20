@@ -5,23 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using DatabaseController.Model;
 using DatabaseController.Interface;
-using DatabaseController.Controller;
-using DatabaseController.DataModel;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System;
-using System.Collections.Generic;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.Extensions.Configuration;
-using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 
 namespace HomeTicketing.Controllers
 {
-    /*********************************************************************************************/
-    /* This file is made to handle those request which are related to Categories table           */
-    /*********************************************************************************************/
     [Produces("application/json")]
     [Route("system")]
     [ApiController]
@@ -149,7 +137,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPut("rename")]
+        [HttpPut("change")]
         public async Task<IActionResult> RenameSystem(string name = null, string newName = null)
         {
             // Check that input is provided
@@ -166,6 +154,33 @@ namespace HomeTicketing.Controllers
             }
 
             return Ok(new GeneralMessage() { Message = response.MessageText });
+        }
+
+        /// <summary>
+        /// This endpoint is for getting a system records
+        /// </summary>
+        /// <param name="id">ID of system</param>
+        /// /// <response code="200">System getting was successfully</response>
+        /// <response code="400">System getting was failed</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        /// <returns></returns>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet]
+        public async Task<IActionResult> GetSystem(int id = -1)
+        {
+            if (id == -1)
+                return BadRequest(new GeneralMessage() { Message = "ID is missing" });
+
+            var respond = await _dbHandler.GetSystemAsync(id);
+            if (respond == null)
+                return BadRequest(new GeneralMessage() { Message = "Get system has failed" });
+
+            return Ok(respond);
         }
     }
 }

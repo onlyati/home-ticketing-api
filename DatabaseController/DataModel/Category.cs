@@ -35,10 +35,10 @@ namespace DatabaseController.DataModel
         /// System ID, used as foreign key to point system in another table
         /// </summary>
         /// <example>5</example>
-        [JsonPropertyName("system_id")]
+        [JsonIgnore]
         public int? SystemId { get; set; }
 
-        [JsonIgnore]
+        [JsonPropertyName("system")]
         public virtual System System { get; set; }
 
         [JsonIgnore]

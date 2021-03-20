@@ -11,9 +11,6 @@ using DatabaseController.Interface;
 
 namespace HomeTicketing.Controllers
 {
-    /*********************************************************************************************/
-    /* This file is made for health check of API                                                 */
-    /*********************************************************************************************/
     [Route("health")]
     [ApiController]
     public class HealthController : ControllerBase

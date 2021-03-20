@@ -48,7 +48,7 @@ namespace DatabaseControllerTest
         {
             DbHandler ticket = new DbHandler(connString);
 
-            var respond = await ticket.GetSystemAsync(null);
+            var respond = await ticket.GetSystemAsync(null as string);
             Assert.AreEqual(null, respond);
         }
 

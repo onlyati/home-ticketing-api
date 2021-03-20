@@ -355,6 +355,16 @@ namespace DatabaseController.Controller
         }
 
         /// <summary>
+        /// Method to check that system is exist
+        /// </summary>
+        /// <param name="sysname">System name</param>
+        /// <returns>Null if record does not exist, else with object</returns>
+        public async Task<DataModel.System> GetSystemAsync(int? id)
+        {
+            return await _context.Systems.SingleOrDefaultAsync(s => s.Id.Equals(id));
+        }
+
+        /// <summary>
         /// Method to list all defined systems
         /// </summary>
         /// <returns>List about the defined system</returns>
@@ -881,11 +891,11 @@ namespace DatabaseController.Controller
         /// <param name="id">Category ID number</param>
         /// <param name="sysname">System name</param>
         /// <returns>Category object or null</returns>
-        public async Task<Category> GetCategoryAsync(int id, DataModel.System system)
+        public async Task<Category> GetCategoryAsync(int? id)
         {
             return await (from c in _context.Categories 
                           join s in _context.Systems on c.SystemId equals s.Id
-                          where c.Id == id && s.Name == system.Name
+                          where c.Id == id
                           select new Category
                           {
                               Id = c.Id,
@@ -954,6 +964,7 @@ namespace DatabaseController.Controller
                               Time = t.Time,
                               Title = t.Title,
                               User = allu,
+                              UserId = t.UserId,
                               System = s,
                               CategoryId = t.CategoryId,
                               SystemId = t.SystemId
@@ -968,25 +979,8 @@ namespace DatabaseController.Controller
         /// <returns>With a TicketHeader list</returns>
         public async Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count)
         {
-            return await (from t in _context.Tickets
-                          join c in _context.Categories on t.CategoryId equals c.Id
-                          join u in _context.Users on t.UserId equals u.Id into uj
-                          from allu in uj.DefaultIfEmpty()
-                          join s in _context.Systems on t.SystemId equals s.Id
-                          orderby t.Id ascending
-                          select new DataModel.Ticket
-                          {
-                              Id = t.Id,
-                              Category = c,
-                              Reference = t.Reference,
-                              Status = t.Status,
-                              Time = t.Time,
-                              Title = t.Title,
-                              User = allu,
-                              System = s,
-                              CategoryId = t.CategoryId,
-                              SystemId = t.SystemId
-                          }).Skip(from).Take(count).ToListAsync();
+            var list = await ListTicketsAsync();
+            return list.Skip(from).Take(count).ToList();
         }
 
         /// <summary>
@@ -1005,98 +999,26 @@ namespace DatabaseController.Controller
         /// <returns>With a TicketHeader list</returns>
         public async Task<List<DataModel.Ticket>> ListTicketsAsync(TicketFilterTemplate filter)
         {
-            if (filter.Category != "" && filter.Status != "")
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).ToListAsync();
-            }
-            else if (filter.Category != "" && filter.Status == "")
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).ToListAsync();
-            }
-            else if (filter.Category == "" && filter.Status != "")
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).ToListAsync();
-            }
-            else
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).ToListAsync();
-            }
+            // Original list
+            var list = await ListTicketsAsync();
+
+            // Check filters
+            if(filter.Category != "" && list != null)
+                list = list.Where(x => x.Category.Name.Equals(filter.Category)).Select(s => s).ToList();
+
+            if(filter.Reference != "" && list != null)
+                list = list.Where(x => x.Reference.Contains(filter.Reference)).Select(s => s).ToList();
+
+            if(filter.Status != "" && list != null)
+                list = list.Where(x => x.Status.Equals(filter.Status)).Select(s => s).ToList();
+
+            if (filter.Title != "" && list != null)
+                list = list.Where(x => x.Title.Contains(filter.Title)).Select(s => s).ToList();
+
+            if (filter.System != "" && list != null)
+                list = list.Where(x => x.System.Name.Equals(filter.System)).Select(s => s).ToList();
+
+            return list;
         }
 
         /// <summary>
@@ -1115,99 +1037,60 @@ namespace DatabaseController.Controller
         /// <returns>With a TicketHeader list</returns>
         public async Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter)
         {
-            if (filter.Category != "" && filter.Status != "")
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).Skip(from).Take(count).ToListAsync();
-            }
-            else if (filter.Category != "" && filter.Status == "")
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where c.Name.Equals(filter.Category) && t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).Skip(from).Take(count).ToListAsync();
-            }
-            else if (filter.Category == "" && filter.Status != "")
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where t.Reference.Contains(filter.Reference) && t.Status.Equals(filter.Status) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).Skip(from).Take(count).ToListAsync();
-            }
-            else
-            {
-                return await (from t in _context.Tickets
-                              join c in _context.Categories on t.CategoryId equals c.Id
-                              join u in _context.Users on t.UserId equals u.Id into uj
-                              from allu in uj.DefaultIfEmpty()
-                              join s in _context.Systems on t.SystemId equals s.Id
-                              where t.Reference.Contains(filter.Reference) && t.Title.Contains(filter.Title) && s.Name.Equals(filter.System)
-                              orderby t.Id ascending
-                              select new DataModel.Ticket
-                              {
-                                  Id = t.Id,
-                                  Category = c,
-                                  Reference = t.Reference,
-                                  Status = t.Status,
-                                  Time = t.Time,
-                                  Title = t.Title,
-                                  User = allu,
-                                  System = s,
-                                  CategoryId = t.CategoryId,
-                                  SystemId = t.SystemId
-                              }).Skip(from).Take(count).ToListAsync();
-            }
+            var list = await ListTicketsAsync(filter);
+            return list.Skip(from).Take(count).ToList();
         }
+
+        /// <summary>
+        /// Listing every ticket which is assigned to selected user
+        /// </summary>
+        /// <param name="user">User name</param>
+        /// <returns></returns>
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(User user)
+        {
+            var list = await ListTicketsAsync();
+            if(user != null)
+                return list.Where(x => x.UserId.Equals(user.Id)).Select(s => s).ToList();
+            else
+                return list.Where(x => x.UserId == null).Select(s => s).ToList();
+        }
+
+        /// <summary>
+        /// Listing counted ticket which is assigned to selected user
+        /// </summary>
+        /// <param name="user">User name</param>
+        /// <returns></returns>
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, User user)
+        {
+            var list = await ListTicketsAsync(user);
+            return list.Skip(from).Take(count).ToList();
+        }
+
+        /// <summary>
+        /// Listing every ticket which is assigned to selected user
+        /// </summary>
+        /// <param name="user">User name</param>
+        /// <returns></returns>
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(TicketFilterTemplate filter, User user)
+        {
+            var list = await ListTicketsAsync(filter);
+            if(user != null)
+                return list.Where(x => x.UserId.Equals(user.Id)).Select(s => s).ToList();
+            else
+                return list.Where(x => x.UserId == null).Select(s => s).ToList();
+        }
+
+        /// <summary>
+        /// Listing counted ticket which is assigned to selected user
+        /// </summary>
+        /// <param name="user">User name</param>
+        /// <returns></returns>
+        public async Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter, User user)
+        {
+            var list = await ListTicketsAsync(filter, user);
+            return list.Skip(from).Take(count).ToList();
+        }
+
 
         /// <summary>
         /// Method to creat ticket
@@ -1498,7 +1381,7 @@ namespace DatabaseController.Controller
 
             // Now ticket header is updated, put a new log under this
             TicketCreationTemplate newLog = new TicketCreationTemplate();
-            newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(newValues.Category));
+            newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(record.Category));
             newLog.Details = changeLog;
             newLog.Reference = record.Reference;
             newLog.Summary = "Ticket has been adjusted";
@@ -1509,7 +1392,7 @@ namespace DatabaseController.Controller
             if(crtTicket.MessageType != MessageType.OK)
             {
                 respond.MessageType = MessageType.NOK;
-                respond.MessageText = $"During the change, log udpate was unsuccessful, changes are undo";
+                respond.MessageText = $"During the change, log udpate was unsuccessful, changes are undo: {crtTicket.MessageText}";
                 transaction.Rollback();
                 return respond;
             }
@@ -1548,11 +1431,14 @@ namespace DatabaseController.Controller
                                     {
                                         Id = t.Id,
                                         Category = c,
+                                        CategoryId = t.CategoryId,
+                                        UserId = t.UserId,
                                         Reference = t.Reference,
                                         Status = t.Status,
                                         Time = t.Time,
                                         Title = t.Title,
                                         User = allu,
+                                        SystemId = t.SystemId,
                                         System = s
                                     }).SingleOrDefaultAsync(s => s.Id == id);
             if(respond.Header == null)
@@ -1571,9 +1457,11 @@ namespace DatabaseController.Controller
                                       Id = l.Id,
                                       Summary = l.Summary,
                                       Ticket = t,
+                                      TicketId = l.TicketId,
                                       Details = l.Details,
                                       Time = l.Time,
-                                      User = allu
+                                      User = allu,
+                                      UserId = l.UserId
                                   }).ToListAsync();
 
             return respond;
@@ -1589,7 +1477,17 @@ namespace DatabaseController.Controller
             return await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(id));
         }
 
-
+        /// <summary>
+        /// This method return with a Ticket header based on its ID
+        /// </summary>
+        /// <param name="reference">Reference value of ticket</param>
+        /// <param name="sysname">System name where ticket belongs</param>
+        /// <returns></returns>
+        public async Task<List<DataModel.Ticket>> GetTicketAsync(string reference, string sysname)
+        {
+            DataModel.System sys = await GetSystemAsync(sysname);
+            return await _context.Tickets.Where(s => s.Reference.Equals(reference) && s.SystemId.Equals(sys.Id)).Select(s => s).ToListAsync();
+        }
         #endregion
 
         #region User stuff
@@ -1959,7 +1857,7 @@ namespace DatabaseController.Controller
         /// </summary>
         /// <param name="id">User's ID number</param>
         /// <returns>If OK then User object, else null</returns>
-        public async Task<User> GetUserAsync(int id)
+        public async Task<User> GetUserAsync(int? id)
         {
             // Object which will return
             User respond = null;

@@ -30,6 +30,8 @@ namespace DatabaseController.Interface
 
         Task<DataModel.System> GetSystemAsync(string sysname);
 
+        Task<DataModel.System> GetSystemAsync(int? id);
+
         Task<List<DataModel.System>> GetSystemsAsync();
 
         Task<Message> RemoveSystemAsync(string sysname);
@@ -53,7 +55,7 @@ namespace DatabaseController.Interface
 
         Task<Message> DeleteCategoryAsync(int id);
 
-        Task<Category> GetCategoryAsync(int id, DataModel.System system);
+        Task<Category> GetCategoryAsync(int? id);
 
         Task<Category> GetCategoryAsync(string name, DataModel.System system);
         #endregion
@@ -67,7 +69,17 @@ namespace DatabaseController.Interface
 
         Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter);
 
+        Task<List<DataModel.Ticket>> ListTicketsAsync(User user);
+
+        Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, User user);
+
+        Task<List<DataModel.Ticket>> ListTicketsAsync(TicketFilterTemplate filter, User user);
+
+        Task<List<DataModel.Ticket>> ListTicketsAsync(int from, int count, TicketFilterTemplate filter, User user);
+
         Task<DataModel.Ticket> GetTicketAsync(int id);
+
+        Task<List<DataModel.Ticket>> GetTicketAsync(string reference, string sysname);
 
         Task<Message> CreateTicketAsync(TicketCreationTemplate input);
 
@@ -97,7 +109,7 @@ namespace DatabaseController.Interface
 
         Task<User> GetUserAsync(string username);
 
-        Task<User> GetUserAsync(int id);
+        Task<User> GetUserAsync(int? id);
 
         Task<List<User>> GetUsersAsync();
 

@@ -57,22 +57,22 @@ namespace DatabaseController.DataModel
         /// <summary>
         /// Record which user created the ticket, used as foreign key to users table
         /// </summary>
-        [JsonPropertyName("user_id")]
+        [JsonIgnore]
         public int? UserId { get; set; }
 
         /// <summary>
         /// Record where the ticket is created, used as foreign key to systems table
         /// </summary>
-        [JsonPropertyName("system_id")]
+        [JsonIgnore]
         public int SystemId { get; set; }
 
-        [JsonIgnore]
+        [JsonPropertyName("category")]
         public virtual Category Category { get; set; }
 
-        [JsonIgnore]
+        [JsonPropertyName("system")]
         public virtual System System { get; set; }
 
-        [JsonIgnore]
+        [JsonPropertyName("user")]
         public virtual User User { get; set; }
 
         [JsonIgnore]

@@ -19,9 +19,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace HomeTicketing.Controllers
 {
-    /*********************************************************************************************/
-    /* This file is made to handle those request which are related to Categories table           */
-    /*********************************************************************************************/
     [Produces("application/json")]
     [Route("user")]
     [ApiController]
@@ -280,7 +277,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpGet("info")]
-        public async Task<IActionResult> GetUserInfo(string username = null, int id = -1)
+        public async Task<IActionResult> GetUserInfo(string username = null, int? id = null)
         {
             // Get user name who wants to get info
             var re = Request;
@@ -309,7 +306,7 @@ namespace HomeTicketing.Controllers
             }
 
             // If ID specified
-            if (id != -1)
+            if (id != null)
             {
                 if (user.Id == id || user.Role == UserRole.Admin)
                     return Ok(await _dbHandler.GetUserAsync(id));
@@ -333,7 +330,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [HttpDelete("remove")]
-        public async Task<IActionResult> RemoveUser(string username = null, int id = -1)
+        public async Task<IActionResult> RemoveUser(string username = null, int? id = null)
         {
             // Get user who wants remove user
             var re = Request;
@@ -368,11 +365,12 @@ namespace HomeTicketing.Controllers
             }
 
             // If ID is specified
-            if(id != -1)
+            if(id != null)
             {
                 if (id == user.Id || user.Role == UserRole.Admin)
                 {
-                    await _dbHandler.RemoveUserAsync(id);
+                    int nid = id ?? default(int);
+                    await _dbHandler.RemoveUserAsync(nid);
                     return Ok(new GeneralMessage() { Message = "User has been removed" });
                 }
                 else

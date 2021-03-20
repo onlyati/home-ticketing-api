@@ -53,7 +53,7 @@ namespace DatabaseController.DataModel
         [JsonIgnore]
         public virtual Ticket Ticket { get; set; }
 
-        [JsonIgnore]
+        [JsonPropertyName("user")]
         public virtual User User { get; set; }
 
         /*---------------------------------------------------------------------------------------*/
