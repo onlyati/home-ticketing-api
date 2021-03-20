@@ -15,7 +15,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Ticket_1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var respond = await ticket.ListTicketsAsync();
 
             Assert.AreNotEqual(0, respond.Count, "Final: 0 listed ticket");
@@ -24,7 +24,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Ticket_2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var respond = await ticket.ListTicketsAsync(2, 5);
 
             Assert.AreEqual(5, respond.Count, "Final: Not 2 ticket has returned");
@@ -34,7 +34,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Ticket_4()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Filter with only one thing
             TicketFilterTemplate filter1 = new TicketFilterTemplate();
@@ -60,7 +60,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Ticket_5()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Filter and expect null return
             TicketFilterTemplate filter1 = new TicketFilterTemplate();
@@ -77,7 +77,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Ticket_6()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Filter and count lines
             TicketFilterTemplate filter = new TicketFilterTemplate();
@@ -94,7 +94,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Create_Close_Ticket_1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Open ticket
             TicketCreationTemplate crt = new TicketCreationTemplate();
@@ -115,7 +115,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Create_Close_Ticket_2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Open ticket
             TicketCreationTemplate crt = new TicketCreationTemplate();
@@ -147,7 +147,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Details_Test_1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Open ticket and send 2 further update
             TicketCreationTemplate crt = new TicketCreationTemplate();
@@ -193,7 +193,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Ticket_Test_1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Open ticket and send 2 further update
             TicketCreationTemplate crt = new TicketCreationTemplate();
@@ -241,7 +241,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Ticket_Test_2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             // Open ticket and send 2 further update
             TicketCreationTemplate crt = new TicketCreationTemplate();

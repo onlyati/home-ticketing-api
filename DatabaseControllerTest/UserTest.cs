@@ -21,7 +21,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Register_User_Missing1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response = await ticket.RegisterUserAsync(null);
             Assert.AreEqual(MessageType.NOK, response.MessageType);
         }
@@ -33,7 +33,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Register_User_Missing2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response = await ticket.RegisterUserAsync(new User());
             Assert.AreEqual(MessageType.NOK, response.MessageType);
         }
@@ -46,7 +46,7 @@ namespace DatabaseControllerTest
         public async Task Register_Delete_User()
         {
             // Register a new user id
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             User user = new User();
             user.Username = "unit-test-1";
             user.Email = "unit-test-1@atihome.local";
@@ -82,8 +82,8 @@ namespace DatabaseControllerTest
         [TestMethod]
         public void Hash_Password()
         {
-            var hash1 = TicketHandler.HashPassword("abcd");
-            var hash2 = TicketHandler.HashPassword("abcd");
+            var hash1 = DbHandler.HashPassword("abcd");
+            var hash2 = DbHandler.HashPassword("abcd");
             Assert.AreEqual(hash1, hash2, "Hash are not same");
             Assert.AreEqual(128, hash2.Length, "Hahs is not 128 bytes long");
         }
@@ -96,7 +96,7 @@ namespace DatabaseControllerTest
         public async Task Register_Password_User()
         {
             // Register new user ID
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             User user = new User();
             user.Username = "unit-test-2";
             user.Email = "unit-test-2@atihome.local";
@@ -109,7 +109,7 @@ namespace DatabaseControllerTest
             Assert.IsNotNull(user1, "Registered user did not found");
 
             // Get hashed password and compare
-            var hashed_pw = TicketHandler.HashPassword("unit");
+            var hashed_pw = DbHandler.HashPassword("unit");
             Assert.AreEqual(user1.Password, hashed_pw, "Hashed passwords are not same");
             Assert.AreEqual(128, user1.Password.Length, "Hash is not 128 bytes long");
 
@@ -121,7 +121,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Register_UsedEmail()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             User usr = new User();
             usr.Username = "valami";
             usr.Password = "ize";
@@ -140,7 +140,7 @@ namespace DatabaseControllerTest
         public async Task Change_Password()
         {
             // Register new user ID for test
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             User user = new User();
             user.Username = "unit-test-3";
             user.Email = "unit-test-3@atihome.local";
@@ -154,7 +154,7 @@ namespace DatabaseControllerTest
             string oldPw = user1.Password;
 
             // Be assumed that good password is set
-            Assert.AreEqual(TicketHandler.HashPassword("unit"), user1.Password, "Wrong password is set originally");
+            Assert.AreEqual(DbHandler.HashPassword("unit"), user1.Password, "Wrong password is set originally");
 
             // Change password
             User chgPw = new User();
@@ -163,7 +163,7 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.OK, chg.MessageType, "Password change has failed");
 
             var user2 = await ticket.GetUserAsync(user.Username);
-            Assert.AreEqual(TicketHandler.HashPassword("sajt"), user2.Password, "Password is not match with calculated one");
+            Assert.AreEqual(DbHandler.HashPassword("sajt"), user2.Password, "Password is not match with calculated one");
             Assert.AreNotEqual(oldPw, user2.Password, "Password is not changed");
 
             // Delete user, cleanup for the next run
@@ -179,7 +179,7 @@ namespace DatabaseControllerTest
         public async Task Change_Email()
         {
             // Register new user ID for test
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             User user = new User();
             user.Username = "unit-test-4";
             user.Email = "unit-test-4@atihome.local";
@@ -215,7 +215,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Fail1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             var chg = await ticket.ChangeUserAsync(null, null);
             Assert.AreEqual(MessageType.NOK, chg.MessageType);
@@ -228,7 +228,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Fail2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             var chg = await ticket.ChangeUserAsync(-88, null);
             Assert.AreEqual(MessageType.NOK, chg.MessageType);
@@ -243,7 +243,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task ListAll()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var list = await ticket.GetUsersAsync();
             Assert.IsNotNull(list);
             Assert.AreNotEqual(0, list.Count);
@@ -257,7 +257,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task ListAll_By_System()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var list = await ticket.GetUsersAsync(await ticket.GetSystemAsync("test-system-1"));
             Assert.IsNotNull(list);
             Assert.AreNotEqual(0, list.Count);
@@ -272,7 +272,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task ListAll_By_Category()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var list = await ticket.GetUsersAsync(await ticket.GetCategoryAsync("System", await ticket.GetSystemAsync("test-system-1")));
             Assert.IsNotNull(list);
             Assert.AreNotEqual(0, list.Count);
@@ -289,7 +289,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Assign_Category()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var user = await ticket.GetUserAsync("test-assign");
             Assert.IsNotNull(user, "User (test-assign) was not located");
 
@@ -310,7 +310,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Assing_Ticket()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var user = await ticket.GetUserAsync("test-user-1");
             var disp = await ticket.GetUserAsync("Dispatcher");
 
@@ -332,7 +332,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_User_Role()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var user1 = await ticket.GetUserAsync("test-role");
             Assert.AreEqual(UserRole.User, user1.Role);
 

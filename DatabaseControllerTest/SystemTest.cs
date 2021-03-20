@@ -20,7 +20,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task SystemTest_Add_Del()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             string newSystem = "Unit-Test-1";
 
@@ -46,7 +46,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task SystemTest_Null()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             var respond = await ticket.GetSystemAsync(null);
             Assert.AreEqual(null, respond);
@@ -59,7 +59,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task SystemTest_Null2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
 
             var respond = await ticket.GetSystemAsync("sdfsdfds");
             Assert.AreEqual(null, respond);

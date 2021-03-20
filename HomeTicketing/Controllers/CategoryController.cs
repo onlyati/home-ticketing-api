@@ -22,10 +22,10 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
-        private readonly ITicketHandler _ticket;
+        private readonly IDbHandler _ticket;
         private readonly ILogger _logger;
 
-        public CategoryController(ITicketHandler ticket, ILogger<CategoryController> logger)
+        public CategoryController(IDbHandler ticket, ILogger<CategoryController> logger)
         {
             _ticket = ticket;
             _logger = logger;

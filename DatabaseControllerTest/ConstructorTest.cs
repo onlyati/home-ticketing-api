@@ -15,7 +15,7 @@ namespace DatabaseControllerTest
         [ExpectedException(typeof(System.NullReferenceException), "Connection string is missing in the constructor")]
         public void Null_Constructor()
         {
-            TicketHandler ticket = new TicketHandler("");
+            DbHandler ticket = new DbHandler("");
             Assert.ThrowsException<System.NullReferenceException>(() => ticket);
         }
 
@@ -26,7 +26,7 @@ namespace DatabaseControllerTest
         [ExpectedException(typeof(System.ArgumentException))]
         public void Invalid_Constructor()
         {
-            TicketHandler ticket = new TicketHandler("kjsdfklfjsdfklé");
+            DbHandler ticket = new DbHandler("kjsdfklfjsdfklé");
             Assert.ThrowsException<System.ArgumentException>(() => ticket);
         }
 
@@ -36,7 +36,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public void Normal_Constructor()
         {
-            TicketHandler ticket = new TicketHandler("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test");
+            DbHandler ticket = new DbHandler("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test");
             Message test = ticket.HealthCheck();
 
             Message exptected = new Message();
@@ -53,7 +53,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public void Get_Connection_String()
         {
-            TicketHandler ticket = new TicketHandler("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test");
+            DbHandler ticket = new DbHandler("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test");
 
             Assert.AreEqual("Host=atihome.local;Database=TestTicketing;Username=ticket_test_api;Password=test", ticket.GetConnectionString());
         }

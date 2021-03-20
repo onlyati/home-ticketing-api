@@ -11,7 +11,7 @@ using System.Text;
 
 namespace DatabaseController.Controller
 {
-    public class TicketHandler : ITicketHandler
+    public class DbHandler : IDbHandler
     {
         private string _connectionString;
         private TicketDatabase _context;
@@ -21,7 +21,7 @@ namespace DatabaseController.Controller
         /// Constructor for creating TicketHandler object. This object can be used for any pre-defined action with database.
         /// </summary>
         /// <param name="connectionString">Database connection string, used by EF</param>
-        public TicketHandler(string connectionString)
+        public DbHandler(string connectionString)
         {
             // Read input string and try to establish a connection
             if(connectionString == "")

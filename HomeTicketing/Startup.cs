@@ -36,7 +36,7 @@ namespace HomeTicketing
             /*-----------------------------------------------------------------------------------*/
             string dbConn = Configuration.GetSection("ConnectionString").GetSection("Db").Value;
             string connString = Configuration.GetValue<string>("ConnectionString:Db");
-            services.AddScoped<ITicketHandler, TicketHandler>(s => new TicketHandler(connString));
+            services.AddScoped<IDbHandler, DbHandler>(s => new DbHandler(connString));
             services.AddControllers();
 
             /*-----------------------------------------------------------------------------------*/

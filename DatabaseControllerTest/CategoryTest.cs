@@ -27,7 +27,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Categoires()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             List<Category> list = await ticket.ListCategoriesAsync();
 
             Assert.AreNotEqual(0, list.Count, "List is empty, there are no categories");
@@ -48,7 +48,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Add_Category_OK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             Message response = await ticket.AddCategoryAsync("UnitTest1", await ticket.GetSystemAsync("atihome"));
             await ticket.DeleteCategoryAsync("UnitTest1", await ticket.GetSystemAsync("atihome"));
 
@@ -65,7 +65,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Add_Category_NOK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             Message response = await ticket.AddCategoryAsync("UnitTest2", await ticket.GetSystemAsync("atihome"));
             response = await ticket.AddCategoryAsync("UnitTest2", await ticket.GetSystemAsync("atihome"));
             await ticket.DeleteCategoryAsync("UnitTest2", await ticket.GetSystemAsync("atihome"));
@@ -89,7 +89,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Category_OK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             Message response1 = await ticket.AddCategoryAsync("UnitTest3", await ticket.GetSystemAsync("atihome"));
 
             Assert.AreEqual(MessageType.OK, response1.MessageType, "Preparation: UnitTest3 could not be added");
@@ -107,7 +107,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Category_NOK_1()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             Message response1 = await ticket.AddCategoryAsync("UnitTest4", await ticket.GetSystemAsync("atihome"));
 
             Assert.AreEqual(MessageType.OK, response1.MessageType, "Preparation: UnitTest4 could not be added");
@@ -125,7 +125,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Change_Category_NOK_2()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             Message response2 = await ticket.RenameCategoryAsync("UnitTest5", "Something", await ticket.GetSystemAsync("atihome"));
 
             Assert.AreEqual(MessageType.NOK, response2.MessageType, "Final: Non-exist categry have been renamed");
@@ -138,7 +138,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Delete_Category1_OK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response1 = await ticket.AddCategoryAsync("UnitTest6", await ticket.GetSystemAsync("atihome"));
             Assert.AreEqual(MessageType.OK, response1.MessageType, "Preparation failed: UnitTest 6 could not be added");
 
@@ -153,7 +153,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Delete_Category1_NOK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response = await ticket.DeleteCategoryAsync("UnitTest7", await ticket.GetSystemAsync("atihome"));
             Assert.AreEqual(MessageType.NOK, response.MessageType, "Final: Category could be deleted which was non-existed");
         }
@@ -165,7 +165,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Delete_Category2_OK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response1 = await ticket.AddCategoryAsync("UnitTest8", await ticket.GetSystemAsync("atihome"));
             Assert.AreEqual(MessageType.OK, response1.MessageType, "Preparation: UnitTest8 could not be added");
 
@@ -189,7 +189,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task Delete_Category2_NOK()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response = await ticket.DeleteCategoryAsync(-1);
             Assert.AreEqual(MessageType.NOK, response.MessageType, "Final: Category could be deleted by non-existing ID");
         }
@@ -201,7 +201,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Category_User()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response = await ticket.ListCategoriesAsync(await ticket.GetUserAsync("Dispatcher"));
             Assert.AreNotEqual(0, response.Count, "No categories was found");
         }
@@ -213,7 +213,7 @@ namespace DatabaseControllerTest
         [TestMethod]
         public async Task List_Category_System()
         {
-            TicketHandler ticket = new TicketHandler(connString);
+            DbHandler ticket = new DbHandler(connString);
             var response = await ticket.ListCategoriesAsync(await ticket.GetSystemAsync("atihome"));
             Assert.AreNotEqual(0, response.Count, "No categories was found");
         }

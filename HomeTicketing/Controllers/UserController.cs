@@ -30,11 +30,11 @@ namespace HomeTicketing.Controllers
         /*---------------------------------------------------------------------------------------*/
         /* Read the actual context (connection to database table and information)                */
         /*---------------------------------------------------------------------------------------*/
-        private readonly ITicketHandler _ticket;
+        private readonly IDbHandler _ticket;
         private readonly ILogger _logger;
         private readonly IConfiguration _configuration;
 
-        public UserController(ITicketHandler ticket, ILogger<CategoryController> logger, IConfiguration config)
+        public UserController(IDbHandler ticket, ILogger<CategoryController> logger, IConfiguration config)
         {
             _ticket = ticket;
             _logger = logger;
@@ -99,7 +99,7 @@ namespace HomeTicketing.Controllers
             if(checkUsr != null)
             {
                 // Check that password hash are the same
-                if(TicketHandler.HashPassword(user.Password) == checkUsr.Password)
+                if(DbHandler.HashPassword(user.Password) == checkUsr.Password)
                 {
                     // Get the role
                     var role = checkUsr.Role.ToString();
@@ -401,6 +401,98 @@ namespace HomeTicketing.Controllers
             if (ret == null)
                 return BadRequest(new GeneralMessage() { Message = "User listing has failed" });
             return Ok(ret);
+        }
+
+        /// <summary>
+        /// This endpoint is for changing user information like email or password
+        /// </summary>
+        /// <param name="changedUser">Object for new values</param>
+        /// <returns></returns>
+        /// <response code="200">Change was successfully</response>
+        /// <response code="400">Invlaid input</response>
+        /// <response code="401">Not authorized</response>
+        /// <response code="403">Not authorized</response>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPut("modify")]
+        public async Task<IActionResult> ModifyUser([FromBody]UserLoginInfo changedUser)
+        {
+            // Check that new data is provided
+            if(changedUser == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "No input data is provided" });
+            }
+
+            // Get user who requested it
+            var re = Request;
+            var headers = re.Headers;
+            var tokenString = headers["Authorization"];
+
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(tokenString[0].Split(' ')[1]);
+
+            var claims = token.Claims;
+            var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
+            var user = await _ticket.GetUserAsync(usernameClaim.Value);
+
+            // If user does not exist, then BadRequest
+            if (user == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "User does not exist" });
+            }
+
+            // Check that requester is same then the modify user or role is Admin
+            if(user.Username != changedUser.Username && user.Role == UserRole.User)
+            {
+                return Unauthorized(new GeneralMessage() { Message = "Not authorized to change different user" });
+            }
+
+            // Everything look cool, let change
+            var response = await _ticket.ChangeUserAsync(user.Id, new User() { Username = changedUser.Username, Email = changedUser.Email, Password = changedUser.Password });
+            if(response.MessageType == MessageType.NOK)
+            {
+                return BadRequest(new GeneralMessage() { Message = response.MessageText });
+            }
+
+            // Everything was fine, return woth OK
+            return Ok(new GeneralMessage() { Message = "Values has been changed" });
+        }
+
+        [AllowAuthorized(UserRole.Admin)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPut("modify/role")]
+        public async Task<IActionResult> ModifyUserRole(string username, string role)
+        {
+            // Check that specified user exist
+            var checkUsr = await _ticket.GetUserAsync(username);
+            if(checkUsr == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "User does not exist" });
+            }
+
+            // Validate the role
+            if(role != "User" && role != "Admin")
+            {
+                return BadRequest(new GeneralMessage() { Message = "Invalid role type" });
+            }
+
+            // Convert role string into an Enum
+            UserRole roleType = (UserRole)Enum.Parse(typeof(UserRole), role);
+
+            // Do the change
+            var response = await _ticket.ChangeUserRole(checkUsr, roleType);
+            if(response.MessageType == MessageType.NOK)
+            {
+                return BadRequest(new GeneralMessage() { Message = response.MessageText });
+            }
+
+            return Ok(new GeneralMessage() { Message = "Role has been changed" });
         }
     }
 }

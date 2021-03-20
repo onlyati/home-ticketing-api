@@ -7,7 +7,7 @@ using DatabaseController.DataModel;
 
 namespace DatabaseController.Interface
 {
-    public interface ITicketHandler
+    public interface IDbHandler
     {
         #region Attribures and utilities
         Message HealthCheck();
