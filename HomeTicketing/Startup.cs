@@ -16,6 +16,7 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using DatabaseController.DataModel;
 using HomeTicketing.Model;
+using System.Collections.Generic;
 
 namespace HomeTicketing
 {
@@ -135,12 +136,20 @@ namespace HomeTicketing
                 app.UseDeveloperExceptionPage();
             }
 
-            //app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
 
-            app.UseSwagger();
+            app.UseSwagger(c =>
+            {
+                c.RouteTemplate = "swagger/{documentName}/swagger.json";
+                c.PreSerializeFilters.Add((swaggerDoc, httpReq) =>
+                {
+                    // swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{httpReq.Scheme}://{httpReq.Host.Value}{Configuration["ProxyPrefix"]}" } };
+                    swaggerDoc.Servers = new List<OpenApiServer> { new OpenApiServer { Url = $"{Configuration["HttpProtocol"]}://{httpReq.Host.Value}{Configuration["ProxyPrefix"]}" } };
+                });
+            });
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("./2.0/swagger.json", "Ticketing API Swagger UI");
+                c.SwaggerEndpoint("2.0/swagger.json", "Ticketing API Swagger UI");
                 c.RoutePrefix = "swagger";
             });
 
