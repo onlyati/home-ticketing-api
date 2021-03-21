@@ -1,0 +1,27 @@
+﻿@page "/" 
+@layout LoginLayout
+
+
+<div class="container">
+    <div class="row">
+        <h2>Login page</h2>
+    </div>
+    <EditForm Model="@_loginInfo" OnValidSubmit="@LoginRequest">
+        <DataAnnotationsValidator />
+
+        <div class="row">
+            <label>Username:</label>
+            <input @bind="@_loginInfo.UserName" />
+        </div>
+        <div class="row">
+            <label>Password:</label>
+            <input @bind="@_loginInfo.Password" type="password" />
+        </div>
+        <div class="row">
+            <button type="submit">Login</button>
+        </div>
+        <ValidationSummary />
+    </EditForm>
+    <p>@valami</p>
+</div>
+
