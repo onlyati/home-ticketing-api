@@ -243,7 +243,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPut("assign/user")]
+        [HttpPut("assign")]
         public async Task<IActionResult> AssignUserToCategory(string userName = null, string categoryName = null, string systemName = null)
         {
             // Check input data
@@ -297,7 +297,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpPut("unassign/user")]
+        [HttpPut("unassign")]
         public async Task<IActionResult> UnassignUserFromCategory(string userName = null, string categoryName = null, string systemName = null)
         {
             // Check input data

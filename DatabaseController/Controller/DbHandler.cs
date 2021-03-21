@@ -203,10 +203,31 @@ namespace DatabaseController.Controller
                 var changeTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Equals(ticket));
                 changeTicket.UserId = user.Id;
                 _context.SaveChanges();
+
+                changeTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Equals(ticket));
+
+                // Now ticket header is updated, put a new log under this
+                TicketCreationTemplate newLog = new TicketCreationTemplate();
+                newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Id.Equals(changeTicket.CategoryId));
+                newLog.Reference = changeTicket.Reference;
+                newLog.Summary = $"Ticket has been assigned to {user.Username}";
+                newLog.Title = changeTicket.Title;
+                newLog.CreatorUser = user;
+
+                // Add the log entry for the ticket
+                Message crtTicket = await CreateTicketAsync(newLog);
+                if (crtTicket.MessageType != MessageType.OK)
+                {
+                    response.MessageType = MessageType.NOK;
+                    response.MessageText = $"During the change, log udpate was unsuccessful, changes are undo: {crtTicket.MessageText}";
+                    transaction.Rollback();
+                    return response;
+                }
+
                 // Everything was, commit then return with OK value
                 transaction.Commit();
 
-                response.MessageText = "New user has been added";
+                response.MessageText = "User has been assigned";
                 response.MessageType = MessageType.OK;
                 return response;
             }
@@ -217,6 +238,69 @@ namespace DatabaseController.Controller
                 response.MessageType = MessageType.NOK;
                 response.MessageText = $"Internal error: {ex.Message}";
                 return response;
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// This function set null for userID at tickets
+        /// </summary>
+        /// <param name="ticket"></param>
+        /// <returns>OK or a NOK message</returns>
+        public async Task<Message> UnassignUserFromTicketAsync(User user, Ticket ticket)
+        {
+            // Object which will return
+            Message responde = new Message();
+
+            // Check that ticket exist
+            var checInc = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(ticket.Id));
+            if(checInc == null)
+            {
+                responde.MessageType = MessageType.NOK;
+                responde.MessageText = "Ticket does not exist";
+                return responde;
+            }
+
+            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
+
+            try
+            {
+                checInc = await _context.Tickets.SingleOrDefaultAsync(s => s.Id.Equals(ticket.Id));
+                checInc.UserId = null;
+                _context.SaveChanges();
+
+
+                // Now ticket header is updated, put a new log under this
+                TicketCreationTemplate newLog = new TicketCreationTemplate();
+                newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Id.Equals(checInc.CategoryId));
+                newLog.Reference = checInc.Reference;
+                newLog.Summary = $"Ticket has become unassigned";
+                newLog.Title = checInc.Title;
+                newLog.CreatorUser = user;
+
+                // Add the log entry for the ticket
+                Message crtTicket = await CreateTicketAsync(newLog);
+                if (crtTicket.MessageType != MessageType.OK)
+                {
+                    responde.MessageType = MessageType.NOK;
+                    responde.MessageText = $"During the change, log udpate was unsuccessful, changes are undo: {crtTicket.MessageText}";
+                    transaction.Rollback();
+                    return responde;
+                }
+
+
+                transaction.Commit();
+
+                responde.MessageType = MessageType.OK;
+                responde.MessageText = "User is unassiged";
+                return responde;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                responde.MessageType = MessageType.NOK;
+                responde.MessageText = $"Internal error: {ex.Message}";
+                return responde;
                 throw;
             }
         }

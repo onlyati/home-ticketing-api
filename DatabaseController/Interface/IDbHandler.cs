@@ -20,6 +20,8 @@ namespace DatabaseController.Interface
 
         Task<Message> AssignUserToTicketAsync(User user, Ticket ticket);
 
+        Task<Message> UnassignUserFromTicketAsync(User user, Ticket ticket);
+
         Task<Message> ChangeUserRole(User user, UserRole role);
 
         #endregion

@@ -318,5 +318,82 @@ namespace HomeTicketing.Controllers
 
             return Ok(new GeneralMessage() { Message = respond.MessageText });
         }
+
+        /// <summary>
+        /// This endpoint responsible for ticket assignment
+        /// </summary>
+        /// <param name="ticketid">Which ticket needs to be assigned?</param>
+        /// <param name="username">Where the ticket should be assigned?</param>
+        /// <returns></returns>
+        /// <response code="200">Ticet changed</response>
+        /// <response code="400">Ticket change has failed</response>
+        /// <response code="401">Authorization failed</response>
+        /// <response code="403">Authorization failed</response>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPut("assign")]
+        public async Task<IActionResult> AssignTicket(int ticketid = -1, string username = null)
+        {
+            if (ticketid == -1 || username == null)
+                return BadRequest(new GeneralMessage() { Message = "Missing input: ticket ID and username are mandatory" });
+
+            var ticket = await _dbHandler.GetTicketAsync(ticketid);
+            var user = await _dbHandler.GetUserAsync(username);
+
+            var response = await _dbHandler.AssignUserToTicketAsync(user, ticket);
+            if (response.MessageType == MessageType.NOK)
+                return BadRequest(new GeneralMessage() { Message = response.MessageText });
+
+            return Ok(new GeneralMessage() { Message = response.MessageText });
+        }
+
+        /// <summary>
+        /// This endpoint is responsible for unsaaigment of tickets
+        /// </summary>
+        /// <param name="ticketid">Which ticket needs to be unassigned?</param>
+        /// <returns></returns>
+        /// <response code="200">Ticet changed</response>
+        /// <response code="400">Ticket change has failed</response>
+        /// <response code="401">Authorization failed</response>
+        /// <response code="403">Authorization failed</response>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpPut("unassign")]
+        public async Task<IActionResult> UnassignTicket(int ticketid = -1)
+        {
+            if (ticketid == -1)
+                return BadRequest(new GeneralMessage() { Message = "Missing ticket ID as input" });
+
+            // Get user who wants remove user
+            var re = Request;
+            var headers = re.Headers;
+            var tokenString = headers["Authorization"];
+
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(tokenString[0].Split(' ')[1]);
+
+            var claims = token.Claims;
+            var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
+            var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
+            if (user == null)
+                return Unauthorized(new GeneralMessage() { Message = "User does not exist" });
+
+            // Get the ticket
+            var ticket = await _dbHandler.GetTicketAsync(ticketid);
+            if (ticket == null)
+                return BadRequest(new GeneralMessage() { Message = "Ticket does not exist" });
+
+            var respond = await _dbHandler.UnassignUserFromTicketAsync(user, ticket);
+            if (respond.MessageType == MessageType.NOK)
+                return BadRequest(new GeneralMessage() { Message = respond.MessageText });
+
+            return Ok(new GeneralMessage() { Message = respond.MessageText });
+        }
     }
 }

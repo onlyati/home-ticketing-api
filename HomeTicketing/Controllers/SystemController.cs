@@ -170,7 +170,7 @@ namespace HomeTicketing.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [HttpGet]
+        [HttpGet("get")]
         public async Task<IActionResult> GetSystem(int id = -1)
         {
             if (id == -1)
