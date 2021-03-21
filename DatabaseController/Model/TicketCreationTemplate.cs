@@ -47,5 +47,8 @@ namespace DatabaseController.Model
         /// <example>Test ticket</example>
         [JsonPropertyName("title")]
         public string Title { get; set; } = "";
+
+        [JsonIgnore]
+        public User CreatorUser { get; set; } = null;
     }
 }

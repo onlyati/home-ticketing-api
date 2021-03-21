@@ -83,9 +83,9 @@ namespace DatabaseController.Interface
 
         Task<Message> CreateTicketAsync(TicketCreationTemplate input);
 
-        Task<Message> CloseTicketAsync(int id);
+        Task<Message> CloseTicketAsync(int id, User user);
 
-        Task<Message> CloseTicketAsync(string referenceValue, string sysname);
+        Task<Message> CloseTicketAsync(string referenceValue, string sysname, User user);
 
         Task<Message> ChangeTicketAsync(TicketChangeTemplate newValues);
 

@@ -40,5 +40,8 @@ namespace DatabaseController.Model
         /// <example>new_ref_val</example>
         [JsonPropertyName("reference")]
         public string Refernce { get; set; } = "";
+
+        [JsonIgnore]
+        public User ChangederUser { get; set; } = null;
     }
 }

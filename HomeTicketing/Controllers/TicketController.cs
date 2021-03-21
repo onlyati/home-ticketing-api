@@ -176,7 +176,7 @@ namespace HomeTicketing.Controllers
                     return BadRequest(new GeneralMessage() { Message = "Only Admin or ticket owner can close ticket" });
 
                 // Close the ticket
-                var respond = await _dbHandler.CloseTicketAsync(id);
+                var respond = await _dbHandler.CloseTicketAsync(id, user);
                 if (respond.MessageType == MessageType.NOK)
                     return BadRequest(new GeneralMessage() { Message = respond.MessageText});
 
@@ -197,7 +197,7 @@ namespace HomeTicketing.Controllers
                     return BadRequest(new GeneralMessage() { Message = "Only Admin or ticket owner can close ticket" });
 
                 // Close the ticket
-                var respond = await _dbHandler.CloseTicketAsync(ticket.Id);
+                var respond = await _dbHandler.CloseTicketAsync(ticket.Id, user);
                 if (respond.MessageType == MessageType.NOK)
                     return BadRequest(new GeneralMessage() { Message = respond.MessageText });
 
@@ -238,8 +238,22 @@ namespace HomeTicketing.Controllers
             template.Category = cat;
             template.Details = info.Details;
             template.Reference = info.Reference;
-            template.Summary = info.Reference;
+            template.Summary = info.Summary;
             template.Title = info.Title;
+
+            // Get user who wants remove user
+            var re = Request;
+            var headers = re.Headers;
+            var tokenString = headers["Authorization"];
+
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(tokenString[0].Split(' ')[1]);
+
+            var claims = token.Claims;
+            var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
+            var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
+
+            template.CreatorUser = user;
 
             var respond = await _dbHandler.CreateTicketAsync(template);
             if(respond.MessageType == MessageType.NOK)
@@ -283,6 +297,20 @@ namespace HomeTicketing.Controllers
             }
 
             input.Category = cat;
+
+            // Get user who wants remove user
+            var re = Request;
+            var headers = re.Headers;
+            var tokenString = headers["Authorization"];
+
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.ReadJwtToken(tokenString[0].Split(' ')[1]);
+
+            var claims = token.Claims;
+            var usernameClaim = claims.Where(x => x.Type == ClaimTypes.Name).FirstOrDefault();
+            var user = await _dbHandler.GetUserAsync(usernameClaim.Value);
+
+            input.ChangederUser = user;
 
             var respond = await _dbHandler.ChangeTicketAsync(input);
             if(respond.MessageType == MessageType.NOK)

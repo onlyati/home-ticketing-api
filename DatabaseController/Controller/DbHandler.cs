@@ -1166,12 +1166,16 @@ namespace DatabaseController.Controller
             newTicket.Title = input.Title;
             newTicket.Time = DateTime.Now;
             newTicket.SystemId = (int)categories.SystemId;
-            newTicket.User = null;
+            newTicket.UserId = null;
 
             DataModel.Log newLog = new DataModel.Log();
             newLog.Details = input.Details;
             newLog.Summary = input.Summary;
             newLog.Time = DateTime.Now;
+            if (input.CreatorUser == null)
+                newLog.UserId = null;
+            else
+                newLog.UserId = input.CreatorUser.Id;
 
             // Check that it is an update. If does, then change Ticket of log
             var existTicket = await _context.Tickets.SingleOrDefaultAsync(s => s.Reference.Equals(input.Reference) && s.Status.Equals("Open") && s.SystemId == categories.SystemId);
@@ -1213,7 +1217,7 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="id">Ticket ID which need to be closed</param>
         /// <returns>OK or a NOK message</returns>
-        public async Task<Message> CloseTicketAsync(int id)
+        public async Task<Message> CloseTicketAsync(int id, User user)
         {
             // Return value
             Message respond = new Message();
@@ -1229,11 +1233,31 @@ namespace DatabaseController.Controller
                 return respond;
             }
 
+            int cid = record.CategoryId ?? default(int);
+
             // Make a lock for the table to prevent concurrent changes
             var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
 
+            // Now ticket header is updated, put a new log under this
+            TicketCreationTemplate newLog = new TicketCreationTemplate();
+            newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Id.Equals(cid));
+            newLog.Reference = record.Reference;
+            newLog.Summary = $"Ticket has been closed";
+            newLog.Title = record.Title;
+            newLog.CreatorUser = user;
+
+            // Add the log entry for the ticket
+            Message crtTicket = await CreateTicketAsync(newLog);
+            if (crtTicket.MessageType != MessageType.OK)
+            {
+                respond.MessageType = MessageType.NOK;
+                respond.MessageText = $"During the change, log udpate was unsuccessful, changes are undo: {crtTicket.MessageText}";
+                transaction.Rollback();
+                return respond;
+            }
+
             // Change the status and update the database
-            record.Status = "Close";
+            record.Status = "Closed";
             await _context.SaveChangesAsync();
 
             // Release the lock and return with OK message
@@ -1253,7 +1277,7 @@ namespace DatabaseController.Controller
         /// </remarks>
         /// <param name="referenceValue">Reference value</param>
         /// <returns>OK or a NOK message</returns>
-        public async Task<Message> CloseTicketAsync(string referenceValue, string sysname)
+        public async Task<Message> CloseTicketAsync(string referenceValue, string sysname, User user)
         {
             // Return value
             Message respond = new Message();
@@ -1271,20 +1295,7 @@ namespace DatabaseController.Controller
                 return respond;
             }
 
-            // Make a lock for the table to prevent concurrent changes
-            var transaction = _context.Database.BeginTransaction(System.Data.IsolationLevel.RepeatableRead);
-
-            // Change the status and update the database
-            record.Status = "Close";
-            await _context.SaveChangesAsync();
-
-            // Release the lock and return with OK message
-            transaction.Commit();
-
-            respond.MessageType = MessageType.OK;
-            respond.MessageText = $"Ticket with {referenceValue} refrence vaue has been closed";
-
-            return respond;
+            return await CloseTicketAsync(record.Id, user);
         }
 
         /// <summary>
@@ -1361,7 +1372,7 @@ namespace DatabaseController.Controller
 
                 // Do the change
                 ticketCategory = catRecord.Name;
-                changeLog += $"Category from {record.Category} to {newValues.Category}{Environment.NewLine}";
+                changeLog += $"Category from {record.Category.Name} to {newValues.Category.Name}{Environment.NewLine}";
                 updRecord.CategoryId = catRecord.Id;
             }
 
@@ -1379,13 +1390,15 @@ namespace DatabaseController.Controller
 
             _context.SaveChanges();
 
+            updRecord = await _context.Tickets.SingleOrDefaultAsync(s => s.Id == newValues.Id && s.Status == "Open");
             // Now ticket header is updated, put a new log under this
             TicketCreationTemplate newLog = new TicketCreationTemplate();
             newLog.Category = await _context.Categories.SingleOrDefaultAsync(s => s.Equals(record.Category));
             newLog.Details = changeLog;
-            newLog.Reference = record.Reference;
-            newLog.Summary = "Ticket has been adjusted";
+            newLog.Reference = updRecord.Reference;
+            newLog.Summary = $"Ticket has been adjusted";
             newLog.Title = record.Title;
+            newLog.CreatorUser = newValues.ChangederUser;
 
             // Add the log entry for the ticket
             Message crtTicket = await CreateTicketAsync(newLog);

@@ -108,7 +108,7 @@ namespace DatabaseControllerTest
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Final: Ticket could not be created");
 
             // Close by reference value
-            var respond2 = await ticket.CloseTicketAsync(crt.Reference, "atihome");
+            var respond2 = await ticket.CloseTicketAsync(crt.Reference, "atihome", null);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Final: Ticket could not be closed based on reference value");
         }
 
@@ -138,7 +138,7 @@ namespace DatabaseControllerTest
             Assert.AreEqual(1, respond2.Count, "Preparation: Not one ticket was found for the filter");
 
             // Close ticket by ID
-            var respond3 = await ticket.CloseTicketAsync(respond2[0].Id);
+            var respond3 = await ticket.CloseTicketAsync(respond2[0].Id, null);
             Assert.AreEqual(MessageType.OK, respond3.MessageType, "Final: Ticket could not be closed based on ID");
         }
         #endregion
@@ -184,7 +184,7 @@ namespace DatabaseControllerTest
             Assert.AreEqual(3, respond5.Logs.Count, "Not 3 update in the ticket");
 
             // Close by refernce value
-            var respond6 = await ticket.CloseTicketAsync(crt.Reference, "atihome");
+            var respond6 = await ticket.CloseTicketAsync(crt.Reference, "atihome", null);
             Assert.AreEqual(MessageType.OK, respond6.MessageType, "Close was failed");
         }
         #endregion
@@ -234,7 +234,7 @@ namespace DatabaseControllerTest
             Assert.AreEqual(1, respond3.Count, "Final: No ticket was found with the changed category name");
 
             // Close ticket
-            var respond4 = await ticket.CloseTicketAsync(crt.Reference, "atihome");
+            var respond4 = await ticket.CloseTicketAsync(crt.Reference, "atihome", null);
             Assert.AreEqual(MessageType.OK, respond4.MessageType, "Post: Close was failed");
         }
 
@@ -253,6 +253,8 @@ namespace DatabaseControllerTest
 
             var respond1 = await ticket.CreateTicketAsync(crt);
             Assert.AreEqual(MessageType.OK, respond1.MessageType, "Preparation: Ticket could not be created");
+            var ticketHead1 = await ticket.ListTicketsAsync(new TicketFilterTemplate() { Reference = crt.Reference, Status = "Open", System = "atihome" });
+            string old_cat = ticketHead1[0].Category.Name;
 
             // Query for the opened change
             TicketFilterTemplate filter1 = new TicketFilterTemplate();
@@ -269,10 +271,11 @@ namespace DatabaseControllerTest
             chg.Category = await ticket.GetCategoryAsync("non-exist", await ticket.GetSystemAsync("atihome"));
 
             var respond2 = await ticket.ChangeTicketAsync(chg);
-            Assert.AreEqual(MessageType.NOK, respond2.MessageType, "Final: Ticket was changed to the a non-exist category");
+            var ticketHead2 = await ticket.ListTicketsAsync(new TicketFilterTemplate() { Reference = crt.Reference, Status = "Open", System = "atihome" });
+            Assert.AreEqual(old_cat, ticketHead2[0].Category.Name, "Final: Ticket was changed to the a non-exist category");
 
             // Close the ticket
-            await ticket.CloseTicketAsync(crt.Reference, "atihome");
+            await ticket.CloseTicketAsync(crt.Reference, "atihome", null);
         }
         #endregion
     }
