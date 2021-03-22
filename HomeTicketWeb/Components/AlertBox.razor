@@ -1,0 +1,134 @@
+﻿@if (IsVisible)
+{
+    <div class="modal-backdrop show"></div>
+    <div class="modal fade show" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header ati-bg-dark-purple">
+                    <h5 class="modal-title" style="color: white" id="exampleModalLabel">@Title</h5>
+                    @if (Type == AlertBoxType.Question)
+                    {
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@HideQuestionNo">
+                            <img src="img/close-icon.png" height="25" width="25" />
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@Hide">
+                            <img src="img/close-icon.png" height="25" width="25" />
+                        </button>
+                    }
+
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-auto">
+                            @if (Type == AlertBoxType.Info)
+                            {
+                                <img src="img/info-icon.png" width="50" height="50" />
+                            }
+                            else if (Type == AlertBoxType.Error)
+                            {
+                                <img src="img/error-icon.png" width="50" height="50" />
+                            }
+                            else if (Type == AlertBoxType.Warning)
+                            {
+                                <img src="img/warning-icon.png" width="50" height="50" />
+                            }
+                            else if (Type == AlertBoxType.Question)
+                            {
+                                <img src="img/question-icon.png" width="50" height="50" />
+                            }
+                        </div>
+                        <div class="col">
+                            <div>@Text</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @if (Type == AlertBoxType.Question)
+                    {
+                        <button type="button" class="btn btn-info" data-dismiss="modal" @onclick="@Hide">Yes, go ahead</button>
+                        <button type="button" class="btn btn-info" data-dismiss="modal" @onclick="@HideQuestionNo">Wait a second</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-info" data-dismiss="modal" @onclick="@Hide">I've got it!</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code
+{
+    private bool IsVisible = false;
+    private string Title;
+    private string Text;
+    private AlertBoxType Type;
+
+    public delegate void ConfirmMethod();
+    private ConfirmMethod OnConfirm = null;
+    private ConfirmMethod OnCancel = null;
+
+    public void SetAlert(string title, string text, AlertBoxType type)
+    {
+        Title = title;
+        Text = text;
+        Type = type;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void SetAlert(string title, string text, AlertBoxType type, ConfirmMethod onConfirm)
+    {
+        OnConfirm = onConfirm;
+        Title = title;
+        Text = text;
+        Type = type;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void SetAlert(string title, string text, AlertBoxType type, ConfirmMethod onConfirm, ConfirmMethod onCancel)
+    {
+        OnConfirm = onConfirm;
+        OnCancel = onCancel;
+        Title = title;
+        Text = text;
+        Type = type;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void HideQuestionNo()
+    {
+        if (OnCancel != null)
+            OnCancel.Invoke();
+
+        OnConfirm = null;
+        OnCancel = null;
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        if(OnConfirm != null)
+            OnConfirm.Invoke();
+
+        OnConfirm = null;
+        OnCancel = null;
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    public enum AlertBoxType
+    {
+        Info,
+        Warning,
+        Error,
+        Question
+    }
+}
