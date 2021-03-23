@@ -48,12 +48,12 @@
                 <div class="modal-footer">
                     @if (Type == AlertBoxType.Question)
                     {
-                        <button type="button" class="btn btn-info" data-dismiss="modal" @onclick="@Hide">Yes, go ahead</button>
-                        <button type="button" class="btn btn-info" data-dismiss="modal" @onclick="@HideQuestionNo">Wait a second</button>
+                        <button type="button" class="btn ati-btn-primary" data-dismiss="modal" @onclick="@Hide">Yes, go ahead</button>
+                        <button type="button" class="btn ati-btn-secondary" data-dismiss="modal" @onclick="@HideQuestionNo">Wait a second</button>
                     }
                     else
                     {
-                        <button type="button" class="btn btn-info" data-dismiss="modal" @onclick="@Hide">I've got it!</button>
+                        <button type="button" class="btn ati-btn-primary" data-dismiss="modal" @onclick="@Hide">I've got it!</button>
                     }
                 </div>
             </div>

@@ -1,0 +1,45 @@
+﻿
+@if (IsVisible)
+{
+    <div class="ati-taskbar-applications">
+        <div class="ati-window-title">
+            <h5>Available applications</h5>
+        </div>
+        @if (AppList == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+        <CascadingValue Value="this">
+            @foreach (var item in AppList)
+            {
+                <ApplicationItem Icon="@item.Image" Title="@item.Title" Route="@item.Route" />
+            }
+        </CascadingValue>
+        }
+    </div>
+}
+<div class="ati-taskbar">
+    <button class="ati-btn-application" @onclick="@Usage">Applications</button>
+</div>
+
+
+
+@code {
+    [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
+    private bool IsVisible = false;
+
+    private void Usage()
+    {
+        IsVisible = !IsVisible;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+}

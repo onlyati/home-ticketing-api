@@ -1,0 +1,44 @@
+﻿@page "/dashboard"
+
+<div class="container-fluid bg-white">
+    <div class="row">
+        <h2 class="text-center">Login page</h2>
+    </div>
+    <EditForm Model="@_loginInfo" OnValidSubmit="@LoginRequest" OnInvalidSubmit="@ShowAlert">
+        <div class="row">
+            <label>Username:</label>
+            <input @bind="@_loginInfo.UserName" />
+        </div>
+        <div class="row">
+            <label>Password:</label>
+            <input @bind="@_loginInfo.Password" type="password" />
+        </div>
+        <div class="row">
+            <button type="submit">Login</button>
+        </div>
+        <DataAnnotationsValidator />
+        @*<ValidationSummary />*@
+    </EditForm>
+    <button @onclick="@TestAlert1">Test #1</button>
+    <button @onclick="@TestAlert2">Test #2</button>
+    <button @onclick="@TestAlert3">Test #3</button>
+    <button @onclick="@TestAlert4">Test #4</button>
+
+    <button @onclick="@DeleteFromLista">Törlés</button>
+
+    @foreach (var item in lista)
+    {
+        <div>@item</div>
+    }
+
+    <button class="btn ati-btn-primary m-3">Ez egy teszt gomb</button>
+    <button class="btn ati-btn-primary m-3" disabled>Ez egy teszt gomb</button>
+    <button class="btn ati-btn-secondary m-3">Ez szintén egy teszt gomb</button>
+    <button class="btn ati-btn-secondary m-3" disabled>Ez szintén egy teszt gomb</button>
+
+    <div>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus velit lorem, eleifend eu nisl eget, pretium dignissim odio. Duis luctus eros eget libero malesuada, nec dapibus tellus finibus. Nullam ligula diam, pellentesque rutrum ullamcorper quis, ornare vel lacus. Praesent mollis, justo ut suscipit euismod, quam eros convallis orci, quis rutrum tortor metus nec tortor. Maecenas quis mi laoreet, blandit odio blandit, molestie tortor. Suspendisse efficitur tortor diam, cursus tristique est placerat vitae. Quisque convallis lorem sed congue cursus. Nunc consectetur turpis eget nunc lacinia consequat ut nec diam. Ut et felis at dui vulputate accumsan quis nec velit. Nunc at dolor ligula. In vitae tempus ligula. Ut blandit urna ut nunc ullamcorper vestibulum. Nullam pulvinar scelerisque tempus. Mauris placerat vehicula ante vestibulum euismod. Sed non est nulla. Praesent vitae ex vitae tellus tincidunt placerat vel sit amet ipsum.
+
+        Phasellus eget finibus lorem. Duis pretium rutrum ipsum, ut ultricies felis sodales sed. In enim justo, vulputate eget augue eget, pulvinar egestas quam. Donec condimentum lacus vel venenatis volutpat. Cras risus mi, iaculis nec tempor quis, consequat vel purus. Etiam sit amet aliquam magna, vel interdum mauris. Vestibulum interdum arcu in diam facilisis auctor. Donec imperdiet sollicitudin mauris et lobortis. Aliquam fermentum suscipit facilisis.
+    </div>
+</div>

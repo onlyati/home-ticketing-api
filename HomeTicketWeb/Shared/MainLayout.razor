@@ -1,13 +1,31 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page bg-light">
-    <div class="main">
-        <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
-        </div>
-
-        <div class="content">
+<CascadingValue Value="this">
+    <div role="main" style="padding-bottom: 55px; height: 100%;">
+        <div class="container-fluid">
             @Body
         </div>
     </div>
-</div>
+    <AlertBox @ref="@AlertBox" />
+    <TaskBar @ref="@Bar" AppList="Apps" />
+</CascadingValue>
+
+@code{
+    public TaskBar Bar;
+    public AlertBox AlertBox;
+
+    public List<TaskBarMenuItem> Apps;
+
+    protected override void OnInitialized()
+    {
+        Apps = new List<TaskBarMenuItem>()
+        {
+            new TaskBarMenuItem("Main screen", "/", "img/desktop-icon.png"),
+            new TaskBarMenuItem("Dashboard", "/dashboard", "img/dashboard-icon.png"),
+            new TaskBarMenuItem("Open ticket", "/dashboard", "img/create-icon.png"),
+            new TaskBarMenuItem("User settings", "/dashboard", "img/user-icon.png"),
+            new TaskBarMenuItem("Admin settings", "/dashboard", "img/admin-icon.png")
+        };
+    }
+}
+}

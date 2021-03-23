@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 using HomeTicketWeb.Components;
 using HomeTicketWeb.Shared;
 
-namespace HomeTicketWeb.Pages
+namespace HomeTicketWeb.Pages.Dashboard
 {
     public partial class LoginPage : ComponentBase
     {
-        AlertBox box;
         LoginInfo _loginInfo = new LoginInfo();
         string valami;
+
+        [CascadingParameter] MainLayout Layout { get; set; }
 
         public List<string> lista = new List<string>()
         {
@@ -36,28 +37,28 @@ namespace HomeTicketWeb.Pages
         public void ShowAlert()
         {
             Console.WriteLine("ShowAlert() elkezdve");
-            box.SetAlert("Login failed", "Missing login credentials", AlertBox.AlertBoxType.Info);
+            Layout.AlertBox.SetAlert("Login failed", "Missing login credentials", AlertBox.AlertBoxType.Info);
             Console.WriteLine("ShowAlert() befejezve");
         }
 
         public void TestAlert1()
         {
-            box.SetAlert("Test alert", "Call with Onconfirmed info", AlertBox.AlertBoxType.Info, TestConfirm);
+            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed info", AlertBox.AlertBoxType.Info, TestConfirm);
         }
 
         public void TestAlert2()
         {
-            box.SetAlert("Test alert", "Call with Onconfirmed warning", AlertBox.AlertBoxType.Warning, TestConfirm);
+            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed warning", AlertBox.AlertBoxType.Warning, TestConfirm);
         }
 
         public void TestAlert3()
         {
-            box.SetAlert("Test alert", "Call with Onconfirmed error", AlertBox.AlertBoxType.Error, TestConfirm);
+            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed error", AlertBox.AlertBoxType.Error, TestConfirm);
         }
 
         public void TestAlert4()
         {
-            box.SetAlert("Test alert", "Call with Onconfirmed question", AlertBox.AlertBoxType.Question, DeleteFromLista, TestCancel);
+            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed question", AlertBox.AlertBoxType.Question, DeleteFromLista, TestCancel);
         }
 
         public void TestConfirm()

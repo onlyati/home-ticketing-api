@@ -1,0 +1,20 @@
+﻿<div class="ati-appitem-border" @onclick="Navigate">
+    <img src="@Icon" class="ati-appitem-img" />
+    @Title
+</div>
+
+
+@code {
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Route { get; set; }
+    [Parameter] public string Icon { get; set; }
+
+    [CascadingParameter] public TaskBar AppsVisible { get; set; }
+
+    public void Navigate()
+    {
+        AppsVisible.Hide();
+        NavManager.NavigateTo(Route);
+        StateHasChanged();
+    }
+}

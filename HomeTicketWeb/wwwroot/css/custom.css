@@ -1,4 +1,9 @@
-﻿.ati-bg-dark-purple {
+﻿body, html {
+    background-image: radial-gradient(#84CEEB 15%, #5AB9EA 30%, #C1C8E4 60%);
+    background-attachment: fixed;
+}
+
+.ati-bg-dark-purple {
     background-color: #8860D0!important
 }
 
@@ -21,3 +26,134 @@
 .ati-bg-primary {
     background-color: #007bff !important
 }
+
+.ati-window-title {
+    color: white;
+    background-color: #8860D0 !important;
+    padding: 5px 21px;
+}
+
+.ati-taskbar {
+    background-color: #5680E9 !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+}
+
+.ati-taskbar-applications {
+    position: fixed;
+    bottom: 55px;
+    left: 13px;
+    background-color: white;
+    border-color: #8860D0;
+    border-width: medium;
+    border-style: solid;
+    border-radius: 8px;
+    height: 500px;
+    width: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.ati-appitem-img {
+    width: 55px;
+    height: 55px;
+    margin-right: 8px;
+}
+
+.ati-appitem-border {
+    padding: 13px 21px;
+    transition: all .2s ease-in-out;
+}
+
+    .ati-appitem-border:hover {
+        padding: 13px 21px;
+        background-color: #C1C8E4;
+        cursor: pointer;
+        transform: scale(1.1);
+    }
+
+.ati-center-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.ati-btn-primary {
+    background-image: linear-gradient(to right, #8860D0 35%, #5680E9);
+    color: white !important;
+    transition: all .2s ease-in-out;
+    border-color: transparent;
+}
+
+    .ati-btn-primary:hover {
+        background-image: linear-gradient(to right, #8860D0 35%, #5680E9);
+        color: white !important;
+        transform: scale(1.1);
+        border-color: #8860D0;
+    }
+
+    .ati-btn-primary:active {
+        background-image: linear-gradient(to right, #8860D0 35%, #5680E9);
+        color: white !important;
+        transform: scale(0.9);
+        border-color: #8860D0;
+    }
+
+    .ati-btn-primary:disabled {
+        background-image: linear-gradient(to right, #8860D0 35%, #5680E9);
+        color: white !important;
+        transform: scale(1);
+        border-color: #8860D0;
+    }
+
+.ati-btn-secondary {
+    background-image: linear-gradient(to right, #5680E9 35%, #5AB9EA);
+    color: white !important;
+    transition: all .2s ease-in-out;
+    border-color: #8860D0;
+}
+
+    .ati-btn-secondary:hover {
+        background-image: linear-gradient(to right, #5680E9 35%, #5AB9EA);
+        color: white !important;
+        transform: scale(1.1);
+        border-color: #8860D0;
+    }
+
+    .ati-btn-secondary:active {
+        background-image: linear-gradient(to right, #5680E9 35%, #5AB9EA);
+        color: white !important;
+        transform: scale(0.9);
+        border-color: #8860D0;
+    }
+
+    .ati-btn-secondary:disabled {
+        background-image: linear-gradient(to right, #5680E9 35%, #5AB9EA);
+        color: white !important;
+        transform: scale(1);
+        border-color: #8860D0;
+    }
+
+.ati-btn-application {
+    background-color: #8860D0;
+    color: white !important;
+    border-radius: 0px;
+    padding: 5px 10px;
+    border-color: transparent;
+    font-size: 18px;
+}
+
+    .ati-btn-application:focus {
+        background-color: #8860D0;
+        color: white !important;
+        border-radius: 0px;
+        padding: 5px 10px;
+        border-color: transparent;
+        font-size: 18px;
+        outline: none;
+    }
+
