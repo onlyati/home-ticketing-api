@@ -13,11 +13,24 @@ namespace HomeTicketWeb.Model
 
         public string Image { get; set; }
 
-        public TaskBarMenuItem(string title, string route, string image)
+        public string Text { get; set; }
+
+        public TaskBarMenuItem(string title, string route, string image, string text)
         {
             Title = title;
             Route = route;
             Image = image;
+            Text = text;
+        }
+
+        public bool CompareRoute(string otherPath)
+        {
+            if (otherPath == "/")
+                return this.Route == otherPath;
+            else if (otherPath == "/index")
+                return this.Route == "/";
+            else
+                return otherPath.StartsWith(this.Route);
         }
     }
 }

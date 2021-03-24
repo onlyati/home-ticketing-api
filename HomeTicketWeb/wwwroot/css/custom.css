@@ -52,9 +52,17 @@
     border-style: solid;
     border-radius: 8px;
     height: 500px;
-    width: 350px;
+    width: 700px;
     overflow-y: auto;
     overflow-x: hidden;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
+
+.ati-taskbar-description {
+    background-color: #C1C8E4 !important;
+    height: auto;
+    overflow-y: auto;
+    text-wrap: normal;
 }
 
 .ati-appitem-img {
@@ -156,4 +164,33 @@
         font-size: 18px;
         outline: none;
     }
+
+.ati-popup-box {
+    background-color: white;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-color: #8860D0;
+    border-width: medium;
+    border-style: solid;
+    border-radius: 8px;
+    min-width: 350px;
+}
+
+.ati-login-element {
+    margin: 8px 21px;
+    text-align: center;
+}
+
+.ati-login-input {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
 

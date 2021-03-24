@@ -2,14 +2,12 @@
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using HomeTicketWeb.Components;
 using HomeTicketWeb.Shared;
+using HomeTicketWeb.Components;
 
 namespace HomeTicketWeb.Pages.Dashboard
 {
-    public partial class LoginPage : ComponentBase
+    public partial class Dashboard : ComponentBase
     {
         LoginInfo _loginInfo = new LoginInfo();
         string valami;
@@ -22,6 +20,17 @@ namespace HomeTicketWeb.Pages.Dashboard
             new string("Kettő"),
             new string("Mi az hogy kettű??")
         };
+
+        protected override void OnInitialized()
+        {
+            if(User.Role == null || User.UserName == null)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+                NavManager.NavigateTo("/");
+            }
+        }
 
         public void DeleteFromLista()
         {

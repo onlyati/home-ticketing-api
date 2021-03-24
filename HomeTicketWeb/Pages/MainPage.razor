@@ -1,0 +1,77 @@
+﻿@page "/"
+@page "/index" 
+
+@if (User.UserName == null || User.Role == null)
+{
+    <Popup>
+        <EditForm Model="@Info" OnValidSubmit="Login" OnInvalidSubmit="ValidateError">
+            <DataAnnotationsValidator />
+            <div class="ati-window-title">
+                <h5>Authorization is required!</h5>
+            </div>
+            <div class="ati-login-element">
+                <input type="text" class="ati-login-input" placeholder="Username" @bind="@Info.UserName" />
+            </div>
+            <div class="ati-login-element">
+                <input type="password" class="ati-login-input" placeholder="Password" @bind="@Info.Password" />
+            </div>
+            <div class="ati-login-element">
+                <button type="submit" class="btn ati-btn-primary">Let me in!</button>
+            </div>
+        </EditForm>
+    </Popup>
+}
+else
+{
+    <Popup>
+        <div class="ati-login-element">
+            <h5 class="text-center">Welcome @User.UserName!</h5>
+            <p>I'm galad to see you. You can chose applications from the task bar or you can logoff if you are done</p>
+            <button class="btn ati-btn-secondary text-center" @onclick="Logoff">Hasta la vista!</button>
+        </div>
+    </Popup>
+}
+
+@code {
+    private LoginInfo Info = new LoginInfo();
+
+    [CascadingParameter] MainLayout Layout { get; set; }
+
+    private void Login()
+    {
+        if (Info.UserName == "God" && Info.Password == "admin")
+        {
+            User.UserName = Info.UserName;
+            User.Role = UserRole.Admin;
+        }
+        else if(Info.UserName == "Béla" && Info.Password == "user")
+        {
+            User.UserName = Info.UserName;
+            User.Role = UserRole.User;
+        }
+        else
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Invalid username or password", "Your username or password is invalid, sorry you can't get in :-(", AlertBox.AlertBoxType.Warning);
+        }
+
+        Info = new LoginInfo();
+        StateHasChanged();
+    }
+
+    private void Logoff()
+    {
+        User.UserName = null;
+        User.Role = null;
+        Info = new LoginInfo();
+        StateHasChanged();
+    }
+
+    private void ValidateError()
+    {
+        if (Layout != null)
+            if (Layout.AlertBox != null)
+                Layout.AlertBox.SetAlert("Missing login credentials", "Username and password fields are mandatory!", AlertBox.AlertBoxType.Info);
+    }
+}

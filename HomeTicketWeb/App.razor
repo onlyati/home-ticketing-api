@@ -4,7 +4,12 @@
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(MainLayout)">
-            <p>Sorry, there's nothing at this address.</p>
+            <Popup>
+                <div class="ati-login-element">
+                    <h5>These aren't the droids you're looking for...</h5>
+                    <p>It seems the page does not exist :-(</p>
+                </div>
+            </Popup>
         </LayoutView>
     </NotFound>
 </Router>

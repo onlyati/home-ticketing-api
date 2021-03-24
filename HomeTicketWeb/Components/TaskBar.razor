@@ -2,21 +2,33 @@
 @if (IsVisible)
 {
     <div class="ati-taskbar-applications">
-        <div class="ati-window-title">
-            <h5>Available applications</h5>
-        </div>
         @if (AppList == null)
         {
             <p>Loading...</p>
         }
         else
         {
-        <CascadingValue Value="this">
-            @foreach (var item in AppList)
-            {
-                <ApplicationItem Icon="@item.Image" Title="@item.Title" Route="@item.Route" />
-            }
-        </CascadingValue>
+            <div class="row" style="height: 100%">
+                <div class="col">
+                    <CascadingValue Value="this">
+                        @foreach (var item in AppList)
+                        {
+                            <ApplicationItem Icon="@item.Image" Title="@item.Title" Route="@item.Route" Text="@item.Text" />
+                        }
+                    </CascadingValue>
+                </div>
+                <div class="col ati-taskbar-description">
+                    <div class="row justify-content-center mb-3 mt-3">
+                        <img src="@DescIcon" width="144" height="144" />
+                    </div>
+                    <div class="row justify-content-center mb-8">
+                        <h5>@DescTitle</h5>
+                    </div>
+                    <div class="row mr-3 ml-3">
+                        @DescText
+                    </div>
+                </div>
+            </div>
         }
     </div>
 }
@@ -28,10 +40,41 @@
 
 @code {
     [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
+
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
+    ApplicationItem AppItem;
+
     private bool IsVisible = false;
+    private string DescText;
+    private string DescTitle;
+    private string DescIcon;
+
+    public void ShowDescription(string title, string icon, string text)
+    {
+        DescText = text;
+        DescIcon = icon;
+        DescTitle = title;
+        StateHasChanged();
+    }
 
     private void Usage()
     {
+        string actPage = NavManager.Uri.Substring(NavManager.BaseUri.Length - 1);
+        if (actPage == "") actPage = "/";
+
+        foreach (var item in Layout.Apps)
+        {
+            if(item.CompareRoute(actPage))
+            {
+                DescIcon = item.Image;
+                DescText = item.Text;
+                DescTitle = item.Title;
+            }
+        }
+
+        Console.WriteLine($"{actPage} - {DescIcon};{DescTitle};{DescText}");
+
         IsVisible = !IsVisible;
         StateHasChanged();
     }
