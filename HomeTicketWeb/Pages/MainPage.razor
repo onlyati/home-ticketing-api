@@ -65,6 +65,16 @@ else
         User.UserName = null;
         User.Role = null;
         Info = new LoginInfo();
+
+        if (Layout != null)
+            if (Layout.Bar != null)
+                Layout.Bar.ClearOpenedApp();
+
+        if(ticket != null)
+        {
+            ticket.SetNull();
+        }
+
         StateHasChanged();
     }
 

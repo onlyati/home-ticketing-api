@@ -1,0 +1,50 @@
+﻿@page "/admin"
+
+<div class="ati-full-window">
+    <div class="row ati-window-title m-0">
+        <div class="col">
+            <h5>Play a God, you are an admin now!</h5>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@CloseWindow">
+                <img src="img/close-icon.png" height="25" width="25" />
+            </button>
+        </div>
+    </div>
+    <div class="bg-white">
+        <div class="container">
+            <h5>Add new user</h5>
+            <hr />
+
+        </div>        
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (User.Role != UserRole.Admin || User.UserName == null)
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+
+            if (Layout != null)
+                if (Layout.Bar != null)
+                    Layout.Bar.RemoveOpenedApp("/admin");
+
+            NavManager.NavigateTo("/");
+        }
+    }
+
+    public void CloseWindow()
+    {
+        if (Layout != null)
+            if (Layout.Bar != null)
+                Layout.Bar.RemoveOpenedApp("/admin");
+
+        NavManager.NavigateTo("/");
+    }
+}

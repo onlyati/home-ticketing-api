@@ -1,5 +1,4 @@
-﻿
-@if (IsVisible)
+﻿@if (IsVisible)
 {
     <div class="ati-taskbar-applications">
         @if (AppList == null)
@@ -33,7 +32,20 @@
     </div>
 }
 <div class="ati-taskbar">
-    <button class="ati-btn-application" @onclick="@Usage">Applications</button>
+    <div class="row m-0">
+        <div class="float-left">
+            <button class="ati-btn-application" @onclick="@Usage">Applications</button>
+        </div>
+        @foreach (var item in OpenedApps)
+        {
+            <div class="float-right">
+                <button class="ati-btn-appitem" @onclick="() => NavManager.NavigateTo(item.Route)">
+                    <img src="@item.Image" width="21" height="21" />
+                    @item.Title
+                </button>
+            </div>
+        }
+    </div>
 </div>
 
 
@@ -43,12 +55,64 @@
 
     [CascadingParameter] public MainLayout Layout { get; set; }
 
+    public List<TaskBarMenuItem> OpenedApps = new List<TaskBarMenuItem>();
+
     ApplicationItem AppItem;
 
     private bool IsVisible = false;
     private string DescText;
     private string DescTitle;
     private string DescIcon;
+
+    public void AddOpenedApp(string route)
+    {
+        if (route == "/" || route == "/index")
+            return;
+
+        TaskBarMenuItem app = null;
+        foreach (var item in AppList)
+        {
+            if (item.CompareRoute(route))
+                app = item;
+        }
+
+        if (app != null)
+        {
+            var isContain = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
+            if (isContain == null)
+            {
+                var record = AppList.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
+                OpenedApps.Add(record);
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    public void RemoveOpenedApp(string route)
+    {
+        TaskBarMenuItem app = null;
+        foreach (var item in AppList)
+        {
+            if (item.CompareRoute(route))
+                app = item;
+        }
+
+        if (app != null)
+        {
+            var record = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
+            if (record != null)
+                OpenedApps.Remove(record);
+        }
+
+        StateHasChanged();
+    }
+
+    public void ClearOpenedApp()
+    {
+        OpenedApps.Clear();
+        StateHasChanged();
+    }
 
     public void ShowDescription(string title, string icon, string text)
     {

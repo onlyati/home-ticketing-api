@@ -1,0 +1,104 @@
+﻿@page "/open"
+
+<Popup>
+    @if(ticket != null)
+    {
+        <EditForm Model="@ticket" OnValidSubmit="SendRequest" OnInvalidSubmit="MissingInput">
+            <DataAnnotationsValidator />
+            <div style="width: 550px">
+                <div class="row ati-window-title m-0">
+                    <div class="col">
+                        <h5>Create work for someone!</h5>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="close" aria-label="Close" @onclick="@CloseWindow">
+                            <img src="img/close-icon.png" height="25" width="25" />
+                        </button>
+                    </div>
+                </div>
+                <div class="ati-login-element">
+                    <input type="text" class="ati-login-input" placeholder="Title - What is the topic of ticket?" @bind="@ticket.Title" />
+                </div>
+                <div class="ati-login-element">
+                    <input type="text" class="ati-login-input" placeholder="Summary - Short description" @bind="@ticket.Summary" />
+                </div>
+                <div class="ati-login-element">
+                    <select class="ati-select" @bind="@ticket.SystemName">
+                        <option value="" selected></option>
+                        <option value="atihome">atihome</option>
+                        <option value="test-system-1">test-system-1</option>
+                    </select>
+                </div>
+                <div class="ati-login-element">
+                    <select class="ati-select" @bind="@ticket.CategoryName">
+                        <option value="" selected></option>
+                        <option value="System">System</option>
+                        <option value="Network">Network</option>
+                        <option value="Storage">Storage</option>
+                        <option value="Database">Database</option>
+                        <option value="Application">Application</option>
+                    </select>
+                </div>
+                <div class="ati-login-element">
+                    <textarea class="ati-login-textarea" placeholder="If you want say more, write there" @bind="@ticket.Details" />
+                </div>
+                <div class="ati-login-element">
+                    <button type="submit" class="btn ati-btn-primary">Submit</button>
+                </div>
+            </div>
+
+        </EditForm>
+    }
+</Popup>
+
+@code {     
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (User.Role == null || User.UserName == null)
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+
+            if (Layout != null)
+                if (Layout.Bar != null)
+                    Layout.Bar.RemoveOpenedApp("/open");
+
+            NavManager.NavigateTo("/");
+        }
+    }
+
+    private void MissingInput()
+    {
+        if (User.Role != null && User.UserName != null)
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Missing input", "One or more field has not been filled with value", AlertBox.AlertBoxType.Warning);
+        }
+    }
+
+    private void SendRequest()
+    {
+        if (User.Role != null && User.UserName != null)
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Successfully request", "Ticket has been opened", AlertBox.AlertBoxType.Info);
+        }
+    }
+
+    public void CloseWindow()
+    {
+        if (ticket != null)
+            ticket.SetNull();
+
+        if (Layout != null)
+            if (Layout.Bar != null)
+                Layout.Bar.RemoveOpenedApp("/open");
+
+        NavManager.NavigateTo("/");
+    }
+}

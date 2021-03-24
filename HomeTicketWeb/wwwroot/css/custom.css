@@ -165,6 +165,27 @@
         outline: none;
     }
 
+.ati-btn-appitem {
+    background-color: #5AB9EA;
+    color: white !important;
+    border-radius: 0px;
+    padding: 5px 10px;
+    border-color: transparent;
+    font-size: 18px;
+    float: left;
+    margin: 0 3px;
+}
+
+    .ati-btn-appitem:focus {
+        background-color: #5AB9EA;
+        color: white !important;
+        border-radius: 0px;
+        padding: 5px 10px;
+        border-color: transparent;
+        font-size: 18px;
+        float: left;
+    }
+
 .ati-popup-box {
     background-color: white;
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
@@ -179,6 +200,17 @@
     min-width: 350px;
 }
 
+.ati-full-window {
+    background-color: white;
+    height: 100%;
+    width: 100%;
+    border-color: #8860D0;
+    border-width: medium;
+    border-style: solid;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
 .ati-login-element {
     margin: 8px 21px;
     text-align: center;
@@ -186,7 +218,27 @@
 
 .ati-login-input {
     width: 100%;
-    padding: 12px 20px;
+    padding: 12px 21px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.ati-login-textarea {
+    width: 100%;
+    padding: 12px 21px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    max-height: 250px;
+}
+
+.ati-select {
+    width: 100%;
     margin: 8px 0;
     display: inline-block;
     border: 1px solid #ccc;

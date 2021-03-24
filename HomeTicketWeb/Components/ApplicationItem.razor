@@ -20,6 +20,7 @@
     public void Navigate()
     {
         AppsVisible.Hide();
+        AppsVisible.AddOpenedApp(Route);
         NavManager.NavigateTo(Route);
         StateHasChanged();
     }
