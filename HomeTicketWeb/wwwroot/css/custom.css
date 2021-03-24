@@ -246,3 +246,15 @@
     box-sizing: border-box;
 }
 
+.ati-list-links {
+    list-style-type: none;
+    font-size: initial;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.ati-list-section {
+    list-style-type: none;
+    font-size: 18px;
+    font-weight: bold;
+}

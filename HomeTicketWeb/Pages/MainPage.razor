@@ -71,9 +71,16 @@ else
                 Layout.Bar.ClearOpenedApp();
 
         if(ticket != null)
-        {
             ticket.SetNull();
-        }
+
+        if (AdminCat != null)
+            AdminCat.SetNull();
+
+        if (AdminSys != null)
+            AdminSys.SetNull();
+
+        if (AdminUsr != null)
+            AdminUsr.SetNull();
 
         StateHasChanged();
     }

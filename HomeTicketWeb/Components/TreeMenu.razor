@@ -1,0 +1,15 @@
+﻿
+
+@code {
+    [Parameter] public List<TreeMenuItem> MenuTree { get; set; }
+
+    private List<Tuple<string, TreeMenuItem>> SubMenu { get; set; }
+
+    protected override void OnInitialized()
+    {
+        foreach (var item in MenuTree)
+        {
+            SubMenu.Add(new Tuple<string, TreeMenuItem>(item.Section, item));
+        }
+    }
+}

@@ -6,22 +6,104 @@
             <h5>Play a God, you are an admin now!</h5>
         </div>
         <div class="col-auto">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@CloseWindow">
+            <button type="button" class="close" aria-label="Close" @onclick="@CloseWindow">
                 <img src="img/close-icon.png" height="25" width="25" />
             </button>
         </div>
     </div>
-    <div class="bg-white">
-        <div class="container">
-            <h5>Add new user</h5>
-            <hr />
-
-        </div>        
+    <div class="bg-white container-fluid">
+        <div class="row">
+            <div class="col-auto">
+                <div class="row mr-3">
+                    @((MarkupString)MenuHTML)
+                    @*
+        <ul class="ati-list-section">
+            <li>User actions</li>
+            <ul class="ati-list-links">
+                @foreach (var item in UserMenu)
+                {
+                    <li @onclick="() => ChangeActive(UserMenu, item)">@item.Title</li>
+                }
+            </ul>
+        </ul>
+                    *@
+                </div>
+            </div>
+            <div class="col">
+                @if (UserMenu.Where(s => s.Title.Equals("Add new user")).Select(s => s.Selected).FirstOrDefault())
+                {
+                    <p>Add new user...</p>
+                }
+                @if (UserMenu.Where(s => s.Title.Equals("Change user")).Select(s => s.Selected).FirstOrDefault())
+                {
+                    <p>Change user...</p>
+                }
+                @if (UserMenu.Where(s => s.Title.Equals("Delete user")).Select(s => s.Selected).FirstOrDefault())
+                {
+                    <p>Delete user...</p>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
 @code {
     [CascadingParameter] public MainLayout Layout { get; set; }
+
+    private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()
+    {
+        new TreeMenuItem() { Title = "Add new user", Section = "User settings" },
+        new TreeMenuItem() { Title = "Change user", Section = "User settings" },
+        new TreeMenuItem() { Title = "Delete user", Section = "User settings" },
+        new TreeMenuItem() { Title = "Add new system", Section = "Sytem settings" },
+        new TreeMenuItem() { Title = "Rename system", Section = "Sytem settings" },
+        new TreeMenuItem() { Title = "Delete system", Section = "Sytem settings" },
+        new TreeMenuItem() { Title = "Add new category", Section = "Category settings" },
+        new TreeMenuItem() { Title = "Rename category", Section = "Category settings" },
+        new TreeMenuItem() { Title = "Rename category", Section = "Category settings" },
+    };
+
+    private string MenuHTML = "";
+
+    private void DrawMenu()
+    {
+        MenuHTML = "<ul class=\"ati-list-section\">";
+
+        for(int i = 0; i < UserMenu.Count; i++)
+        {
+            if(i == 0)
+            {
+                MenuHTML += $"<li>{UserMenu[i].Section}</li><ul class=\"ati-list-links\"><li @onclick=\"() => ChangeActive(UserMenu, item)\">{UserMenu[i].Title}</li>";
+            }
+            else
+            {
+                if(UserMenu[i].Section == UserMenu[i - 1].Section)
+                {
+                    MenuHTML += $"<li>{UserMenu[i].Title}</li>";
+                }
+                else
+                {
+                    MenuHTML += $"</ul><li>{UserMenu[i].Section}</li><ul class=\"ati-list-links\"><li @onclick=\"() => ChangeActive(UserMenu, item)\">{UserMenu[i].Title}</li>";
+                }
+            }
+        }
+        MenuHTML += "</ul>";
+
+        StateHasChanged();
+    }
+
+    private void ChangeActive(List<TreeMenuItem> menu, TreeMenuItem selected)
+    {
+        foreach (var item in menu)
+        {
+            if (item.Selected)
+                item.Selected = false;
+
+            if (item.Title == selected.Title)
+                item.Selected = true;
+        }
+        StateHasChanged();
+    }
 
     protected override void OnInitialized()
     {
@@ -37,13 +119,26 @@
 
             NavManager.NavigateTo("/");
         }
+        else
+        {
+            DrawMenu();
+        }
     }
 
-    public void CloseWindow()
+    private void CloseWindow()
     {
         if (Layout != null)
             if (Layout.Bar != null)
                 Layout.Bar.RemoveOpenedApp("/admin");
+
+        if (AdminCat != null)
+            AdminCat.SetNull();
+
+        if (AdminSys != null)
+            AdminSys.SetNull();
+
+        if (AdminUsr != null)
+            AdminUsr.SetNull();
 
         NavManager.NavigateTo("/");
     }
