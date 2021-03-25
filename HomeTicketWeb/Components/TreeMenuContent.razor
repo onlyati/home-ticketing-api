@@ -1,0 +1,16 @@
+﻿@if (TreeMenuRef != null)
+{
+    @if (TreeMenuRef.MenuTree != null)
+    {
+        @if (TreeMenuRef.IsSelected(ID))
+        {
+            @ChildContent
+        }
+    }
+}
+
+@code {
+    [Parameter] public int ID { get; set; }
+    [Parameter] public TreeMenu TreeMenuRef { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

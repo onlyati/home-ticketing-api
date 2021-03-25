@@ -1,40 +1,30 @@
 ﻿@page "/admin"
 
 <div class="ati-full-window">
-    <div class="row ati-window-title m-0">
-        <div class="col">
-            <h5>Play a God, you are an admin now!</h5>
-        </div>
-        <div class="col-auto">
-            <button type="button" class="close" aria-label="Close" @onclick="@CloseWindow">
-                <img src="img/close-icon.png" height="25" width="25" />
-            </button>
-        </div>
-    </div>
-    <div class="bg-white container-fluid">
+    <WindowTitle Title="Play a God, you are and admin now!" CloseAction="@CloseWindow" /> 
+    <div class="bg-white container">
         <div class="row">
             <div class="col-auto">
-                <TreeMenu MenuTree="UserMenu" @ref="TMenu" AfterClick="StateHasChanged" />
+                <CascadingValue Value="AdminPageState.ActMenu">
+                    <TreeMenu MenuTree="UserMenu" @ref="TMenu" AfterClick="UpdateState" />
+                </CascadingValue>
             </div>
             <div class="col">
-                @if (TMenu != null)
-                {
-                    @if (TMenu.MenuTree != null)
-                    {
-                        @if (TMenu.MenuTree.Where(s => s.Title.Equals("Add new user")).Select(s => s.Selected).FirstOrDefault())
-                        {
-                            <p>Add new user...</p>
-                        }
-                        @if (TMenu.MenuTree.Where(s => s.Title.Equals("Change user")).Select(s => s.Selected).FirstOrDefault())
-                        {
-                            <p>Change user...</p>
-                        }
-                        @if (TMenu.MenuTree.Where(s => s.Title.Equals("Delete user")).Select(s => s.Selected).FirstOrDefault())
-                        {
-                            <p>Delete user...</p>
-                        }
-                    }
-                 }
+                <TreeMenuContent ID="1" TreeMenuRef="TMenu">
+                    <p>Add/change/delete users...</p>
+                </TreeMenuContent>
+                <TreeMenuContent ID="2" TreeMenuRef="TMenu">
+                    <p>Assign user to groups...</p>
+                </TreeMenuContent>
+                <TreeMenuContent ID="3" TreeMenuRef="TMenu">
+                    <p>Add/change/delete systems...</p>
+                </TreeMenuContent>
+                <TreeMenuContent ID="4" TreeMenuRef="TMenu">
+                    <p>Add/change/delete category...</p>
+                </TreeMenuContent>
+                <TreeMenuContent ID="5" TreeMenuRef="TMenu">
+                    <p>Assign categories to system...</p>
+                </TreeMenuContent>
             </div>
         </div>
     </div>
@@ -43,19 +33,15 @@
 @code {
     [CascadingParameter] public MainLayout Layout { get; set; }
 
-    private TreeMenu TMenu;
+    public TreeMenu TMenu;
 
     private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()
     {
-        new TreeMenuItem() { Title = "Add new user", Section = "User settings"},
-        new TreeMenuItem() { Title = "Change user", Section = "User settings" },
-        new TreeMenuItem() { Title = "Delete user", Section = "User settings" },
-        new TreeMenuItem() { Title = "Add new system", Section = "Sytem settings" },
-        new TreeMenuItem() { Title = "Rename system", Section = "Sytem settings" },
-        new TreeMenuItem() { Title = "Delete system", Section = "Sytem settings" },
-        new TreeMenuItem() { Title = "Add new category", Section = "Category settings" },
-        new TreeMenuItem() { Title = "Rename category", Section = "Category settings" },
-        new TreeMenuItem() { Title = "Delete category", Section = "Category settings" },
+        new TreeMenuItem() { Title = "User adjustment", Section = "User management", Id = 1 },
+        new TreeMenuItem() { Title = "User-Group assigments", Section = "User management", Id = 2 },
+        new TreeMenuItem() { Title = "System adjustment", Section = "Sytem management", Id = 3 },
+        new TreeMenuItem() { Title = "Category adjustment", Section = "Category management", Id = 4 },
+        new TreeMenuItem() { Title = "Category-System assignments", Section = "Category management", Id = 5 },
     };
 
     protected override void OnInitialized()
@@ -72,6 +58,15 @@
 
             NavManager.NavigateTo("/");
         }
+    }
+
+    public void UpdateState()
+    {
+        if(TMenu != null)
+            if(TMenu.ActMenu != null)
+                AdminPageState.ActMenu = TMenu.ActMenu;
+
+        StateHasChanged();
     }
 
     private void CloseWindow()

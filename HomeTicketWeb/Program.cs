@@ -22,6 +22,7 @@ namespace HomeTicketWeb
             builder.Services.AddSingleton<UserInfo>();
             builder.Services.AddSingleton<CreateTicket>();
             builder.Services.AddSingleton<AdminStatus>();
+            builder.Services.AddSingleton<UserStatus>();
 
             await builder.Build().RunAsync();
         }

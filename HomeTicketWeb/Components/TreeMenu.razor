@@ -24,6 +24,9 @@
     [Parameter] public List<TreeMenuItem> MenuTree { get; set; }
     [Parameter] public EventCallback AfterClick { get; set; }
 
+    [CascadingParameter] public TreeMenuItem ExternalActMenu { get; set; }
+    public TreeMenuItem ActMenu;
+
     private List<List<TreeMenuItem>> SubMenu = new List<List<TreeMenuItem>>();
 
     protected override void OnInitialized()
@@ -51,9 +54,9 @@
             }
         }
 
-        if (AdminPageState.ActMenu != null)
+        if (ExternalActMenu != null)
         {
-            if (AdminPageState.ActMenu.Selected == false)
+            if(ExternalActMenu.Selected == false)
             {
                 MenuTree[0].Selected = true;
             }
@@ -61,7 +64,7 @@
             {
                 foreach (var item in MenuTree)
                 {
-                    if (item.Title == AdminPageState.ActMenu.Title)
+                    if (item.Title == ExternalActMenu.Title)
                         item.Selected = true;
                 }
             }
@@ -81,11 +84,18 @@
             if (item.Title == selected.Title)
                 item.Selected = true;
         }
-        if(AfterClick.HasDelegate)
+
+
+        ActMenu = selected;
+
+        if (AfterClick.HasDelegate)
             AfterClick.InvokeAsync();
 
-        AdminPageState.ActMenu = selected;
-
         StateHasChanged();
+    }
+
+    public bool IsSelected(int id)
+    {
+        return MenuTree.Where(s => s.Id.Equals(id)).Select(s => s.Selected).FirstOrDefault();
     }
 }

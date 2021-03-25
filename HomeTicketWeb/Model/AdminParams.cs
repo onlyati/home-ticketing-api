@@ -13,12 +13,15 @@ namespace HomeTicketWeb.Model
 
         public string Title { get; set; }
 
+        public int Id { get; set; }
+
         public bool Selected { get; set; } = false;
 
         public void SetNull()
         {
             Section = null;
             Title = null;
+            Id = 0;
             Selected = false;
         }
     }

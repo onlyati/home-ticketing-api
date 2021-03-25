@@ -6,9 +6,7 @@
     <Popup>
         <EditForm Model="@Info" OnValidSubmit="Login" OnInvalidSubmit="ValidateError">
             <DataAnnotationsValidator />
-            <div class="ati-window-title">
-                <h5>Authorization is required!</h5>
-            </div>
+            <WindowTitle Title="Authorization is required!" ShowClose="false" />
             <div class="ati-login-element">
                 <input type="text" class="ati-login-input" placeholder="Username" @bind="@Info.UserName" />
             </div>

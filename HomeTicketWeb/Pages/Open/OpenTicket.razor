@@ -6,16 +6,7 @@
         <EditForm Model="@OpenPageState" OnValidSubmit="SendRequest" OnInvalidSubmit="MissingInput">
             <DataAnnotationsValidator />
             <div style="width: 550px">
-                <div class="row ati-window-title m-0">
-                    <div class="col">
-                        <h5>Create work for someone!</h5>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="close" aria-label="Close" @onclick="@CloseWindow">
-                            <img src="img/close-icon.png" height="25" width="25" />
-                        </button>
-                    </div>
-                </div>
+                <WindowTitle Title="Make work for somebody!" CloseAction="@CloseWindow" />
                 <div class="ati-login-element">
                     <input type="text" class="ati-login-input" placeholder="Title - What is the topic of ticket?" @bind="@OpenPageState.Title" />
                 </div>

@@ -1,0 +1,69 @@
+﻿@page "/user"
+
+<div class="ati-full-window">
+    <WindowTitle Title="It is your nice profile" CloseAction="@CloseWindow" />
+    <div class="bg-white container">
+        <div class="row">
+            <div class="col-auto">
+                <CascadingValue Value="UserPageState.ActMenu">
+                    <TreeMenu MenuTree="UserMenu" @ref="TMenu" AfterClick="UpdateState" />
+                </CascadingValue>
+            </div>
+            <div class="col">
+                <TreeMenuContent ID="1" TreeMenuRef="TMenu">
+                    <p>Display your data...</p>
+                </TreeMenuContent>
+                <TreeMenuContent ID="2" TreeMenuRef="TMenu">
+                    <p>Change your settings...</p>
+                </TreeMenuContent>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public MainLayout Layout { get; set; }
+
+    public TreeMenu TMenu;
+
+    private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()
+    {
+        new TreeMenuItem() { Title = "Display data", Section = "User management", Id = 1 },
+        new TreeMenuItem() { Title = "Change your profile", Section = "User management", Id = 2 },
+    };
+
+    protected override void OnInitialized()
+    {
+        if (User.Role == null || User.UserName == null)
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+
+            if (Layout != null)
+                if (Layout.Bar != null)
+                    Layout.Bar.RemoveOpenedApp("/user");
+
+            NavManager.NavigateTo("/");
+        }
+    }
+
+    public void UpdateState()
+    {
+        if (TMenu != null)
+            if (TMenu.ActMenu != null)
+                UserPageState.ActMenu = TMenu.ActMenu;
+
+        StateHasChanged();
+    }
+
+    private void CloseWindow()
+    {
+        if (UserPageState != null)
+            UserPageState.SetNull();
+
+        if (Layout != null)
+            if (Layout.Bar != null)
+                Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
+    }
+}
