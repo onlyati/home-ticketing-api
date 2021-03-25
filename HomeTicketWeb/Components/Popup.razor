@@ -1,7 +1,52 @@
-﻿<div class="ati-popup-box">
+﻿<div class="ati-popup-box"  style="top: @yCssPos; left: @xCssPos; transform: @transformCss"
+     @ondragstart="BeginDrag" @ondragend="EndDrag" id="#PopupBox">
     @ChildContent
 </div>
 
 @code {
     [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private double xPos1, yPos1;
+    private double? xPos2 = null, yPos2 = null;
+    private string xCssPos = "50%", yCssPos = "50%", transformCss = "translate(-50%, -50%)";
+
+    public async Task BeginDrag(DragEventArgs e)
+    {
+        JSCalls call = new JSCalls(js);
+        var dimensions = await call.GetBounds("#PopupBox");
+        var window = await call.GetBrowserDimensionAsync();
+
+        if (xPos2 == null)
+            xPos2 = (window.Width - dimensions.Width) / 2;
+
+        if (yPos2 == null)
+            yPos2 = (window.Height - dimensions.Height) / 2;
+
+        xPos1 = e.ClientX;
+        yPos1 = e.ClientY;
+
+        Console.WriteLine($"Before: P1 = {xPos1},{yPos1};P2 = {xPos2},{yPos2}; Div = {dimensions.Height}x{dimensions.Width}; Screen: {window.Height}x{window.Width}");
+    }
+
+    public async Task EndDrag(DragEventArgs e)
+    {
+        transformCss = "none";
+        xPos2 += e.ClientX - xPos1;
+        yPos2 += e.ClientY - yPos1;
+
+        if (xPos2 < 0) xPos2 = 0;
+        if (yPos2 < 0) yPos2 = 0;
+
+        JSCalls call = new JSCalls(js);
+        var window = await call.GetBrowserDimensionAsync();
+        var dimensions = await call.GetBounds("#PopupBox");
+
+        if (xPos2 > window.Width - dimensions.Width) xPos2 = window.Width - dimensions.Width;
+        if (yPos2 > window.Height - dimensions.Height) yPos2 = window.Height - dimensions.Height;
+
+        xCssPos = $"{Convert.ToInt32(xPos2)}px";
+        yCssPos = $"{Convert.ToInt32(yPos2)}px";
+
+        Console.WriteLine($"New offset: {xCssPos},{yCssPos};");
+    }
 }

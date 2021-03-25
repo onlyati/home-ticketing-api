@@ -204,12 +204,19 @@
     background-color: white;
     height: 100%;
     width: 100%;
+    background-color: #C1C8E4 !important;
     border-color: #8860D0;
     border-width: medium;
     border-style: solid;
     border-radius: 8px;
     margin-top: 8px;
     box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
+
+.ati-full-window-content {
+    background-color: white;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 
 .ati-login-element {
