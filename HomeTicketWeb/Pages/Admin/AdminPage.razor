@@ -14,34 +14,27 @@
     <div class="bg-white container-fluid">
         <div class="row">
             <div class="col-auto">
-                <div class="row mr-3">
-                    @((MarkupString)MenuHTML)
-                    @*
-        <ul class="ati-list-section">
-            <li>User actions</li>
-            <ul class="ati-list-links">
-                @foreach (var item in UserMenu)
-                {
-                    <li @onclick="() => ChangeActive(UserMenu, item)">@item.Title</li>
-                }
-            </ul>
-        </ul>
-                    *@
-                </div>
+                <TreeMenu MenuTree="UserMenu" @ref="TMenu" AfterClick="StateHasChanged" />
             </div>
             <div class="col">
-                @if (UserMenu.Where(s => s.Title.Equals("Add new user")).Select(s => s.Selected).FirstOrDefault())
+                @if (TMenu != null)
                 {
-                    <p>Add new user...</p>
-                }
-                @if (UserMenu.Where(s => s.Title.Equals("Change user")).Select(s => s.Selected).FirstOrDefault())
-                {
-                    <p>Change user...</p>
-                }
-                @if (UserMenu.Where(s => s.Title.Equals("Delete user")).Select(s => s.Selected).FirstOrDefault())
-                {
-                    <p>Delete user...</p>
-                }
+                    @if (TMenu.MenuTree != null)
+                    {
+                        @if (TMenu.MenuTree.Where(s => s.Title.Equals("Add new user")).Select(s => s.Selected).FirstOrDefault())
+                        {
+                            <p>Add new user...</p>
+                        }
+                        @if (TMenu.MenuTree.Where(s => s.Title.Equals("Change user")).Select(s => s.Selected).FirstOrDefault())
+                        {
+                            <p>Change user...</p>
+                        }
+                        @if (TMenu.MenuTree.Where(s => s.Title.Equals("Delete user")).Select(s => s.Selected).FirstOrDefault())
+                        {
+                            <p>Delete user...</p>
+                        }
+                    }
+                 }
             </div>
         </div>
     </div>
@@ -50,9 +43,11 @@
 @code {
     [CascadingParameter] public MainLayout Layout { get; set; }
 
+    private TreeMenu TMenu;
+
     private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()
     {
-        new TreeMenuItem() { Title = "Add new user", Section = "User settings" },
+        new TreeMenuItem() { Title = "Add new user", Section = "User settings"},
         new TreeMenuItem() { Title = "Change user", Section = "User settings" },
         new TreeMenuItem() { Title = "Delete user", Section = "User settings" },
         new TreeMenuItem() { Title = "Add new system", Section = "Sytem settings" },
@@ -62,48 +57,6 @@
         new TreeMenuItem() { Title = "Rename category", Section = "Category settings" },
         new TreeMenuItem() { Title = "Rename category", Section = "Category settings" },
     };
-
-    private string MenuHTML = "";
-
-    private void DrawMenu()
-    {
-        MenuHTML = "<ul class=\"ati-list-section\">";
-
-        for(int i = 0; i < UserMenu.Count; i++)
-        {
-            if(i == 0)
-            {
-                MenuHTML += $"<li>{UserMenu[i].Section}</li><ul class=\"ati-list-links\"><li @onclick=\"() => ChangeActive(UserMenu, item)\">{UserMenu[i].Title}</li>";
-            }
-            else
-            {
-                if(UserMenu[i].Section == UserMenu[i - 1].Section)
-                {
-                    MenuHTML += $"<li>{UserMenu[i].Title}</li>";
-                }
-                else
-                {
-                    MenuHTML += $"</ul><li>{UserMenu[i].Section}</li><ul class=\"ati-list-links\"><li @onclick=\"() => ChangeActive(UserMenu, item)\">{UserMenu[i].Title}</li>";
-                }
-            }
-        }
-        MenuHTML += "</ul>";
-
-        StateHasChanged();
-    }
-
-    private void ChangeActive(List<TreeMenuItem> menu, TreeMenuItem selected)
-    {
-        foreach (var item in menu)
-        {
-            if (item.Selected)
-                item.Selected = false;
-
-            if (item.Title == selected.Title)
-                item.Selected = true;
-        }
-        StateHasChanged();
-    }
 
     protected override void OnInitialized()
     {
@@ -119,27 +72,15 @@
 
             NavManager.NavigateTo("/");
         }
-        else
-        {
-            DrawMenu();
-        }
     }
 
     private void CloseWindow()
     {
+        if (AdminPageState != null)
+            AdminPageState.SetNull();
+
         if (Layout != null)
             if (Layout.Bar != null)
-                Layout.Bar.RemoveOpenedApp("/admin");
-
-        if (AdminCat != null)
-            AdminCat.SetNull();
-
-        if (AdminSys != null)
-            AdminSys.SetNull();
-
-        if (AdminUsr != null)
-            AdminUsr.SetNull();
-
-        NavManager.NavigateTo("/");
+                Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
     }
 }

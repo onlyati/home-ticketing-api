@@ -1,9 +1,9 @@
 ﻿@page "/open"
 
 <Popup>
-    @if(ticket != null)
+    @if(OpenPageState != null)
     {
-        <EditForm Model="@ticket" OnValidSubmit="SendRequest" OnInvalidSubmit="MissingInput">
+        <EditForm Model="@OpenPageState" OnValidSubmit="SendRequest" OnInvalidSubmit="MissingInput">
             <DataAnnotationsValidator />
             <div style="width: 550px">
                 <div class="row ati-window-title m-0">
@@ -17,20 +17,20 @@
                     </div>
                 </div>
                 <div class="ati-login-element">
-                    <input type="text" class="ati-login-input" placeholder="Title - What is the topic of ticket?" @bind="@ticket.Title" />
+                    <input type="text" class="ati-login-input" placeholder="Title - What is the topic of ticket?" @bind="@OpenPageState.Title" />
                 </div>
                 <div class="ati-login-element">
-                    <input type="text" class="ati-login-input" placeholder="Summary - Short description" @bind="@ticket.Summary" />
+                    <input type="text" class="ati-login-input" placeholder="Summary - Short description" @bind="@OpenPageState.Summary" />
                 </div>
                 <div class="ati-login-element">
-                    <select class="ati-select" @bind="@ticket.SystemName">
+                    <select class="ati-select" @bind="@OpenPageState.SystemName">
                         <option value="" selected></option>
                         <option value="atihome">atihome</option>
                         <option value="test-system-1">test-system-1</option>
                     </select>
                 </div>
                 <div class="ati-login-element">
-                    <select class="ati-select" @bind="@ticket.CategoryName">
+                    <select class="ati-select" @bind="@OpenPageState.CategoryName">
                         <option value="" selected></option>
                         <option value="System">System</option>
                         <option value="Network">Network</option>
@@ -40,7 +40,7 @@
                     </select>
                 </div>
                 <div class="ati-login-element">
-                    <textarea class="ati-login-textarea" placeholder="If you want say more, write there" @bind="@ticket.Details" />
+                    <textarea class="ati-login-textarea" placeholder="If you want say more, write there" @bind="@OpenPageState.Details" />
                 </div>
                 <div class="ati-login-element">
                     <button type="submit" class="btn ati-btn-primary">Submit</button>
@@ -92,13 +92,11 @@
 
     public void CloseWindow()
     {
-        if (ticket != null)
-            ticket.SetNull();
+        if (OpenPageState != null)
+            OpenPageState.SetNull();
 
         if (Layout != null)
             if (Layout.Bar != null)
-                Layout.Bar.RemoveOpenedApp("/open");
-
-        NavManager.NavigateTo("/");
+                Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
     }
 }

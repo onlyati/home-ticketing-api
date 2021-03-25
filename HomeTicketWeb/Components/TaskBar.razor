@@ -91,6 +91,9 @@
 
     public void RemoveOpenedApp(string route)
     {
+        if (route == "/index")
+            route = "/";
+
         TaskBarMenuItem app = null;
         foreach (var item in AppList)
         {
@@ -106,6 +109,16 @@
         }
 
         StateHasChanged();
+
+        if(OpenedApps.Count == 0)
+        {
+            NavManager.NavigateTo("/");
+        }
+        else
+        {
+            NavManager.NavigateTo(OpenedApps[OpenedApps.Count - 1].Route);
+        }
+
     }
 
     public void ClearOpenedApp()
@@ -136,8 +149,6 @@
                 DescTitle = item.Title;
             }
         }
-
-        Console.WriteLine($"{actPage} - {DescIcon};{DescTitle};{DescText}");
 
         IsVisible = !IsVisible;
         StateHasChanged();

@@ -22,6 +22,32 @@ namespace HomeTicketWeb.Model
         }
     }
 
+    public class AdminStatus
+    {
+        public AdminAddCategory AdminCat { get; set; }
+
+        public AdminAddSystem AdminSys { get; set; }
+        
+        public AdminAddUser AdminUser { get; set; }
+
+        public AdminStatus()
+        {
+            AdminCat = new AdminAddCategory();
+            AdminSys = new AdminAddSystem();
+            AdminUser = new AdminAddUser();
+        }
+
+        public void SetNull()
+        {
+            if (AdminCat != null)
+                AdminCat.SetNull();
+            if (AdminSys != null)
+                AdminSys.SetNull();
+            if (AdminUser != null)
+                AdminUser.SetNull();
+        }
+    }
+
     public class AdminAddUser
     {
         [Required]

@@ -1,15 +1,64 @@
-﻿
+﻿@if (SubMenu != null)
+{
+    @foreach (var MenuHeader in SubMenu)
+    {
+         <ul class="ati-list-section">
+             <li>@MenuHeader[0].Section</li>
+             <ul class="ati-list-links">
+                 @foreach (var MenuLink in MenuHeader)
+                 {
+                     <li @onclick="() => ChangeActive(MenuTree, MenuLink)">@MenuLink.Title</li>
+                 }
+             </ul>
+         </ul>
+    }
+}
+
 
 @code {
     [Parameter] public List<TreeMenuItem> MenuTree { get; set; }
+    [Parameter] public EventCallback AfterClick { get; set; }
 
-    private List<Tuple<string, TreeMenuItem>> SubMenu { get; set; }
+    private List<List<TreeMenuItem>> SubMenu = new List<List<TreeMenuItem>>();
 
     protected override void OnInitialized()
     {
-        foreach (var item in MenuTree)
+        int list_number = 0;
+        for (int i = 0; i < MenuTree.Count; i++)
         {
-            SubMenu.Add(new Tuple<string, TreeMenuItem>(item.Section, item));
+            if(i == 0)
+            {
+                SubMenu.Add(new List<TreeMenuItem>());
+                SubMenu[list_number].Add(MenuTree[i]);
+            }
+            else
+            {
+                if(MenuTree[i].Section == MenuTree[i - 1].Section)
+                {
+                    SubMenu[list_number].Add(MenuTree[i]);
+                }
+                else
+                {
+                    SubMenu.Add(new List<TreeMenuItem>());
+                    list_number++;
+                    SubMenu[list_number].Add(MenuTree[i]);
+                }
+            }
         }
+    }
+
+    private void ChangeActive(List<TreeMenuItem> menu, TreeMenuItem selected)
+    {
+        foreach (var item in menu)
+        {
+            if (item.Selected)
+                item.Selected = false;
+
+            if (item.Title == selected.Title)
+                item.Selected = true;
+        }
+        if(AfterClick.HasDelegate)
+            AfterClick.InvokeAsync();
+        StateHasChanged();
     }
 }
