@@ -2,15 +2,20 @@
 {
     @foreach (var MenuHeader in SubMenu)
     {
-         <ul class="ati-list-section">
-             <li>@MenuHeader[0].Section</li>
-             <ul class="ati-list-links">
-                 @foreach (var MenuLink in MenuHeader)
-                 {
-                     <li @onclick="() => ChangeActive(MenuTree, MenuLink)">@MenuLink.Title</li>
-                 }
-             </ul>
-         </ul>
+        <div class="ati-treemenu-box">
+            <div class="ati-treemenu-title">@MenuHeader[0].Section</div>
+            @foreach (var MenuLink in MenuHeader)
+            {
+                @if (MenuLink.Selected)
+                {
+                    <div class="ati-treemenu-link-active" @onclick="() => ChangeActive(MenuTree, MenuLink)">@MenuLink.Title</div>
+                }
+                else
+                {
+                    <div class="ati-treemenu-link" @onclick="() => ChangeActive(MenuTree, MenuLink)">@MenuLink.Title</div>
+                }
+            }
+        </div>
     }
 }
 
@@ -45,6 +50,25 @@
                 }
             }
         }
+
+        if (AdminPageState.ActMenu != null)
+        {
+            if (AdminPageState.ActMenu.Selected == false)
+            {
+                MenuTree[0].Selected = true;
+            }
+            else
+            {
+                foreach (var item in MenuTree)
+                {
+                    if (item.Title == AdminPageState.ActMenu.Title)
+                        item.Selected = true;
+                }
+            }
+        }
+
+        if (AfterClick.HasDelegate)
+            AfterClick.InvokeAsync();
     }
 
     private void ChangeActive(List<TreeMenuItem> menu, TreeMenuItem selected)
@@ -59,6 +83,9 @@
         }
         if(AfterClick.HasDelegate)
             AfterClick.InvokeAsync();
+
+        AdminPageState.ActMenu = selected;
+
         StateHasChanged();
     }
 }

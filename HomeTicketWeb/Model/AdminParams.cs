@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeTicketWeb.Components;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -14,27 +15,27 @@ namespace HomeTicketWeb.Model
 
         public bool Selected { get; set; } = false;
 
-        public string CheckSelected()
+        public void SetNull()
         {
-            if (Selected)
-                return "active";
-            return "";
+            Section = null;
+            Title = null;
+            Selected = false;
         }
     }
 
     public class AdminStatus
     {
         public AdminAddCategory AdminCat { get; set; }
-
         public AdminAddSystem AdminSys { get; set; }
-        
         public AdminAddUser AdminUser { get; set; }
+        public TreeMenuItem ActMenu { get; set; }
 
         public AdminStatus()
         {
             AdminCat = new AdminAddCategory();
             AdminSys = new AdminAddSystem();
             AdminUser = new AdminAddUser();
+            ActMenu = new TreeMenuItem();
         }
 
         public void SetNull()
@@ -45,6 +46,8 @@ namespace HomeTicketWeb.Model
                 AdminSys.SetNull();
             if (AdminUser != null)
                 AdminUser.SetNull();
+            if (ActMenu != null)
+                ActMenu.SetNull();
         }
     }
 

@@ -209,6 +209,7 @@
     border-style: solid;
     border-radius: 8px;
     margin-top: 8px;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
 }
 
 .ati-login-element {
@@ -246,15 +247,31 @@
     box-sizing: border-box;
 }
 
-.ati-list-links {
-    list-style-type: none;
-    font-size: initial;
-    font-weight: normal;
+.ati-treemenu-box {
+    background-color: white;
+    border-color: #5680E9;
+    border-width: medium;
+    border-style: solid;
+    border-radius: 8px;
+    margin: 13px 21px;
+    min-width: 250px;
+}
+
+.ati-treemenu-title {
+    color: white;
+    background-color: #5680E9 !important;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.ati-treemenu-link {
+    padding: 5px;
     cursor: pointer;
 }
 
-.ati-list-section {
-    list-style-type: none;
-    font-size: 18px;
-    font-weight: bold;
+.ati-treemenu-link-active {
+    background-color: #C1C8E4;
+    padding: 5px;
+    cursor: pointer;
 }
