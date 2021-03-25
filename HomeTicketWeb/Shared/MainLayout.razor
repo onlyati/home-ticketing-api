@@ -20,11 +20,11 @@
     {
         Apps = new List<TaskBarMenuItem>()
         {
-            new TaskBarMenuItem("Main screen", "/", "img/desktop-icon.png", "This leads to the main panel, where you are able to logon. This is the default window after startup"),
-            new TaskBarMenuItem("Dashboard", "/dashboard", "img/dashboard-icon.png", "This leads a dashboard, where you can see some statistics about tickets, you can filter them and perform action againts them"),
-            new TaskBarMenuItem("Open ticket", "/open", "img/create-icon.png", "Do you have an issue? Just open a ticket, let people know about it!"),
-            new TaskBarMenuItem("User settings", "/user", "img/user-icon.png", "This leads to the user settings window. There you are able to change your email address and password."),
-            new TaskBarMenuItem("Admin settings", "/admin", "img/admin-icon.png", "This leads to admin page, where the tool can be administrated. You can perform actions like: add/remove/rename systems or categories and user mnagement")
+            new TaskBarMenuItem("Main screen", "/", "img/desktop-icon.png", "This leads to the main panel, where you are able to logon. This is the default window after startup", null),
+            new TaskBarMenuItem("Dashboard", "/dashboard", "img/dashboard-icon.png", "This leads a dashboard, where you can see some statistics about tickets, you can filter them and perform action againts them", null),
+            new TaskBarMenuItem("Open ticket", "/open", "img/create-icon.png", "Do you have an issue? Just open a ticket, let people know about it!", OpenPageState),
+            new TaskBarMenuItem("User settings", "/user", "img/user-icon.png", "This leads to the user settings window. There you are able to change your email address and password.", UserPageState),
+            new TaskBarMenuItem("Admin settings", "/admin", "img/admin-icon.png", "This leads to admin page, where the tool can be administrated. You can perform actions like: add/remove/rename systems or categories and user mnagement", AdminPageState)
         };
     }
 }

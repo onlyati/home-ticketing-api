@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
-    public class CreateTicket
+    public class CreateTicket : IShareDataModel
     {
         [Required]
         public string Title { get; set; }

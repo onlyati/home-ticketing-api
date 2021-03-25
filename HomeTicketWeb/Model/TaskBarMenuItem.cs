@@ -18,12 +18,15 @@ namespace HomeTicketWeb.Model
 
         public ContextMenu ContextMenu { get; set; }
 
-        public TaskBarMenuItem(string title, string route, string image, string text)
+        public IShareDataModel DataContainer { get; set; }
+
+        public TaskBarMenuItem(string title, string route, string image, string text, IShareDataModel dataContainer)
         {
             Title = title;
             Route = route;
             Image = image;
             Text = text;
+            DataContainer = dataContainer;
         }
 
         public bool CompareRoute(string otherPath)

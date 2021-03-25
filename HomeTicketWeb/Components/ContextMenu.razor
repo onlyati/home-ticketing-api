@@ -1,8 +1,8 @@
 ﻿@if (IsVisible)
 {
-    <div class="ati-contextmenu-box" style="left: @PosXFromLeft; bottom: @PosYFromBottom;">
+    <div class="ati-contextmenu-box" style="left: @(PosXFromLeft)px; bottom: @(PosYFromBottom)px;">
         <div class="row ati-contextmenu-title m-0">
-            <div class="col">
+            <div class="col justify-content-center">
                 <h5>Quick actions</h5>
             </div>
             <div class="col-auto">
@@ -11,18 +11,52 @@
                 </button>
             </div>
         </div>
+        <div class="ati-contextmenu-item" @onclick="ExecuteOpenAction">
+            Open @AppName
+        </div>
+        <div class="ati-contextmenu-item" @onclick="ExecuteCloseAction">
+            Close @AppName
+        </div>
     </div>
 }
 
 @code {
-    [Parameter] public int PosXFromLeft { get; set; }
-    [Parameter] public int PosYFromBottom { get; set; }
+    [Parameter] public EventCallback OpenAction { get; set; }
+    [Parameter] public EventCallback CloseAction { get; set; }
+    [Parameter] public string AppName { get; set; } = "application";
+    [Parameter] public string Id { get; set; }
+
+    private int PosXFromLeft { get; set; }
+    private int PosYFromBottom { get; set; }
 
     private bool IsVisible { get; set; }
 
-    public void Show()
+    private void ExecuteOpenAction()
+    {
+        if (OpenAction.HasDelegate)
+            OpenAction.InvokeAsync();
+        Hide();
+    }
+
+    private void ExecuteCloseAction()
+    {
+        if (CloseAction.HasDelegate)
+            CloseAction.InvokeAsync();
+        Hide();
+    }
+
+    public async Task Show()
     {
         Console.WriteLine("Megmutatom");
+
+        JSCalls call = new JSCalls(js);
+        if (Id != null)
+        {
+            var dimensions = await call.GetBounds(Id);
+            PosXFromLeft = Convert.ToInt32(dimensions.Left);
+            PosYFromBottom = 55;
+        }
+
         IsVisible = true;
         StateHasChanged();
     }

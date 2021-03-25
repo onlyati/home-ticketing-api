@@ -26,7 +26,7 @@ namespace HomeTicketWeb.Model
         }
     }
 
-    public class AdminStatus
+    public class AdminStatus : IShareDataModel
     {
         public AdminAddCategory AdminCat { get; set; }
         public AdminAddSystem AdminSys { get; set; }

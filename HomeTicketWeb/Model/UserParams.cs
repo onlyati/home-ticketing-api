@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
-    public class UserStatus
+    public class UserStatus : IShareDataModel
     {
         public TreeMenuItem ActMenu { get; set; }
 

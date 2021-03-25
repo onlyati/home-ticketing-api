@@ -300,3 +300,13 @@
     padding: 3px;
 }
 
+.ati-contextmenu-item {
+    padding: 8px;
+    cursor: pointer;
+}
+
+    .ati-contextmenu-item:hover {
+        padding: 8px;
+        cursor: pointer;
+        background-color: #84CEEB;
+    }

@@ -71,9 +71,6 @@
 
     private void CloseWindow()
     {
-        if (AdminPageState != null)
-            AdminPageState.SetNull();
-
         if (Layout != null)
             if (Layout.Bar != null)
                 Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
