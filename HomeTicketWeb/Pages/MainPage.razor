@@ -41,11 +41,13 @@ else
         {
             User.UserName = Info.UserName;
             User.Role = UserRole.Admin;
+            User.Email = "god@izé.com";
         }
         else if(Info.UserName == "Béla" && Info.Password == "user")
         {
             User.UserName = Info.UserName;
             User.Role = UserRole.User;
+            User.Email = "bela@izé.com";
         }
         else
         {
@@ -62,6 +64,7 @@ else
     {
         User.UserName = null;
         User.Role = null;
+        User.Email = null;
         Info = new LoginInfo();
 
         if (Layout != null)

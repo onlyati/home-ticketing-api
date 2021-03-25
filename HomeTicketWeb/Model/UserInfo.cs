@@ -10,6 +10,8 @@ namespace HomeTicketWeb.Model
         public string UserName { get; set; } = null;
 
         public UserRole? Role { get; set; } = null;
+
+        public string Email { get; set; } = null;
     }
 
     public enum UserRole
