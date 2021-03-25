@@ -1,14 +1,33 @@
-﻿<div class="ati-popup-box"  style="top: @yCssPos; left: @xCssPos; transform: @transformCss"
+﻿<div class="ati-popup-box"  style="@(DirectionY): @yCssPos; @(DirectionX): @xCssPos; transform: @transformCss"
      @ondragstart="BeginDrag" @ondragend="EndDrag" id="#PopupBox">
     @ChildContent
 </div>
 
 @code {
     [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public int? PositionX { get; set; } = null;
+    [Parameter] public int? PositionY { get; set; } = null;
+    [Parameter] public string DirectionX { get; set; } = "left";
+    [Parameter] public string DirectionY { get; set; } = "top";
 
     private double xPos1, yPos1;
     private double? xPos2 = null, yPos2 = null;
     private string xCssPos = "50%", yCssPos = "50%", transformCss = "translate(-50%, -50%)";
+
+    protected override void OnInitialized()
+    {
+        if (PositionX != null)
+        {
+            xCssPos = $"{PositionX}px";
+            transformCss = "none";
+        }
+
+        if (PositionY != null)
+        {
+            yCssPos = $"{PositionY}px";
+            transformCss = "none";
+        }
+    }
 
     public async Task BeginDrag(DragEventArgs e)
     {
@@ -24,8 +43,6 @@
 
         xPos1 = e.ClientX;
         yPos1 = e.ClientY;
-
-        Console.WriteLine($"Before: P1 = {xPos1},{yPos1};P2 = {xPos2},{yPos2}; Div = {dimensions.Height}x{dimensions.Width}; Screen: {window.Height}x{window.Width}");
     }
 
     public async Task EndDrag(DragEventArgs e)
@@ -46,7 +63,5 @@
 
         xCssPos = $"{Convert.ToInt32(xPos2)}px";
         yCssPos = $"{Convert.ToInt32(yPos2)}px";
-
-        Console.WriteLine($"New offset: {xCssPos},{yCssPos};");
     }
 }

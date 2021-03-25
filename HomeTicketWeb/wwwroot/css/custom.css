@@ -282,3 +282,21 @@
     padding: 5px;
     cursor: pointer;
 }
+
+.ati-contextmenu-box {
+    background-color: white;
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    position: fixed;
+    border-color: #5AB9EA;
+    border-width: thin;
+    border-style: solid;
+    border-radius: 3px;
+    min-width: 200px;
+}
+
+.ati-contextmenu-title {
+    color: white;
+    background-color: #5AB9EA !important;
+    padding: 3px;
+}
+

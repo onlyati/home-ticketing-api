@@ -38,11 +38,12 @@
         </div>
         @foreach (var item in OpenedApps)
         {
-            <div class="float-right">
-                <button class="ati-btn-appitem" @onclick="() => NavManager.NavigateTo(item.Route)">
+            <div class="float-right" oncontextmenu="return false;">
+                <button class="ati-btn-appitem" @onclick="() => NavManager.NavigateTo(item.Route)" @onmouseup="(e) => ContextMenu(e, item)">
                     <img src="@item.Image" width="21" height="21" />
                     @item.Title
                 </button>
+                <ContextMenu @ref="item.ContextMenu" />
             </div>
         }
     </div>
@@ -51,16 +52,25 @@
 
 
 @code {
-    [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
+        [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
 
-    [CascadingParameter] public MainLayout Layout { get; set; }
+        [CascadingParameter] public MainLayout Layout { get; set; }
 
-    public List<TaskBarMenuItem> OpenedApps = new List<TaskBarMenuItem>();
+    private List<TaskBarMenuItem> OpenedApps = new List<TaskBarMenuItem>();
 
     private bool IsVisible = false;
     private string DescText;
     private string DescTitle;
     private string DescIcon;
+
+    private void ContextMenu(MouseEventArgs e, TaskBarMenuItem item)
+    {
+        if (e.Button == 2)
+        {
+            Console.WriteLine($"Jobb klikk volt: {item.Route}");
+            item.ContextMenu.Show();
+        }
+    }
 
     public void AddOpenedApp(string route)
     {

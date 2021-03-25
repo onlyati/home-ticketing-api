@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HomeTicketWeb.Components;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,6 +15,8 @@ namespace HomeTicketWeb.Model
         public string Image { get; set; }
 
         public string Text { get; set; }
+
+        public ContextMenu ContextMenu { get; set; }
 
         public TaskBarMenuItem(string title, string route, string image, string text)
         {
