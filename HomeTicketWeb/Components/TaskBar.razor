@@ -38,23 +38,26 @@
         </div>
         @foreach (var item in OpenedApps)
         {
-            <div class="float-right" oncontextmenu="return false;">
-                <button class="ati-btn-appitem" id="@(item.Route)" @onclick="() => NavManager.NavigateTo(item.Route)" @onmouseup="(e) => ContextMenu(e, item)">
-                    <img src="@item.Image" width="21" height="21" />
-                    @item.Title
-                </button>
-                <ContextMenu @ref="item.ContextMenu" OpenAction="() => NavManager.NavigateTo(item.Route)" CloseAction="() => RemoveOpenedApp(item.Route)" AppName="@item.Title" Id="@(item.Route)" />
-            </div>
+            @if (item != null)
+            {
+                <div class="float-right" oncontextmenu="return false;">
+                    <button class="ati-btn-appitem" id="@(item.DivId)" @onclick="() => NavManager.NavigateTo(item.Route)" @onmouseup="(e) => ContextMenu(e, item)">
+                        <img src="@item.Image" width="21" height="21" />
+                        @item.Title
+                    </button>
+                    <CascadingValue Value="item">
+                        <ContextMenu @ref="@item.ContextMenu" OpenAction="() => NavManager.NavigateTo(item.Route)" CloseAction="() => RemoveOpenedApp(item.Route)" />
+                    </CascadingValue>
+                </div>
+            }
         }
     </div>
 </div>
 
-
-
 @code {
-        [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
+    [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
 
-        [CascadingParameter] public MainLayout Layout { get; set; }
+    [CascadingParameter] public MainLayout Layout { get; set; }
 
     private List<TaskBarMenuItem> OpenedApps = new List<TaskBarMenuItem>();
 
@@ -98,29 +101,7 @@
 
     public void RemoveOpenedApp(string route)
     {
-        if (route == "/index")
-            route = "/";
-
-        TaskBarMenuItem app = null;
-        foreach (var item in AppList)
-        {
-            if (item.CompareRoute(route))
-                app = item;
-        }
-
-        if (app != null)
-        {
-            var record = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
-            if (record != null)
-            {
-                if(record.DataContainer != null)
-                    record.DataContainer.SetNull();
-
-                OpenedApps.Remove(record);
-            }
-        }
-
-        StateHasChanged();
+        RemoveOpenedAppNoNavigate(route);
 
         if(OpenedApps.Count == 0)
         {
@@ -133,7 +114,7 @@
 
     }
 
-    private void RemoveOpenedApp(string route, bool navigate)
+    private void RemoveOpenedAppNoNavigate(string route)
     {
         if (route == "/index")
             route = "/";
@@ -158,27 +139,14 @@
         }
 
         StateHasChanged();
-
-        if (navigate)
-        {
-            if (OpenedApps.Count == 0)
-            {
-                NavManager.NavigateTo("/");
-            }
-            else
-            {
-                NavManager.NavigateTo(OpenedApps[OpenedApps.Count - 1].Route);
-            }
-        }
     }
-
 
     public void ClearOpenedApp()
     {
         var routeList = OpenedApps.Select(s => s.Route).ToList();
         foreach (var item in routeList)
         {
-            RemoveOpenedApp(item, false);
+            RemoveOpenedAppNoNavigate(item);
         }
         StateHasChanged();
     }

@@ -32,8 +32,8 @@
     public async Task BeginDrag(DragEventArgs e)
     {
         JSCalls call = new JSCalls(js);
-        var dimensions = await call.GetBounds("#PopupBox");
-        var window = await call.GetBrowserDimensionAsync();
+        var dimensions = call.GetBounds("#PopupBox");
+        var window = call.GetBrowserDimensionAsync();
 
         if (xPos2 == null)
             xPos2 = (window.Width - dimensions.Width) / 2;
@@ -55,8 +55,8 @@
         if (yPos2 < 0) yPos2 = 0;
 
         JSCalls call = new JSCalls(js);
-        var window = await call.GetBrowserDimensionAsync();
-        var dimensions = await call.GetBounds("#PopupBox");
+        var window = call.GetBrowserDimensionAsync();
+        var dimensions = call.GetBounds("#PopupBox");
 
         if (xPos2 > window.Width - dimensions.Width) xPos2 = window.Width - dimensions.Width;
         if (yPos2 > window.Height - dimensions.Height) yPos2 = window.Height - dimensions.Height;

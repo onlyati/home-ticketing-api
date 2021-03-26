@@ -12,24 +12,24 @@
             </div>
         </div>
         <div class="ati-contextmenu-item" @onclick="ExecuteOpenAction">
-            Open @AppName
+            Open @MenuItem.Title
         </div>
         <div class="ati-contextmenu-item" @onclick="ExecuteCloseAction">
-            Close @AppName
+            Close @MenuItem.Title
         </div>
     </div>
 }
 
 @code {
-    [Parameter] public EventCallback OpenAction { get; set; }
-    [Parameter] public EventCallback CloseAction { get; set; }
-    [Parameter] public string AppName { get; set; } = "application";
-    [Parameter] public string Id { get; set; }
+        [Parameter] public EventCallback OpenAction { get; set; }
+        [Parameter] public EventCallback CloseAction { get; set; }
+
+        [CascadingParameter] public TaskBarMenuItem MenuItem { get; set; }
 
     private int PosXFromLeft { get; set; }
-    private int PosYFromBottom { get; set; }
+    private int PosYFromBottom = 55;
 
-    private bool IsVisible { get; set; }
+    private bool IsVisible = false;
 
     private void ExecuteOpenAction()
     {
@@ -45,17 +45,23 @@
         Hide();
     }
 
-    public async Task Show()
+    public void Show()
     {
         Console.WriteLine("Megmutatom");
 
+
         JSCalls call = new JSCalls(js);
-        if (Id != null)
+        if (MenuItem != null)
         {
-            var dimensions = await call.GetBounds(Id);
-            PosXFromLeft = Convert.ToInt32(dimensions.Left);
-            PosYFromBottom = 55;
+            if (MenuItem.DivId != null)
+            {
+                var dimensions = call.GetBounds(MenuItem.DivId);
+                PosXFromLeft = Convert.ToInt32(dimensions.Left);
+                PosYFromBottom = 55;
+            }
         }
+
+        Console.WriteLine($"{MenuItem.Title} - {MenuItem.DivId} - From left: {PosXFromLeft}px");
 
         IsVisible = true;
         StateHasChanged();
@@ -65,6 +71,11 @@
     {
         Console.WriteLine("Elrejtem");
         IsVisible = false;
+        StateHasChanged();
+    }
+
+    public void Refresh()
+    {
         StateHasChanged();
     }
 }

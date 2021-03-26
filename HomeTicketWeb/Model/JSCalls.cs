@@ -8,21 +8,21 @@ namespace HomeTicketWeb.Model
 {
     public class JSCalls
     {
-        private readonly IJSRuntime _js;
+        private readonly IJSInProcessRuntime _js;
 
-        public JSCalls(IJSRuntime js)
+        public JSCalls(IJSInProcessRuntime js)
         {
             _js = js;
         }
 
-        public async Task<BrowserDimension> GetBrowserDimensionAsync()
+        public BrowserDimension GetBrowserDimensionAsync()
         {
-            return await _js.InvokeAsync<BrowserDimension>("getDimensions");
+            return _js.Invoke<BrowserDimension>("getDimensions");
         }
 
-        public async Task<BoundingClientRect> GetBounds(string element)
+        public BoundingClientRect GetBounds(string element)
         {
-            return await _js.InvokeAsync<BoundingClientRect>("GetDivInformation", element);
+            return _js.Invoke<BoundingClientRect>("GetDivInformation", element);
         }
     }
 

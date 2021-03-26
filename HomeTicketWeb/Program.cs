@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -23,6 +24,7 @@ namespace HomeTicketWeb
             builder.Services.AddSingleton<CreateTicket>();
             builder.Services.AddSingleton<AdminStatus>();
             builder.Services.AddSingleton<UserStatus>();
+            builder.Services.AddSingleton<IJSInProcessRuntime>(services => (IJSInProcessRuntime)services.GetRequiredService<IJSRuntime>());
 
             await builder.Build().RunAsync();
         }
