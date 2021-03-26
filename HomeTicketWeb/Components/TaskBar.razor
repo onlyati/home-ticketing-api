@@ -45,12 +45,17 @@
                         <img src="@item.Image" width="21" height="21" />
                         @item.Title
                     </button>
-                    <CascadingValue Value="item">
-                        <ContextMenu @ref="@item.ContextMenu" OpenAction="() => NavManager.NavigateTo(item.Route)" CloseAction="() => RemoveOpenedApp(item.Route)" />
-                    </CascadingValue>
                 </div>
             }
         }
+        <ContextMenu @ref="@CMenu" Title="Quick actions" PosXFromLeft="@DistanceFromLeft">
+            <div class="ati-contextmenu-item" @onclick="ConextMenuOpen">
+                Open @SelectedItem.Title
+            </div>
+            <div class="ati-contextmenu-item" @onclick="ConextMenuClose">
+                Close @SelectedItem.Title
+            </div>
+        </ContextMenu>
     </div>
 </div>
 
@@ -61,6 +66,10 @@
 
     private List<TaskBarMenuItem> OpenedApps = new List<TaskBarMenuItem>();
 
+    private ContextMenu CMenu;
+    private TaskBarMenuItem SelectedItem;
+    private int DistanceFromLeft;
+
     private bool IsVisible = false;
     private string DescText;
     private string DescTitle;
@@ -70,8 +79,25 @@
     {
         if (e.Button == 2)
         {
-            item.ContextMenu.Show();
+            JSCalls call = new JSCalls(js);
+            var dimensions = call.GetBounds(item.DivId);
+            DistanceFromLeft = Convert.ToInt32(dimensions.Left);
+
+            SelectedItem = item;
+            CMenu.Show();
         }
+    }
+
+    public void ConextMenuOpen()
+    {
+        NavManager.NavigateTo(SelectedItem.Route);
+        CMenu.Hide();
+    }
+
+    public void ConextMenuClose()
+    {
+        RemoveOpenedApp(SelectedItem.Route);
+        CMenu.Hide();
     }
 
     public void AddOpenedApp(string route)

@@ -3,7 +3,7 @@
     <div class="ati-contextmenu-box" style="left: @(PosXFromLeft)px; bottom: @(PosYFromBottom)px;">
         <div class="row ati-contextmenu-title m-0">
             <div class="col justify-content-center">
-                <h5>Quick actions</h5>
+                <h5>@Title</h5>
             </div>
             <div class="col-auto">
                 <button type="button" class="close" aria-label="Close" @onclick="@Hide">
@@ -11,58 +11,23 @@
                 </button>
             </div>
         </div>
-        <div class="ati-contextmenu-item" @onclick="ExecuteOpenAction">
-            Open @MenuItem.Title
-        </div>
-        <div class="ati-contextmenu-item" @onclick="ExecuteCloseAction">
-            Close @MenuItem.Title
-        </div>
+        @ChildContent
     </div>
 }
 
 @code {
-        [Parameter] public EventCallback OpenAction { get; set; }
-        [Parameter] public EventCallback CloseAction { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public int PosXFromLeft { get; set; }
+    [Parameter] public int PosYFromBottom { get; set; } = 55;
+    [Parameter] public string Title { get; set; }
 
-        [CascadingParameter] public TaskBarMenuItem MenuItem { get; set; }
-
-    private int PosXFromLeft { get; set; }
-    private int PosYFromBottom = 55;
+    [CascadingParameter] public TaskBarMenuItem MenuItem { get; set; }
 
     private bool IsVisible = false;
-
-    private void ExecuteOpenAction()
-    {
-        if (OpenAction.HasDelegate)
-            OpenAction.InvokeAsync();
-        Hide();
-    }
-
-    private void ExecuteCloseAction()
-    {
-        if (CloseAction.HasDelegate)
-            CloseAction.InvokeAsync();
-        Hide();
-    }
 
     public void Show()
     {
         Console.WriteLine("Megmutatom");
-
-
-        JSCalls call = new JSCalls(js);
-        if (MenuItem != null)
-        {
-            if (MenuItem.DivId != null)
-            {
-                var dimensions = call.GetBounds(MenuItem.DivId);
-                PosXFromLeft = Convert.ToInt32(dimensions.Left);
-                PosYFromBottom = 55;
-            }
-        }
-
-        Console.WriteLine($"{MenuItem.Title} - {MenuItem.DivId} - From left: {PosXFromLeft}px");
-
         IsVisible = true;
         StateHasChanged();
     }
