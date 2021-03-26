@@ -1,4 +1,16 @@
-﻿@if (IsVisible)
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- AlertBox.razor                                                                             -->
+<!--                                                                                            -->
+<!-- This component is for display different types of alert box in the browser screen. There are-->
+<!-- different types of AlertBox:                                                               -->
+<!-- - Info/Warning/Error: only one button is available with OnConfirm action                   -->
+<!-- - Question: there are 2 button with OnConfirm and OnCancel actions                         -->
+<!--                                                                                            -->
+<!-- It is basically a modal window, but instead of JS, C# code switching that it is showed     -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
+
+@if (IsVisible)
 {
     <div class="modal-backdrop show"></div>
     <div class="modal fade show" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: block">
@@ -61,74 +73,3 @@
     </div>
 }
 
-@code
-{
-    private bool IsVisible = false;
-    private string Title;
-    private string Text;
-    private AlertBoxType Type;
-
-    public delegate void ConfirmMethod();
-    private ConfirmMethod OnConfirm = null;
-    private ConfirmMethod OnCancel = null;
-
-    public void SetAlert(string title, string text, AlertBoxType type)
-    {
-        Title = title;
-        Text = text;
-        Type = type;
-        IsVisible = true;
-        StateHasChanged();
-    }
-
-    public void SetAlert(string title, string text, AlertBoxType type, ConfirmMethod onConfirm)
-    {
-        OnConfirm = onConfirm;
-        Title = title;
-        Text = text;
-        Type = type;
-        IsVisible = true;
-        StateHasChanged();
-    }
-
-    public void SetAlert(string title, string text, AlertBoxType type, ConfirmMethod onConfirm, ConfirmMethod onCancel)
-    {
-        OnConfirm = onConfirm;
-        OnCancel = onCancel;
-        Title = title;
-        Text = text;
-        Type = type;
-        IsVisible = true;
-        StateHasChanged();
-    }
-
-    public void HideQuestionNo()
-    {
-        if (OnCancel != null)
-            OnCancel.Invoke();
-
-        OnConfirm = null;
-        OnCancel = null;
-        IsVisible = false;
-        StateHasChanged();
-    }
-
-    public void Hide()
-    {
-        if(OnConfirm != null)
-            OnConfirm.Invoke();
-
-        OnConfirm = null;
-        OnCancel = null;
-        IsVisible = false;
-        StateHasChanged();
-    }
-
-    public enum AlertBoxType
-    {
-        Info,
-        Warning,
-        Error,
-        Question
-    }
-}

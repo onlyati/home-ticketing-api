@@ -1,4 +1,13 @@
-﻿@if (SubMenu != null)
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- TreeMenu.razor                                                                             -->
+<!--                                                                                            -->
+<!-- This component is a sidebar grouped menu. Parameters:                                      -->
+<!-- - MenuTree: list which defined what should be showed                                       -->
+<!-- - AfterClick: event, which will be executed after a menu has been selected                 -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
+
+@if (SubMenu != null)
 {
     @foreach (var MenuHeader in SubMenu)
     {
@@ -20,82 +29,3 @@
 }
 
 
-@code {
-    [Parameter] public List<TreeMenuItem> MenuTree { get; set; }
-    [Parameter] public EventCallback AfterClick { get; set; }
-
-    [CascadingParameter] public TreeMenuItem ExternalActMenu { get; set; }
-    public TreeMenuItem ActMenu;
-
-    private List<List<TreeMenuItem>> SubMenu = new List<List<TreeMenuItem>>();
-
-    protected override void OnInitialized()
-    {
-        int list_number = 0;
-        for (int i = 0; i < MenuTree.Count; i++)
-        {
-            if(i == 0)
-            {
-                SubMenu.Add(new List<TreeMenuItem>());
-                SubMenu[list_number].Add(MenuTree[i]);
-            }
-            else
-            {
-                if(MenuTree[i].Section == MenuTree[i - 1].Section)
-                {
-                    SubMenu[list_number].Add(MenuTree[i]);
-                }
-                else
-                {
-                    SubMenu.Add(new List<TreeMenuItem>());
-                    list_number++;
-                    SubMenu[list_number].Add(MenuTree[i]);
-                }
-            }
-        }
-
-        if (ExternalActMenu != null)
-        {
-            if(ExternalActMenu.Selected == false)
-            {
-                MenuTree[0].Selected = true;
-            }
-            else
-            {
-                foreach (var item in MenuTree)
-                {
-                    if (item.Title == ExternalActMenu.Title)
-                        item.Selected = true;
-                }
-            }
-        }
-
-        if (AfterClick.HasDelegate)
-            AfterClick.InvokeAsync();
-    }
-
-    private void ChangeActive(List<TreeMenuItem> menu, TreeMenuItem selected)
-    {
-        foreach (var item in menu)
-        {
-            if (item.Selected)
-                item.Selected = false;
-
-            if (item.Title == selected.Title)
-                item.Selected = true;
-        }
-
-
-        ActMenu = selected;
-
-        if (AfterClick.HasDelegate)
-            AfterClick.InvokeAsync();
-
-        StateHasChanged();
-    }
-
-    public bool IsSelected(int id)
-    {
-        return MenuTree.Where(s => s.Id.Equals(id)).Select(s => s.Selected).FirstOrDefault();
-    }
-}

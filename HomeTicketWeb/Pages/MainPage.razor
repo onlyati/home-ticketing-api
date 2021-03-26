@@ -1,8 +1,22 @@
-﻿@page "/"
-@page "/index" 
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- MainPage.razor                                                                             -->
+<!--                                                                                            -->
+<!-- This is the main screen. It shows a login popup window or a welcome message for the user   -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
 
+<!------------------------------------------------------------------------------------------------>
+<!-- Page definitions                                                                           -->
+<!------------------------------------------------------------------------------------------------>
+@page "/"
+@page "/index"
+
+<!------------------------------------------------------------------------------------------------>
+<!-- Conent of the page                                                                         -->
+<!------------------------------------------------------------------------------------------------>
 @if (User.UserName == null || User.Role == null)
 {
+    <!-- If user is not authorized, shows a login screen in a popup window                      -->
     <Popup>
         <EditForm Model="@Info" OnValidSubmit="Login" OnInvalidSubmit="ValidateError">
             <DataAnnotationsValidator />
@@ -21,6 +35,7 @@
 }
 else
 {
+    <!-- If user is logged on, then show a warm welcome                                         -->
     <Popup>
         <div class="ati-login-element">
             <h5 class="text-center">Welcome @User.UserName!</h5>
@@ -30,54 +45,3 @@ else
     </Popup>
 }
 
-@code {
-    private LoginInfo Info = new LoginInfo();
-
-    [CascadingParameter] MainLayout Layout { get; set; }
-
-    private void Login()
-    {
-        if (Info.UserName == "God" && Info.Password == "admin")
-        {
-            User.UserName = Info.UserName;
-            User.Role = UserRole.Admin;
-            User.Email = "god@izé.com";
-        }
-        else if(Info.UserName == "Béla" && Info.Password == "user")
-        {
-            User.UserName = Info.UserName;
-            User.Role = UserRole.User;
-            User.Email = "bela@izé.com";
-        }
-        else
-        {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Invalid username or password", "Your username or password is invalid, sorry you can't get in :-(", AlertBox.AlertBoxType.Warning);
-        }
-
-        Info = new LoginInfo();
-        StateHasChanged();
-    }
-
-    private void Logoff()
-    {
-        User.UserName = null;
-        User.Role = null;
-        User.Email = null;
-        Info = new LoginInfo();
-
-        if (Layout != null)
-            if (Layout.Bar != null)
-                Layout.Bar.ClearOpenedApp();
-
-        StateHasChanged();
-    }
-
-    private void ValidateError()
-    {
-        if (Layout != null)
-            if (Layout.AlertBox != null)
-                Layout.AlertBox.SetAlert("Missing login credentials", "Username and password fields are mandatory!", AlertBox.AlertBoxType.Info);
-    }
-}

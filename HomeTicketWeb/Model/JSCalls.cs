@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
+    /*********************************************************************************************/
+    /* Some function is not available from Blazor, and some javascript needs to be used          */
+    /*********************************************************************************************/
     public class JSCalls
     {
+        // JSProcessRuntime which will run the JS command syncronousily
         private readonly IJSInProcessRuntime _js;
 
         public JSCalls(IJSInProcessRuntime js)
@@ -15,23 +19,31 @@ namespace HomeTicketWeb.Model
             _js = js;
         }
 
-        public BrowserDimension GetBrowserDimensionAsync()
+        // Get the size of the browser window in pixels
+        public BrowserDimension GetBrowserDimension()
         {
             return _js.Invoke<BrowserDimension>("getDimensions");
         }
 
+        // Get information about the selected elements: widht, hight, distance from top/bottom/left/right, etc
         public BoundingClientRect GetBounds(string element)
         {
             return _js.Invoke<BoundingClientRect>("GetDivInformation", element);
         }
     }
 
+    /*********************************************************************************************/
+    /* Class to represent screen size                                                            */
+    /*********************************************************************************************/
     public class BrowserDimension
     {
         public int Width { get; set; }
         public int Height { get; set; }
     }
 
+    /*********************************************************************************************/
+    /* Class to represent information about an element                                           */
+    /*********************************************************************************************/
     public class BoundingClientRect
     {
         public double X { get; set; }

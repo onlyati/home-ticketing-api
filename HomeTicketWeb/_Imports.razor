@@ -10,11 +10,14 @@
 @using HomeTicketWeb.Shared
 @using HomeTicketWeb.Components
 @using HomeTicketWeb.Model
-@using Microsoft.AspNetCore.Components.Web
 
+
+@* DI some useful stuff *@
 @inject NavigationManager NavManager
+@inject IJSInProcessRuntime js
+
+@* DI some class, which has purpose to save user data in memory during runtime *@
 @inject UserInfo User
 @inject CreateTicket OpenPageState
 @inject AdminStatus AdminPageState
 @inject UserStatus UserPageState
-@inject IJSInProcessRuntime js

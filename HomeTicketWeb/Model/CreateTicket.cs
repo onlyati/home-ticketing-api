@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
+    /*********************************************************************************************/
+    /* This page contains definition which helps to save data from OpenPage.razor                */
+    /*********************************************************************************************/
     public class CreateTicket : IShareDataModel
     {
         [Required]

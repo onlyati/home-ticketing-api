@@ -1,4 +1,15 @@
-﻿@if (IsVisible)
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- ConextMenu.razor                                                                           -->
+<!--                                                                                            -->
+<!-- It is a conext menu (right click menu). Input parameters:                                  -->
+<!-- - ChildContent: fragement should contain every data in the body of context menu            -->
+<!-- - PosXFromLeft: this component is fixed position, this parameter tells positon from left   -->
+<!-- - PosYFromBottom: this component is fixed position, parameter tells positon from bottom    -->
+<!-- - Title: it is showed at the top of the conext menu                                        -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
+
+@if (IsVisible)
 {
     <div class="ati-contextmenu-box" style="left: @(PosXFromLeft)px; bottom: @(PosYFromBottom)px;">
         <div class="row ati-contextmenu-title m-0">
@@ -27,14 +38,12 @@
 
     public void Show()
     {
-        Console.WriteLine("Megmutatom");
         IsVisible = true;
         StateHasChanged();
     }
 
     public void Hide()
     {
-        Console.WriteLine("Elrejtem");
         IsVisible = false;
         StateHasChanged();
     }

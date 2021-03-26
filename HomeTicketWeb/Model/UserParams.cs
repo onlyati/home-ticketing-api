@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
+    /*********************************************************************************************/
+    /* Class which helps to save data from user settings page                                    */
+    /*********************************************************************************************/
     public class UserStatus : IShareDataModel
     {
         public TreeMenuItem ActMenu { get; set; }

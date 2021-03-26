@@ -7,31 +7,19 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
-    public class TreeMenuItem
-    {
-        public string Section { get; set; }
-
-        public string Title { get; set; }
-
-        public int Id { get; set; }
-
-        public bool Selected { get; set; } = false;
-
-        public void SetNull()
-        {
-            Section = null;
-            Title = null;
-            Id = 0;
-            Selected = false;
-        }
-    }
-
+    /*********************************************************************************************/
+    /* This file contains definitions which belongs to AdminPage.razor. Via this object,         */
+    /* information there is saved into a DI obeject                                              */
+    /*********************************************************************************************/
     public class AdminStatus : IShareDataModel
     {
-        public AdminAddCategory AdminCat { get; set; }
-        public AdminAddSystem AdminSys { get; set; }
-        public AdminAddUser AdminUser { get; set; }
-        public TreeMenuItem ActMenu { get; set; }
+        public AdminAddCategory AdminCat { get; set; }                                   // Object to save category related administration data
+
+        public AdminAddSystem AdminSys { get; set; }                                     // Object to save system related adminstration data
+
+        public AdminAddUser AdminUser { get; set; }                                      // Object to save user related administartion  data
+
+        public TreeMenuItem ActMenu { get; set; }                                        // Actually selected menu on the page
 
         public AdminStatus()
         {
@@ -54,7 +42,7 @@ namespace HomeTicketWeb.Model
         }
     }
 
-    public class AdminAddUser
+    public class AdminAddUser : IShareDataModel
     {
         [Required]
         public string UserName { get; set; }
@@ -73,7 +61,7 @@ namespace HomeTicketWeb.Model
         }
     }
 
-    public class AdminAddSystem
+    public class AdminAddSystem : IShareDataModel
     {
         [Required]
         public string Name { get; set; }
@@ -84,7 +72,7 @@ namespace HomeTicketWeb.Model
         }
     }
 
-    public class AdminAddCategory
+    public class AdminAddCategory : IShareDataModel
     {
         [Required]
         public string Name { get; set; }

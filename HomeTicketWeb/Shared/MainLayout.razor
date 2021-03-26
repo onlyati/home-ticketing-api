@@ -10,7 +10,7 @@
     <TaskBar @ref="@Bar" AppList="Apps" />
 </CascadingValue>
 
-@code{
+@code {
     public TaskBar Bar;
     public AlertBox AlertBox;
 
@@ -18,13 +18,23 @@
 
     protected override void OnInitialized()
     {
+        /*---------------------------------------------------------------------------------------*/
+        /* Define the applications into the taskbar. Properties in each row:                     */
+        /* -----------------------------------------------------------------                     */
+        /* Title: This is what you can see in the application list as app name                   */
+        /* Route: Where is the application page (relative path)                                  */
+        /* Image: Icon of the app                                                                */
+        /* Text: Short summary about the application, whihc will be shows in application box     */
+        /* DataContainer: If there is any IShareDataModel derived class, which store information */
+        /*                about page                                                             */
+        /*---------------------------------------------------------------------------------------*/
         Apps = new List<TaskBarMenuItem>()
-        {
-            new TaskBarMenuItem("Main screen", "/", "img/desktop-icon.png", "This leads to the main panel, where you are able to logon. This is the default window after startup", null, "MainScreenDiv"),
-            new TaskBarMenuItem("Dashboard", "/dashboard", "img/dashboard-icon.png", "This leads a dashboard, where you can see some statistics about tickets, you can filter them and perform action againts them", null, "DashboardScreenDiv"),
-            new TaskBarMenuItem("Open ticket", "/open", "img/create-icon.png", "Do you have an issue? Just open a ticket, let people know about it!", OpenPageState, "OpenTicketScreenDiv"),
-            new TaskBarMenuItem("User settings", "/user", "img/user-icon.png", "This leads to the user settings window. There you are able to change your email address and password.", UserPageState, "UserScreenDiv"),
-            new TaskBarMenuItem("Admin settings", "/admin", "img/admin-icon.png", "This leads to admin page, where the tool can be administrated. You can perform actions like: add/remove/rename systems or categories and user mnagement", AdminPageState, "AdminScreenDiv")
-        };
+            {
+                new TaskBarMenuItem("Main screen", "/", "img/desktop-icon.png", "This leads to the main panel, where you are able to logon. This is the default window after startup", null, "MainScreenDiv"),
+                new TaskBarMenuItem("Dashboard", "/dashboard", "img/dashboard-icon.png", "This leads a dashboard, where you can see some statistics about tickets, you can filter them and perform action againts them", null, "DashboardScreenDiv"),
+                new TaskBarMenuItem("Open ticket", "/open", "img/create-icon.png", "Do you have an issue? Just open a ticket, let people know about it!", OpenPageState, "OpenTicketScreenDiv"),
+                new TaskBarMenuItem("User settings", "/user", "img/user-icon.png", "This leads to the user settings window. There you are able to change your email address and password.", UserPageState, "UserScreenDiv"),
+                new TaskBarMenuItem("Admin settings", "/admin", "img/admin-icon.png", "This leads to admin page, where the tool can be administrated. You can perform actions like: add/remove/rename systems or categories and user mnagement", AdminPageState, "AdminScreenDiv")
+            };
     }
 }

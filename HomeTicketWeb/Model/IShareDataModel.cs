@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
     /*********************************************************************************************/
-    /* Class for validation of input box                                                         */
+    /* Interface for general 'data saving' objects which are used by DI                          */
     /*********************************************************************************************/
-    public class LoginInfo
+    public interface IShareDataModel
     {
-        [Required]
-        public string UserName { get; set; }
-
-        [Required]
-        public string Password { get; set; }
+        // Set every component (which can be) to null or default
+        public void SetNull();
     }
 }

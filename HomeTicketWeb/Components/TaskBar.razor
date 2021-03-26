@@ -1,4 +1,16 @@
-﻿@if (IsVisible)
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- TaskBar.razor                                                                              -->
+<!--                                                                                            -->
+<!-- This component is the main navigation component. It provides a taskbar at the bottom of the-->
+<!-- page, opened application handler and taskbar box (start menu) features. Applications are   -->
+<!-- tracked on the taskbar, that it is easy to swithc among them.                              -->
+<!--                                                                                            -->
+<!-- Parameters:                                                                                -->
+<!-- - AppList: list about applications, they will be showed in the taskbar box                 -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
+
+@if (IsVisible)
 {
     <div class="ati-taskbar-applications">
         @if (AppList == null)
@@ -60,154 +72,5 @@
 </div>
 
 @code {
-    [Parameter] public List<TaskBarMenuItem> AppList { get; set; }
-
-    [CascadingParameter] public MainLayout Layout { get; set; }
-
-    private List<TaskBarMenuItem> OpenedApps = new List<TaskBarMenuItem>();
-
-    private ContextMenu CMenu;
-    private TaskBarMenuItem SelectedItem;
-    private int DistanceFromLeft;
-
-    private bool IsVisible = false;
-    private string DescText;
-    private string DescTitle;
-    private string DescIcon;
-
-    private void ContextMenu(MouseEventArgs e, TaskBarMenuItem item)
-    {
-        if (e.Button == 2)
-        {
-            JSCalls call = new JSCalls(js);
-            var dimensions = call.GetBounds(item.DivId);
-            DistanceFromLeft = Convert.ToInt32(dimensions.Left);
-
-            SelectedItem = item;
-            CMenu.Show();
-        }
-    }
-
-    public void ConextMenuOpen()
-    {
-        NavManager.NavigateTo(SelectedItem.Route);
-        CMenu.Hide();
-    }
-
-    public void ConextMenuClose()
-    {
-        RemoveOpenedApp(SelectedItem.Route);
-        CMenu.Hide();
-    }
-
-    public void AddOpenedApp(string route)
-    {
-        if (route == "/" || route == "/index")
-            return;
-
-        TaskBarMenuItem app = null;
-        foreach (var item in AppList)
-        {
-            if (item.CompareRoute(route))
-                app = item;
-        }
-
-        if (app != null)
-        {
-            var isContain = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
-            if (isContain == null)
-            {
-                var record = AppList.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
-                OpenedApps.Add(record);
-            }
-        }
-
-        StateHasChanged();
-    }
-
-    public void RemoveOpenedApp(string route)
-    {
-        RemoveOpenedAppNoNavigate(route);
-
-        if(OpenedApps.Count == 0)
-        {
-            NavManager.NavigateTo("/");
-        }
-        else
-        {
-            NavManager.NavigateTo(OpenedApps[OpenedApps.Count - 1].Route);
-        }
-
-    }
-
-    private void RemoveOpenedAppNoNavigate(string route)
-    {
-        if (route == "/index")
-            route = "/";
-
-        TaskBarMenuItem app = null;
-        foreach (var item in AppList)
-        {
-            if (item.CompareRoute(route))
-                app = item;
-        }
-
-        if (app != null)
-        {
-            var record = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
-            if (record != null)
-            {
-                if (record.DataContainer != null)
-                    record.DataContainer.SetNull();
-
-                OpenedApps.Remove(record);
-            }
-        }
-
-        StateHasChanged();
-    }
-
-    public void ClearOpenedApp()
-    {
-        var routeList = OpenedApps.Select(s => s.Route).ToList();
-        foreach (var item in routeList)
-        {
-            RemoveOpenedAppNoNavigate(item);
-        }
-        StateHasChanged();
-    }
-
-    public void ShowDescription(string title, string icon, string text)
-    {
-        DescText = text;
-        DescIcon = icon;
-        DescTitle = title;
-        StateHasChanged();
-    }
-
-    private void Usage()
-    {
-        string actPage = NavManager.Uri.Substring(NavManager.BaseUri.Length - 1);
-        if (actPage == "") actPage = "/";
-
-        foreach (var item in Layout.Apps)
-        {
-            if(item.CompareRoute(actPage))
-            {
-                DescIcon = item.Image;
-                DescText = item.Text;
-                DescTitle = item.Title;
-            }
-        }
-
-        IsVisible = !IsVisible;
-        StateHasChanged();
-    }
-
-    public void Hide()
-    {
-        IsVisible = false;
-        StateHasChanged();
-    }
-
+    
 }

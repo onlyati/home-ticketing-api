@@ -1,8 +1,25 @@
-﻿@page "/user"
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- UserPage.razor                                                                             -->
+<!--                                                                                            -->
+<!-- This page is for showing info about the user itself and change them                        -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
 
+<!------------------------------------------------------------------------------------------------>
+<!-- Page definitions                                                                           -->
+<!------------------------------------------------------------------------------------------------>
+@page "/user"
+
+<!------------------------------------------------------------------------------------------------>
+<!-- Content                                                                                    -->
+<!------------------------------------------------------------------------------------------------>
 <div class="ati-full-window">
+    <!-- Show a title at the top of the page -->
     <WindowTitle Title="It is your nice profile" CloseAction="@CloseWindow" />
+    <!-- Here is the content of application -->
     <div class="ati-full-window-content container">
+        <!-- Put a tree menu to the left side of page              -->
+        <!-- Right side of the page is the actual sub-page content -->
         <div class="row">
             <div class="col-auto">
                 <CascadingValue Value="UserPageState.ActMenu">
@@ -21,46 +38,3 @@
     </div>
 </div>
 
-@code {
-    [CascadingParameter] public MainLayout Layout { get; set; }
-
-    public TreeMenu TMenu;
-
-    private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()
-    {
-        new TreeMenuItem() { Title = "Display data", Section = "User management", Id = 1 },
-        new TreeMenuItem() { Title = "Change your profile", Section = "User management", Id = 2 },
-    };
-
-    protected override void OnInitialized()
-    {
-        if (User.Role == null || User.UserName == null)
-        {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
-
-            if (Layout != null)
-                if (Layout.Bar != null)
-                    Layout.Bar.RemoveOpenedApp("/user");
-
-            NavManager.NavigateTo("/");
-        }
-    }
-
-    public void UpdateState()
-    {
-        if (TMenu != null)
-            if (TMenu.ActMenu != null)
-                UserPageState.ActMenu = TMenu.ActMenu;
-
-        StateHasChanged();
-    }
-
-    private void CloseWindow()
-    {
-        if (Layout != null)
-            if (Layout.Bar != null)
-                Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
-    }
-}

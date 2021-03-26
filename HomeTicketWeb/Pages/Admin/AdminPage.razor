@@ -1,8 +1,29 @@
-﻿@page "/admin"
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- AdminPage.razor                                                                            -->
+<!--                                                                                            -->
+<!-- This page is for executing some adminstrating actions like:                                -->
+<!-- - Add/Rename/Remove category                                                               -->
+<!-- - Add/Rename/Remove system                                                                 -->
+<!-- - Add//Change/Delete user                                                                  -->
+<!-- - Execute assignments                                                                      -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
 
+<!------------------------------------------------------------------------------------------------>
+<!-- Page definitions                                                                           -->
+<!------------------------------------------------------------------------------------------------>
+@page "/admin"
+
+<!------------------------------------------------------------------------------------------------>
+<!-- Content                                                                                    -->
+<!------------------------------------------------------------------------------------------------>
 <div class="ati-full-window">
-    <WindowTitle Title="Play a God, you are and admin now!" CloseAction="@CloseWindow" /> 
+    <!-- Show title of the page -->
+    <WindowTitle Title="Play a God, you are and admin now!" CloseAction="@CloseWindow" />
+    <!-- Here is the content -->
     <div class="ati-full-window-content container">
+        <!-- Put a tree menu to the left side of page              -->
+        <!-- Right side of the page is the actual sub-page content -->
         <div class="row">
             <div class="col-auto">
                 <CascadingValue Value="AdminPageState.ActMenu">
@@ -30,49 +51,3 @@
     </div>
 </div>
 
-@code {
-    [CascadingParameter] public MainLayout Layout { get; set; }
-
-    public TreeMenu TMenu;
-
-    private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()
-    {
-        new TreeMenuItem() { Title = "User adjustment", Section = "User management", Id = 1 },
-        new TreeMenuItem() { Title = "User-Group assigments", Section = "User management", Id = 2 },
-        new TreeMenuItem() { Title = "System adjustment", Section = "Sytem management", Id = 3 },
-        new TreeMenuItem() { Title = "Category adjustment", Section = "Category management", Id = 4 },
-        new TreeMenuItem() { Title = "Category-System assignments", Section = "Category management", Id = 5 },
-    };
-
-    protected override void OnInitialized()
-    {
-        if (User.Role != UserRole.Admin || User.UserName == null)
-        {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
-
-            if (Layout != null)
-                if (Layout.Bar != null)
-                    Layout.Bar.RemoveOpenedApp("/admin");
-
-            NavManager.NavigateTo("/");
-        }
-    }
-
-    public void UpdateState()
-    {
-        if(TMenu != null)
-            if(TMenu.ActMenu != null)
-                AdminPageState.ActMenu = TMenu.ActMenu;
-
-        StateHasChanged();
-    }
-
-    private void CloseWindow()
-    {
-        if (Layout != null)
-            if (Layout.Bar != null)
-                Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
-    }
-}

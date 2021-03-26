@@ -184,6 +184,7 @@
         border-color: transparent;
         font-size: 18px;
         float: left;
+        outline: none;
     }
 
 .ati-popup-box {

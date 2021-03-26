@@ -1,4 +1,16 @@
-﻿<div class="ati-popup-box"  style="@(DirectionY): @yCssPos; @(DirectionX): @xCssPos; transform: @transformCss"
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- Popup.razor                                                                                -->
+<!--                                                                                            -->
+<!-- This component is a draggable window. Size is equal with the ChildContent size             -->
+<!--                                                                                            -->
+<!-- Parameters:                                                                                -->
+<!-- - ChildContent: what should be dsiplayed in the box                                        -->
+<!-- - PositionX/PositionY: if the default position is not OK, it can specified                 -->
+<!-- - DirectionX/DirectionY: where should PositionX/Y measured                                 -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
+
+<div class="ati-popup-box" style="@(DirectionY): @yCssPos; @(DirectionX): @xCssPos; transform: @transformCss"
      @ondragstart="BeginDrag" @ondragend="EndDrag" id="#PopupBox">
     @ChildContent
 </div>
@@ -29,11 +41,11 @@
         }
     }
 
-    public async Task BeginDrag(DragEventArgs e)
+    public void BeginDrag(DragEventArgs e)
     {
         JSCalls call = new JSCalls(js);
         var dimensions = call.GetBounds("#PopupBox");
-        var window = call.GetBrowserDimensionAsync();
+        var window = call.GetBrowserDimension();
 
         if (xPos2 == null)
             xPos2 = (window.Width - dimensions.Width) / 2;
@@ -45,7 +57,7 @@
         yPos1 = e.ClientY;
     }
 
-    public async Task EndDrag(DragEventArgs e)
+    public void EndDrag(DragEventArgs e)
     {
         transformCss = "none";
         xPos2 += e.ClientX - xPos1;
@@ -55,7 +67,7 @@
         if (yPos2 < 0) yPos2 = 0;
 
         JSCalls call = new JSCalls(js);
-        var window = call.GetBrowserDimensionAsync();
+        var window = call.GetBrowserDimension();
         var dimensions = call.GetBounds("#PopupBox");
 
         if (xPos2 > window.Width - dimensions.Width) xPos2 = window.Width - dimensions.Width;

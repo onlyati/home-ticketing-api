@@ -6,22 +6,29 @@ using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Model
 {
+    /*********************************************************************************************/
+    /* Class for 'TaskBar' component. It defines what menu are required and describe them        */
+    /*********************************************************************************************/
     public class TaskBarMenuItem
     {
-        public string Title { get; set; }
+        /*---------------------------------------------------------------------------------------*/
+        /* Properties                                                                            */
+        /*---------------------------------------------------------------------------------------*/
+        public string Title { get; set; }                                                // Title, it will be seen as application name
 
-        public string Route { get; set; }
+        public string Route { get; set; }                                                // Relative address of a page/app
 
-        public string Image { get; set; }
+        public string Image { get; set; }                                                // Icon for app
 
-        public string Text { get; set; }
+        public string Text { get; set; }                                                 // Short summary about the app, it will be showed in taskbar box
 
-        public ContextMenu ContextMenu { get; set; }
+        public string DivId { get; set; }                                                // ID of a div in html, must be unique on each row
 
-        public IShareDataModel DataContainer { get; set; }
+        public IShareDataModel DataContainer { get; set; }                               // Object which is used for cleanup (remove data from cache)
 
-        public string DivId { get; set; }
-
+        /*---------------------------------------------------------------------------------------*/
+        /* Constructor                                                                           */
+        /*---------------------------------------------------------------------------------------*/
         public TaskBarMenuItem(string title, string route, string image, string text, IShareDataModel dataContainer, string id)
         {
             Title = title;
@@ -32,6 +39,9 @@ namespace HomeTicketWeb.Model
             DivId = id;
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Execute comparison betwwen two path string                                            */
+        /*---------------------------------------------------------------------------------------*/
         public bool CompareRoute(string otherPath)
         {
             if (otherPath == "/")
