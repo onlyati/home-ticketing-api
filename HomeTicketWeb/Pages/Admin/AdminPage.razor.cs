@@ -38,7 +38,6 @@ namespace HomeTicketWeb.Pages.Admin
             new TreeMenuItem() { Title = "User-Group assigments", Section = "User management", Id = 2 },
             new TreeMenuItem() { Title = "System adjustment", Section = "Sytem management", Id = 3 },
             new TreeMenuItem() { Title = "Category adjustment", Section = "Category management", Id = 4 },
-            new TreeMenuItem() { Title = "Category-System assignments", Section = "Category management", Id = 5 },
         };
         private NewUser AddUser = new NewUser();                                         // Model for EditForm
 
@@ -47,6 +46,8 @@ namespace HomeTicketWeb.Pages.Admin
         private string moveCategory;
 
         private NewSystem AddSystem = new NewSystem();
+
+        private AssignCategory AddCategory = new AssignCategory();
 
         /*=======================================================================================*/
         /* Classes                                                                               */
@@ -74,8 +75,10 @@ namespace HomeTicketWeb.Pages.Admin
 
         private class AssignCategory
         {
+            [Required]
             public string SystemName { get; set; }
 
+            [Required]
             public string CategoryName { get; set; }
 
             public override bool Equals(object obj)
@@ -379,6 +382,52 @@ namespace HomeTicketWeb.Pages.Admin
             if (Layout != null)
                 if (Layout.AlertBox != null)
                     Layout.AlertBox.SetAlert("System adjustment", "System is deleted", AlertBox.AlertBoxType.Info);
+        }
+
+        #endregion
+
+        #region Category adjustment
+
+        public void AddCategorySubmit()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", $"New category ({AddCategory.SystemName}->{AddCategory.CategoryName}) has been added", AlertBox.AlertBoxType.Info);
+        }
+
+        public void AddCategorySubmitMissing()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", "Missing input values", AlertBox.AlertBoxType.Error);
+        }
+
+        public void ChangeCategoryVerify()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", "Do you really want to change this record?", AlertBox.AlertBoxType.Question, ChangeCategory);
+        }
+
+        public void ChangeCategory()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", "Category is changed", AlertBox.AlertBoxType.Info);
+        }
+
+        public void DeleteCategoryVerify()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", "Do you really want to delete this record?", AlertBox.AlertBoxType.Question, DeleteCategory);
+        }
+
+        public void DeleteCategory()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", "Category is deleted", AlertBox.AlertBoxType.Info);
         }
 
         #endregion

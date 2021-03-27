@@ -272,12 +272,129 @@
                     </table>
                 </TreeMenuContent>
                 <TreeMenuContent ID="4" TreeMenuRef="TMenu">
+                    <h1 class="ati-h-blurpl">Add new category</h1>
+                    <hr class="ati-hr-normal" />
+                    <EditForm Model="AddCategory" OnValidSubmit="AddCategorySubmit" OnInvalidSubmit="AddCategorySubmitMissing">
+                        <DataAnnotationsValidator />
+                        <table>
+                            <tbody>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Username:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="ABC123" @bind="@AddCategory.SystemName" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>System:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <select @bind="@AddCategory.CategoryName">
+                                            <option></option>
+                                            <option>atihome</option>
+                                            <option>test-system-1</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element">
+                                    <td colspan="2">
+                                        <button type="submit" class="btn ati-btn-primary mt-3">Add new category</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </EditForm>
                     <h1 class="ati-h-blurpl">Adjust categories</h1>
                     <hr class="ati-hr-normal" />
-                </TreeMenuContent>
-                <TreeMenuContent ID="5" TreeMenuRef="TMenu">
-                    <h1 class="ati-h-blurpl">Assign category connections</h1>
-                    <hr class="ati-hr-normal" />
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <td><b>System name</b></td>
+                                <td><b>Category name</b></td>
+                                <td><b>New category name</b></td>
+                                <td><b>New system name</b></td>
+                                <td><b>Action</b></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>atihome</td>
+                                <td>System</td>
+                                <td><input type="text" placeholder="Changed category name" /></td>
+                                <td>
+                                    <select>
+                                        <option></option>
+                                        <option>atihome</option>
+                                        <option>test-system-1</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="ChangeCategoryVerify">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteCategoryVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>atihome</td>
+                                <td>Network</td>
+                                <td><input type="text" placeholder="Changed category name" /></td>
+                                <td>
+                                    <select>
+                                        <option></option>
+                                        <option>atihome</option>
+                                        <option>test-system-1</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="ChangeCategoryVerify">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteCategoryVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>test-system-1</td>
+                                <td>System</td>
+                                <td><input type="text" placeholder="Changed category name" /></td>
+                                <td>
+                                    <select>
+                                        <option></option>
+                                        <option>atihome</option>
+                                        <option>test-system-1</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="ChangeCategoryVerify">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteCategoryVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </TreeMenuContent>
             </div>
         </div>
