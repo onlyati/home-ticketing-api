@@ -2,6 +2,7 @@
 using HomeTicketWeb.Model;
 using HomeTicketWeb.Shared;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -41,6 +42,10 @@ namespace HomeTicketWeb.Pages.Admin
         };
         private NewUser AddUser = new NewUser();                                         // Model for EditForm
 
+        private List<string> categoryList;
+        private List<AssignCategory> userCategoryList;
+        private string moveCategory;
+
         /*=======================================================================================*/
         /* Classes                                                                               */
         /*=======================================================================================*/
@@ -57,6 +62,33 @@ namespace HomeTicketWeb.Pages.Admin
 
             [Required]
             public string Role { get; set; }
+        }
+
+        private class AssignCategory
+        {
+            public string SystemName { get; set; }
+
+            public string CategoryName { get; set; }
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as AssignCategory);
+            }
+
+            public bool Equals(AssignCategory other)
+            {
+                if (SystemName != other.SystemName)
+                    return false;
+                if (CategoryName != other.CategoryName)
+                    return false;
+
+                return true;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(SystemName, CategoryName);
+            }
         }
 
         /*=======================================================================================*/
@@ -114,6 +146,7 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
         }
 
+        #region User adjustment
         /*---------------------------------------------------------------------------------------*/
         /* Function name: ChangeUserVerify                                                       */
         /*                                                                                       */
@@ -169,7 +202,7 @@ namespace HomeTicketWeb.Pages.Admin
         {
             if (Layout != null)
                 if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjsut user", "User has been deleted", AlertBox.AlertBoxType.Info);
+                    Layout.AlertBox.SetAlert("Adjust user", "User has been deleted", AlertBox.AlertBoxType.Info);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -200,5 +233,99 @@ namespace HomeTicketWeb.Pages.Admin
                 if (Layout.AlertBox != null)
                     Layout.AlertBox.SetAlert("Adjust user", "Input field(s) is(are) missing", AlertBox.AlertBoxType.Error);
         }
+        #endregion
+
+        #region User-Category Assignment
+        public void AssignSystemChanged(ChangeEventArgs e)
+        {
+            AdminPageState.AdminUsrCat.SelectedSystem = e.Value.ToString();
+
+            if(e.Value != null)
+            {
+                if (!string.IsNullOrEmpty(e.Value.ToString()))
+                {
+                    categoryList = new List<string>()
+                    {
+                        "System",
+                        "Network",
+                        "Storage",
+                        "Application"
+                    };
+                }
+                else
+                    categoryList = null;
+            }
+            else
+            {
+                categoryList = null;
+            }
+
+            StateHasChanged();
+        }
+
+        public void AssignUserChanged(ChangeEventArgs e)
+        {
+            AdminPageState.AdminUsrCat.SelectedUser = e.Value.ToString();
+
+            if(e.Value != null)
+            {
+                if(!string.IsNullOrEmpty(e.Value.ToString()))
+                {
+                    userCategoryList = new List<AssignCategory>()
+                    {
+                        new AssignCategory() {SystemName = "atihome", CategoryName = "Network" }
+                    };
+                }
+                else
+                {
+                    userCategoryList = null;
+                }
+            }
+            else
+            {
+                userCategoryList = null;
+            }
+
+            StateHasChanged();
+        }
+
+        public void AssignCategoryDrag(DragEventArgs e, string item)
+        {
+            moveCategory = item;
+            
+        }
+
+        public void AssignCategoryDropped(DragEventArgs e)
+        {
+            if(AdminPageState.AdminUsrCat.SelectedUser != null)
+            {
+                var checkExist = userCategoryList.Where(s => s.CategoryName == moveCategory && s.SystemName == AdminPageState.AdminUsrCat.SelectedSystem).Select(s => s).FirstOrDefault();
+                if(checkExist == null)
+                {
+                    userCategoryList.Add(new AssignCategory() { CategoryName = moveCategory, SystemName = AdminPageState.AdminUsrCat.SelectedSystem });
+                    userCategoryList = userCategoryList.OrderBy(o => o.CategoryName).ToList();
+                }
+            }
+
+            StateHasChanged();
+        }
+
+        public void UnassignCategory(string cat, string sys)
+        {
+            AssignCategory find = new AssignCategory()
+            {
+                CategoryName = cat,
+                SystemName = sys,
+            };
+
+            var record = userCategoryList.Where(s => s.Equals(find)).FirstOrDefault();
+            if(record != null)
+            {
+                userCategoryList.Remove(record);
+            }
+
+            StateHasChanged();
+        }
+        #endregion
     }
 }

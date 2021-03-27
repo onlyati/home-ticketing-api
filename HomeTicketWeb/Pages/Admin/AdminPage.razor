@@ -143,6 +143,62 @@
                 <TreeMenuContent ID="2" TreeMenuRef="TMenu">
                     <h1 class="ati-h-blurpl">Assign user connections</h1>
                     <hr class="ati-hr-normal" />
+                    <div class="row">
+                        <div class="col">
+                            <select class="ati-select" value="@AdminPageState.AdminUsrCat.SelectedSystem" @onchange="AssignSystemChanged">
+                                <option></option>
+                                <option>atihome</option>
+                                <option>test-system-1</option>
+                            </select>
+                            <div>
+                                @if (categoryList != null)
+                                {
+                                    @foreach (var item in categoryList)
+                                    {
+                                        <div draggable="true" @ondragstart="(e) => AssignCategoryDrag(e, item)" class="ati-drag-item" style="cursor: move;">
+                                            <div class="ati-drag-item-title">@item</div>
+                                            <div class="ati-drag-item-subtext">@AdminPageState.AdminUsrCat.SelectedSystem</div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="col">
+                            <select class="ati-select" value="@AdminPageState.AdminUsrCat.SelectedUser" @onchange="AssignUserChanged">
+                                <option></option>
+                                <option>God</option>
+                                <option>Béla</option>
+                            </select>
+                            <div class="ati-drag-item-add" @ondrop="AssignCategoryDropped" ondragover="event.preventDefault();">
+                                Drag here to assign new category
+                            </div>
+                            <div>
+                                @if(userCategoryList != null)
+                                {
+                                    @foreach (var item in userCategoryList)
+                                    {
+                                        <div class="ati-drag-item">
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="ati-drag-item-title">@item.CategoryName</div>
+                                                </div>
+                                                <div class="ati-change-btn-table mr-3">
+                                                    <a data-tooltip="Unassign category" @onclick="() => UnassignCategory(item.CategoryName, item.SystemName)">
+                                                        <img class="ati-change-img-table" src="img/remove-icon.png">
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col">
+                                                    <div class="ati-drag-item-subtext float-none">@item.SystemName</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </TreeMenuContent>
                 <TreeMenuContent ID="3" TreeMenuRef="TMenu">
                     <h1 class="ati-h-blurpl">Adjust systems</h1>

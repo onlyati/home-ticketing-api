@@ -380,3 +380,34 @@
         transform: translate(-50%, 0);
         margin-bottom: 1px;
     }
+
+.ati-drag-item {
+    width: 100%;
+    padding: 12px 21px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #5680E9;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.ati-drag-item-title {
+    font-size: 21px;
+    font-weight: bold;
+    color: black;
+}
+
+.ati-drag-item-subtext {
+    font-size: 14px;
+    color: #5680E9;
+}
+
+.ati-drag-item-add {
+    border: 5px dashed #5680E9;
+    text-align: center;
+    font-size: 21px;
+    font-weight: bold;
+    color: #5680E9;
+    padding-top: 13px;
+    padding-bottom: 13px;
+}

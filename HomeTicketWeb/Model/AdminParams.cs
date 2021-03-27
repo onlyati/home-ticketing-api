@@ -19,6 +19,8 @@ namespace HomeTicketWeb.Model
 
         public AdminAddUser AdminUser { get; set; }                                      // Object to save user related administartion  data
 
+        public AdminUserCat AdminUsrCat { get; set; }
+
         public TreeMenuItem ActMenu { get; set; }                                        // Actually selected menu on the page
 
         public AdminStatus()
@@ -27,6 +29,7 @@ namespace HomeTicketWeb.Model
             AdminSys = new AdminAddSystem();
             AdminUser = new AdminAddUser();
             ActMenu = new TreeMenuItem();
+            AdminUsrCat = new AdminUserCat();
         }
 
         public void SetNull()
@@ -39,6 +42,23 @@ namespace HomeTicketWeb.Model
                 AdminUser.SetNull();
             if (ActMenu != null)
                 ActMenu.SetNull();
+            if (AdminUsrCat != null)
+                AdminUsrCat.SetNull();
+        }
+    }
+
+    public class AdminUserCat : IShareDataModel
+    {
+        public string SelectedUser { get; set; } = null;
+
+        public string SelectedSystem { get; set; } = null;
+
+        public void SetNull()
+        {
+            if(SelectedSystem != null)
+                SelectedSystem = null;
+            if (SelectedUser != null)
+                SelectedUser = null;
         }
     }
 
