@@ -28,10 +28,70 @@
             </div>
             <div class="col">
                 <TreeMenuContent ID="1" TreeMenuRef="TMenu">
-                    <p>Display your data...</p>
+                    <h1 class="ati-h-blurpl">User information</h1>
+                    <hr class="ati-hr-normal" />
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td class="pr-3"><b>Username:</b></td>
+                                <td>@User.UserName</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-3"><b>Email address:</b></td>
+                                <td>@User.Email</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-3"><b>Role:</b></td>
+                                <td>@User.Role</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h1 class="ati-h-blurpl">Category connections</h1>
+                    <hr class="ati-hr-normal" />
+                    <b>atihome:</b>
+                    <ul>
+                        <li>System</li>
+                        <li>Network</li>
+                        <li>Hardware</li>
+                        <li>Application</li>
+                        <li>Storage</li>
+                    </ul>
+                    <b>test-system-1:</b>
+                    <ul>
+                        <li>System</li>
+                        <li>Network</li>
+                        <li>Hardware</li>
+                        <li>Application</li>
+                        <li>Storage</li>
+                    </ul>
                 </TreeMenuContent>
                 <TreeMenuContent ID="2" TreeMenuRef="TMenu">
-                    <p>Change your settings...</p>
+                    <h1 class="ati-h-blurpl">Change your user information</h1>
+                    <hr class="ati-hr-normal" />
+                    <EditForm Model="@ChangeInfo" OnValidSubmit="ChangeUserInfo" OnInvalidSubmit="ChangeUserInfoMissing">
+                        <DataAnnotationsValidator />
+                        <table>
+                            <tbody>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>New email address:</b></td>
+                                    <td style="min-width: 300px;"><input type="text" class="ati-login-input" placeholder="something@anything.com" @bind="@ChangeInfo.Email" /></td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>New password:</b></td>
+                                    <td><input type="password" class="ati-login-input" placeholder="Password" @bind="@ChangeInfo.Password" /></td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Current password</b></td>
+                                    <td><input type="password" class="ati-login-input" placeholder="Password" @bind="@ChangeInfo.OldPassword" /></td>
+                                </tr>
+                                <tr class="ati-login-element">
+                                    <td colspan="2">
+                                        <button type="submit" class="btn ati-btn-primary">Change information</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </EditForm>
                 </TreeMenuContent>
             </div>
         </div>

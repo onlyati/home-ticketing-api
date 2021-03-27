@@ -110,13 +110,14 @@ namespace HomeTicketWeb.Components
         /*---------------------------------------------------------------------------------------*/
         public void Hide()
         {
+            IsVisible = false;
+            StateHasChanged();
+
             if (OnConfirm != null)
                 OnConfirm.Invoke();
 
             OnConfirm = null;
             OnCancel = null;
-            IsVisible = false;
-            StateHasChanged();
         }
 
         /*=======================================================================================*/

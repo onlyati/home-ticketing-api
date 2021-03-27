@@ -32,19 +32,129 @@
             </div>
             <div class="col">
                 <TreeMenuContent ID="1" TreeMenuRef="TMenu">
-                    <p>Add/change/delete users...</p>
+                    <h1 class="ati-h-blurpl">Add new user</h1>
+                    <hr class="ati-hr-normal" />
+                    <EditForm Model="@AddUser" OnValidSubmit="AddUserSubmit" OnInvalidSubmit="AddUserSubmitMissing">
+                        <DataAnnotationsValidator />
+                        <table>
+                            <tbody>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Username:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="ABC123" @bind="@AddUser.UserName" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Email:</b></td>
+                                    <td>
+                                        <input type="text" class="ati-login-input" placeholder="something@anything.com" @bind="@AddUser.Email" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Password:</b></td>
+                                    <td>
+                                        <input type="password" class="ati-login-input" @bind="@AddUser.Password" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Role:</b></td>
+                                    <td>
+                                        <select class="ati-select" @bind="@AddUser.Role">
+                                            <option selected></option>
+                                            <option>User</option>
+                                            <option>Admin</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element">
+                                    <td colspan="2">
+                                        <button type="submit" class="btn ati-btn-primary mt-3">Add new user</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </EditForm>
+                    <h1 class="ati-h-blurpl">Modify users</h1>
+                    <hr class="ati-hr-normal" />
+                    <table style="width: 100%">
+                        <thead>
+                            <tr>
+                                <td><b>Username</b></td>
+                                <td><b>Password</b></td>
+                                <td><b>Email address</b></td>
+                                <td><b>Role</b></td>
+                                <td colspan="2"><b>Action</b></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>God</td>
+                                <td><input type="password" placeholder="New password" /></td>
+                                <td><input type="text" value="god@ize.com" /></td>
+                                <td>
+                                    <select>
+                                        <option selected>Admin</option>
+                                        <option>User</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="ChangeUserVerify">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteUserVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Béla</td>
+                                <td><input type="password" placeholder="New password" /></td>
+                                <td><input type="text" value="user@ize.com" /></td>
+                                <td>
+                                    <select>
+                                        <option>Admin</option>
+                                        <option selected>User</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="ChangeUserVerify">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteUserVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </TreeMenuContent>
                 <TreeMenuContent ID="2" TreeMenuRef="TMenu">
-                    <p>Assign user to groups...</p>
+                    <h1 class="ati-h-blurpl">Assign user connections</h1>
+                    <hr class="ati-hr-normal" />
                 </TreeMenuContent>
                 <TreeMenuContent ID="3" TreeMenuRef="TMenu">
-                    <p>Add/change/delete systems...</p>
+                    <h1 class="ati-h-blurpl">Adjust systems</h1>
+                    <hr class="ati-hr-normal" />
                 </TreeMenuContent>
                 <TreeMenuContent ID="4" TreeMenuRef="TMenu">
-                    <p>Add/change/delete category...</p>
+                    <h1 class="ati-h-blurpl">Adjust categories</h1>
+                    <hr class="ati-hr-normal" />
                 </TreeMenuContent>
                 <TreeMenuContent ID="5" TreeMenuRef="TMenu">
-                    <p>Assign categories to system...</p>
+                    <h1 class="ati-h-blurpl">Assign category connections</h1>
+                    <hr class="ati-hr-normal" />
                 </TreeMenuContent>
             </div>
         </div>

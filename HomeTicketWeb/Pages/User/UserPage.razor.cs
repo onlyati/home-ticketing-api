@@ -4,6 +4,7 @@ using HomeTicketWeb.Shared;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -35,6 +36,20 @@ namespace HomeTicketWeb.Pages.User
             new TreeMenuItem() { Title = "Display data", Section = "User management", Id = 1 },
             new TreeMenuItem() { Title = "Change your profile", Section = "User management", Id = 2 },
         };
+        private ChangeUser ChangeInfo = new ChangeUser();                                // Use as model for EditForm
+
+        /*=======================================================================================*/
+        /* Classes                                                                               */
+        /*=======================================================================================*/
+        private class ChangeUser
+        {
+            public string Email { get; set; }
+
+            public string Password { get; set; }
+
+            [Required]
+            public string OldPassword { get; set; }
+        }
 
         /*=======================================================================================*/
         /* Methods                                                                               */
@@ -91,6 +106,58 @@ namespace HomeTicketWeb.Pages.User
             if (Layout != null)
                 if (Layout.Bar != null)
                     Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: ChangeUserInfo                                                         */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Adjust user information (email or password)                                           */
+        /*---------------------------------------------------------------------------------------*/
+        private void ChangeUserInfo()
+        {
+            string oldpw = null;
+            if (User.UserName == "God")
+                oldpw = "admin";
+            if (User.UserName == "Béla")
+                oldpw = "user";
+
+            if(oldpw != ChangeInfo.OldPassword)
+            {
+                Layout.AlertBox.SetAlert("User modification", "Old password does not match", AlertBox.AlertBoxType.Error);
+                ChangeInfo = new ChangeUser();
+                return;
+            }
+
+            bool changed = false;
+            if (!string.IsNullOrEmpty(ChangeInfo.Email) && !string.IsNullOrWhiteSpace(ChangeInfo.Email))
+            {
+                User.Email = ChangeInfo.Email;
+                changed = true;
+            }
+
+            if (!string.IsNullOrEmpty(ChangeInfo.Password) && !string.IsNullOrWhiteSpace(ChangeInfo.Password))
+            {
+                changed = true;
+            }
+
+            if (changed)
+                Layout.AlertBox.SetAlert("User modification", "User information has been updated", AlertBox.AlertBoxType.Info);
+            else
+                Layout.AlertBox.SetAlert("User modification", "Nothing has changed", AlertBox.AlertBoxType.Info);
+
+            ChangeInfo = new ChangeUser();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: ChangeUserInfoMissing                                                  */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Error message, something is missing in the input                                      */
+        /*---------------------------------------------------------------------------------------*/
+        private void ChangeUserInfoMissing()
+        {
+            Layout.AlertBox.SetAlert("User modification", "Current password must be specified as verification", AlertBox.AlertBoxType.Warning);
         }
     }
 }

@@ -4,6 +4,7 @@ using HomeTicketWeb.Shared;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,6 +39,25 @@ namespace HomeTicketWeb.Pages.Admin
             new TreeMenuItem() { Title = "Category adjustment", Section = "Category management", Id = 4 },
             new TreeMenuItem() { Title = "Category-System assignments", Section = "Category management", Id = 5 },
         };
+        private NewUser AddUser = new NewUser();                                         // Model for EditForm
+
+        /*=======================================================================================*/
+        /* Classes                                                                               */
+        /*=======================================================================================*/
+        private class NewUser
+        {
+            [Required]
+            public string UserName { get; set; }
+
+            [Required]
+            public string Password { get; set; }
+
+            [Required]
+            public string Email { get; set; }
+
+            [Required]
+            public string Role { get; set; }
+        }
 
         /*=======================================================================================*/
         /* Methods                                                                               */
@@ -92,6 +112,93 @@ namespace HomeTicketWeb.Pages.Admin
             if (Layout != null)
                 if (Layout.Bar != null)
                     Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: ChangeUserVerify                                                       */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called if admin wants to change a user. It gives a verification window */
+        /* and if if it is verified it calls the change function                                 */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private void ChangeUserVerify()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser);
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: ChangeUser                                                             */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called after admin verified user change.                               */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private void ChangeUser()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust user", "User change is done", AlertBox.AlertBoxType.Info);
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: DeleteUserVerify                                                       */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called if admin wantzs to remove a user, it gives a verification window*/
+        /* and if it is verified it calls the delete user function                               */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private void DeleteUserVerify()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust user", "Are you sure you want remove this user?", AlertBox.AlertBoxType.Question, DeleteUser);
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: DeleteUser                                                             */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called if admin verified a user remove question                        */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private void DeleteUser()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjsut user", "User has been deleted", AlertBox.AlertBoxType.Info);
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AddUserSubmit                                                          */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* New user request has been submitted from the admin page.                              */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private void AddUserSubmit()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust user", "User is added", AlertBox.AlertBoxType.Info);
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AddUserSubmitMissing                                                   */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called after admin verified user change, but it failed due to valida-  */
+        /* tion                                                                                  */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private void AddUserSubmitMissing()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust user", "Input field(s) is(are) missing", AlertBox.AlertBoxType.Error);
         }
     }
 }
