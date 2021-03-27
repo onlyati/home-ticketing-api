@@ -46,9 +46,17 @@ namespace HomeTicketWeb.Pages.Admin
         private List<AssignCategory> userCategoryList;
         private string moveCategory;
 
+        private NewSystem AddSystem = new NewSystem();
+
         /*=======================================================================================*/
         /* Classes                                                                               */
         /*=======================================================================================*/
+        private class NewSystem
+        {
+            [Required]
+            public string SystemName { get; set; }
+        }
+
         private class NewUser
         {
             [Required]
@@ -326,6 +334,53 @@ namespace HomeTicketWeb.Pages.Admin
 
             StateHasChanged();
         }
+        #endregion
+
+        #region System adjustment
+
+        public void AddSystemSubmit()
+        {
+            AddSystem = new NewSystem();
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("System adjustment", $"New system ({AddSystem.SystemName}) has been added", AlertBox.AlertBoxType.Info);
+        }
+
+        public void AddSystemSubmitMissing()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("System adjustment", $"Missing input parameters", AlertBox.AlertBoxType.Error);
+        }
+
+        public void ChangeSystemVerify()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("System adjustment", "Do you really want to change the system?", AlertBox.AlertBoxType.Question, ChangeSystem);
+        }
+
+        public void ChangeSystem()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("System adjustment", "System is changed", AlertBox.AlertBoxType.Info);
+        }
+
+        public void DeleteSystemVerify()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("System adjustment", "Do you really want to delete the system?", AlertBox.AlertBoxType.Question, DeleteSystem);
+        }
+
+        public void DeleteSystem()
+        {
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("System adjustment", "System is deleted", AlertBox.AlertBoxType.Info);
+        }
+
         #endregion
     }
 }

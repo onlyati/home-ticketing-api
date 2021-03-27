@@ -201,8 +201,75 @@
                     </div>
                 </TreeMenuContent>
                 <TreeMenuContent ID="3" TreeMenuRef="TMenu">
-                    <h1 class="ati-h-blurpl">Adjust systems</h1>
+                    <h1 class="ati-h-blurpl">Add new system</h1>
                     <hr class="ati-hr-normal" />
+                    <EditForm Model="AddSystem" OnValidSubmit="AddSystemSubmit" OnInvalidSubmit="AddSystemSubmitMissing">
+                        <DataAnnotationsValidator />
+                        <table>
+                            <tbody>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Username:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="ABC123" @bind="@AddSystem.SystemName" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element">
+                                    <td colspan="2">
+                                        <button type="submit" class="btn ati-btn-primary mt-3">Add new system</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </EditForm>
+                    <h1 class="ati-h-blurpl">Modify systems</h1>
+                    <hr class="ati-hr-normal" />
+                    <table style="width: 100%">
+                        <thead>
+                            <tr>
+                                <td><b>System name</b></td>
+                                <td><b>New system name</b></td>
+                                <td colspan="2"><b>Action</b></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>atihome</td>
+                                <td><input type="text" placeholder="Changed system name" /></td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="() => ChangeSystemVerify()">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteSystemVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>test-system-1</td>
+                                <td><input type="text" placeholder="Changed system name" /></td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Change user" @onclick="ChangeSystemVerify">
+                                            <img class="ati-change-img-table" src="img/change-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ati-change-btn-table">
+                                        <a data-tooltip="Remove user" @onclick="DeleteSystemVerify">
+                                            <img class="ati-change-img-table" src="img/remove-icon.png">
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </TreeMenuContent>
                 <TreeMenuContent ID="4" TreeMenuRef="TMenu">
                     <h1 class="ati-h-blurpl">Adjust categories</h1>
