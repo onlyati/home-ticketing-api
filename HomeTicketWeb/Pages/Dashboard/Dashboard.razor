@@ -7,56 +7,36 @@
     <div class="ati-full-window-content container">
         <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
         <hr class="ati-hr-normal" />
-
-        <div class="ati-dashboard-section">
-            asdasdsaasd
+        <div class="ati-dashboard-container">
+            @foreach (var item in tickets)
+            {
+            <div class="ati-dashboard-section">
+                <div class="row m-1">
+                    <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
+                </div>
+                <div class="row m-1">
+                    <p class="ati-dashboard-property">Category: </p>
+                    <p>@item.Category.Name</p>
+                </div>
+                <div class="row m-1">
+                    <p class="ati-dashboard-property">Status: </p>
+                    <p>@item.Status</p>
+                </div>
+                <div class="row m-1">
+                    <p class="ati-dashboard-property">System: </p>
+                    <p>@item.System.Name</p>
+                </div>
+                <div class="row m-1">
+                    <p class="ati-dashboard-property">Opened at: </p>
+                    <p>@item.Time.ToString()</p>
+                </div>
+                <div class="ati-login-element">
+                    <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Edit ticket</button>
+                    <button class="btn ati-btn-secondary">Close ticket</button>
+                </div>
+            </div>
+            }
         </div>
-
-        <table style="width: 100%;">
-            <thead>
-                <tr>
-                    <td><b>Title</b></td>
-                    <td><b>Status</b></td>
-                    <td><b>System</b></td>
-                    <td><b>Category</b></td>
-                    <td><b>Owner</b></td>
-                    <td colspan="2"><b>Action</b></td>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in tickets)
-                {
-                    <tr>
-                        <td>@item.Title</td>
-                        <td>@item.Status</td>
-                        <td>@item.System.Name</td>
-                        <td>@item.Category.Name</td>
-                        @if (item.User != null)
-                        {
-                            <td>@item.User.UserName</td>
-                        }
-                        else
-                        {
-                            <td></td>
-                        }
-                        <td>
-                            <div class="ati-change-btn-table">
-                                <a data-tooltip="Edit ticket" @onclick="() => GetDetails(item.Id)">
-                                    <img class="ati-change-img-table" src="img/change-icon.png">
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="ati-change-btn-table">
-                                <a data-tooltip="Close ticket">
-                                    <img class="ati-change-img-table" src="img/remove-icon.png">
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
         <div class="row">
             <div class="col-auto">
                 <h1 class="ati-h-blurpl">Filter tickets</h1>
