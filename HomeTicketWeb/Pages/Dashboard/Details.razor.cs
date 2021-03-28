@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -31,6 +33,7 @@ namespace HomeTicketWeb.Pages.Dashboard
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
         [Parameter] public int id { get; set; }
+        private TicketDetails details = new TicketDetails();
         private string PageTitle;
 
 
@@ -48,6 +51,39 @@ namespace HomeTicketWeb.Pages.Dashboard
             bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
             if (!check)
                 CloseWindow();
+
+            if (check)
+            {
+                PageTitle = $"Details of #{id}";
+                await LoadDetails();
+            }
+
+            StateHasChanged();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: LoadDetails                                                            */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* It loads details of and ID which was passed via parameter                             */
+        /*---------------------------------------------------------------------------------------*/
+        private async Task LoadDetails()
+        {
+            details = new TicketDetails();
+            var detailsRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/ticket/details?id={id}");
+            if(detailsRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Get details", "Ticket details could not be collected", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            details = JsonSerializer.Deserialize<TicketDetails>(await detailsRequest.Content.ReadAsStringAsync());
+            foreach (var item in details.Logs)
+            {
+                item.Details.Replace(Environment.NewLine, "<br />");
+            }
 
             StateHasChanged();
         }

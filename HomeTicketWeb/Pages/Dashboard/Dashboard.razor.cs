@@ -9,6 +9,7 @@ using System.Timers;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Linq;
+using System.Net;
 
 namespace HomeTicketWeb.Pages.Dashboard
 {
@@ -51,7 +52,13 @@ namespace HomeTicketWeb.Pages.Dashboard
             if (!check)
                 CloseWindow();
 
-            await LoadPersonalTickets();
+            if (check)
+            {
+                await LoadPersonalTickets();
+
+                if (DashboardPageState.FilterFindDone)
+                    await FilterTicketSubmit();
+            }
 
             StateHasChanged();
         }
@@ -151,14 +158,47 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         public async Task FilterTicketSubmit()
         {
-            DashboardPageState.filter = new TicketFilter();
-            DashboardPageState.IsPopUpShowed = false;
-
+            filteredTickets = new List<TicketListElem>();
             /*-----------------------------------------------------------------------------------*/
             /* Build the parameters and send the request                                         */
             /*-----------------------------------------------------------------------------------*/
-            var filterJson = JsonSerializer.Serialize<TicketFilter>(DashboardPageState.filter);
-            var filterRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/ticket/list/filter?username={User.UserName}&status=Open");
+            string link = $"{Configuration["ServerAddress"]}/ticket/list/filter?";
+
+            if(!string.IsNullOrEmpty(DashboardPageState.filter.Title) && !string.IsNullOrWhiteSpace(DashboardPageState.filter.Title))
+                link += $"title={DashboardPageState.filter.Title}&";
+
+            if (!string.IsNullOrEmpty(DashboardPageState.filter.Status) && !string.IsNullOrWhiteSpace(DashboardPageState.filter.Status))
+                link += $"status={DashboardPageState.filter.Status}&";
+
+            if (!string.IsNullOrEmpty(DashboardPageState.filter.SystemName) && !string.IsNullOrWhiteSpace(DashboardPageState.filter.SystemName))
+                link += $"system={DashboardPageState.filter.SystemName}&";
+
+            if (!string.IsNullOrEmpty(DashboardPageState.filter.CategoryName) && !string.IsNullOrWhiteSpace(DashboardPageState.filter.CategoryName))
+                link += $"category={DashboardPageState.filter.CategoryName}&";
+
+            if (DashboardPageState.filter.Owner == "*Unassigned*")
+                link += $"unassigned=true";
+            else if (!string.IsNullOrEmpty(DashboardPageState.filter.Owner) && !string.IsNullOrWhiteSpace(DashboardPageState.filter.Owner))
+                link += $"username={DashboardPageState.filter.Owner}&";
+
+            var filterRequest = await Http.GetAsync(link);
+            if(filterRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Ticket listing", "Ticket could not listed", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            filteredTickets = JsonSerializer.Deserialize<List<TicketListElem>>(await filterRequest.Content.ReadAsStringAsync());
+
+            /*-----------------------------------------------------------------------------------*/
+            /* Request is done, hide the popup                                                   */
+            /*-----------------------------------------------------------------------------------*/
+            DashboardPageState.IsPopUpShowed = false;
+            DashboardPageState.FilterFindDone = true;
+
+            StateHasChanged();
         }
     }
 }

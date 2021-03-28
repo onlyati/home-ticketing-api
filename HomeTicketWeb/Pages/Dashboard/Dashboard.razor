@@ -56,7 +56,7 @@
                             else
                             {
                                 <td class="pr-2"><strong>Owner:</strong></td>
-                                <td></td>
+                                <td>*Unassigned*</td>
                             }
                         </tr>
                         <tr>
@@ -118,7 +118,7 @@
                                 </td>
                             </tr>
                             <tr class="ati-login-element text-left">
-                                <td class="pr-3"><b>Role:</b></td>
+                                <td class="pr-3"><b>Status:</b></td>
                                 <td>
                                     <select class="ati-select" @bind="@DashboardPageState.filter.Status">
                                         <option selected></option>
@@ -166,7 +166,7 @@
                     <td><b>System</b></td>
                     <td><b>Category</b></td>
                     <td><b>Owner</b></td>
-                    <td colspan="2"><b>Action</b></td>
+                    <td><b>Action</b></td>
                 </tr>
             </thead>
             <tbody>
@@ -183,19 +183,12 @@
                         }
                         else
                         {
-                            <td></td>
+                            <td>*Unassigned*</td>
                         }
                         <td>
                             <div class="ati-change-btn-table">
-                                <a data-tooltip="Edit ticket">
+                                <a data-tooltip="Edit ticket" @onclick="() => GetDetails(item.Id)">
                                     <img class="ati-change-img-table" src="img/change-icon.png">
-                                </a>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="ati-change-btn-table">
-                                <a data-tooltip="Close ticket">
-                                    <img class="ati-change-img-table" src="img/remove-icon.png">
                                 </a>
                             </div>
                         </td>

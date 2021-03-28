@@ -12,10 +12,13 @@ namespace HomeTicketWeb.Model
 
         public TicketFilter filter { get; set; }
 
+        public bool FilterFindDone { get; set; }
+
         public DashBoardParams()
         {
             filter = new TicketFilter();
             IsPopUpShowed = false;
+            FilterFindDone = false;
         }
 
         public void SetNull()
@@ -23,6 +26,7 @@ namespace HomeTicketWeb.Model
             if (filter != null)
                 filter.SetNull();
             IsPopUpShowed = false;
+            FilterFindDone = false;
         }
     }
 
@@ -40,6 +44,7 @@ namespace HomeTicketWeb.Model
 
         public bool? Unassigned { get; set; }
 
+
         public void SetNull()
         {
             Title = null;
@@ -47,6 +52,7 @@ namespace HomeTicketWeb.Model
             SystemName = null;
             CategoryName = null;
             Owner = null;
+            Unassigned = null;
         }
     }
 }

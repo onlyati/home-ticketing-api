@@ -19,7 +19,7 @@
     <WindowTitle Title="@PageTitle" CloseAction="CloseWindow" />
     <div class="ati-full-window-content container">
         <div class="row">
-            <div class="col-auto">
+            <div class="col">
                 <h1 class="ati-h-blurpl">Details of #@id</h1>
             </div>
             <div class="col-auto">
@@ -29,70 +29,82 @@
                 <button class="btn ati-btn-secondary mt-3">Close the ticket</button>
             </div>
         </div>
-        <div class="ati-details-section">
-            <div class="row m-1">
-                <h4 class="ati-dashboard-property text-wrap">Sample ticket title (#@(id))</h4>
-            </div>
-            <div class="row m-1">
-                <p class="ati-dashboard-property">Category: </p>
-                <p>System</p>
-            </div>
-            <div class="row m-1">
-                <p class="ati-dashboard-property">Status: </p>
-                <p>Open</p>
-            </div>
-            <div class="row m-1">
-                <p class="ati-dashboard-property">System: </p>
-                <p>test-system-1</p>
-            </div>
-            <div class="row m-1">
-                <p class="ati-dashboard-property">Opened at: </p>
-                <p>YYYY-MM-DD HH-MM-SS</p>
-            </div>
-            <div class="row m-1">
-                <p class="ati-dashboard-property">Reference: </p>
-                <p>test-01</p>
-            </div>
-        </div>
-        <h3 class="ati-h-blurpl">Logs</h3>
-        <div class="ati-details-section">
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Created at: </p>
-                <p>YYYY-MM-DD HH-MM-SS</p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Created by: </p>
-                <p>Béla</p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Summary: </p>
-                <p>This is a short summary</p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Details: <br /></p>
-                <pre class="text-monospace">Sample updated log entry #1<br />Can be more line</pre>
-            </div>
-        </div>
-        <div class="ati-details-section">
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Created at: </p>
-                <p>YYYY-MM-DD HH-MM-SS</p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Created by: </p>
-                <p>Béla</p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Summary: </p>
-                <p>This is a short summary too</p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <p class="ati-dashboard-property">Details: </p>
-            </div>
-            <div class="row ml-1 mr-1">
-                <pre class="text-monospace">Sample updated log entry #2<br />This can be more line too</pre>
-            </div>
-        </div>
+        @if (details != null)
+        {
+            @if (details.Header != null)
+            {
+                <div class="ati-details-section">
+                    <div class="row m-1">
+                        <h4 class="ati-dashboard-property text-wrap">@(details.Header.Title) (#@(id))</h4>
+                    </div>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td class="pr-2"><strong>Owner: </strong></td>
+                                <td>@details.Header.User.UserName</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-2"><strong>Category: </strong></td>
+                                <td>@details.Header.Category.Name</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-2"><strong>Status: </strong></td>
+                                <td>@details.Header.Status</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-2"><strong>System: </strong></td>
+                                <td>@details.Header.System.Name</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-2"><strong>Opened at:</strong></td>
+                                <td>@details.Header.Time.ToString()</td>
+                            </tr>
+                            <tr>
+                                <td class="pr-2"><strong>Reference: </strong></td>
+                                <td>@details.Header.Reference</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+            <h3 class="ati-h-blurpl">Logs</h3>
+            @if (details.Logs != null)
+            {
+                @foreach (var item in details.Logs)
+                {
+                    <div class="ati-details-section">
+                        <div class="row ml-1 mr-1">
+                            <p class="ati-dashboard-property">Created at: </p>
+                            <p>@item.Time.ToString()</p>
+                        </div>
+                        @if (item.User != null)
+                        {
+                            <div class="row ml-1 mr-1">
+                                <p class="ati-dashboard-property">Created by: </p>
+                                <p>@item.User.UserName</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row ml-1 mr-1">
+                                <p class="ati-dashboard-property">Created by: </p>
+                                <p>*bot*</p>
+                            </div>
+                        }
+                        <div class="row ml-1 mr-1">
+                            <p class="ati-dashboard-property">Summary: </p>
+                            <p>@item.Summary</p>
+                        </div>
+                        <div class="row ml-1 mr-1">
+                            <p class="ati-dashboard-property">Details: </p>
+                        </div>
+                        <div class="row ml-1 mr-1">
+                            <pre class="text-monospace">@((MarkupString)item.Details)</pre>
+                        </div>
+                    </div>
+                }
+            }
+        }
     </div>
 </div>
 

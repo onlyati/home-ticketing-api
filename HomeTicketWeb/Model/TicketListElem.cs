@@ -68,4 +68,31 @@ namespace HomeTicketWeb.Model
         [JsonPropertyName("role")]
         public string Role { get; set; }
     }
+
+    public class LogListElem
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("summary")]
+        public string Summary { get; set; }
+
+        [JsonPropertyName("details")]
+        public string Details { get; set; }
+
+        [JsonPropertyName("time")]
+        public DateTime Time { get; set; }
+
+        [JsonPropertyName("user")]
+        public User User { get; set; }
+    }
+
+    public class TicketDetails
+    {
+        [JsonPropertyName("header")]
+        public TicketListElem Header { get; set; }
+
+        [JsonPropertyName("logs")]
+        public List<LogListElem> Logs { get; set; }
+    }
 }
