@@ -26,6 +26,8 @@ namespace HomeTicketWeb
             builder.Services.AddSingleton<CreateTicket>();
             builder.Services.AddSingleton<AdminStatus>();
             builder.Services.AddSingleton<UserStatus>();
+            builder.Services.AddSingleton<DashBoardParams>();
+
 
             // It is webassembly, so JS can run in non async mode, thus IJSProcessRuntime is used instaed of JSRuntime
             builder.Services.AddSingleton<IJSInProcessRuntime>(services => (IJSInProcessRuntime)services.GetRequiredService<IJSRuntime>());

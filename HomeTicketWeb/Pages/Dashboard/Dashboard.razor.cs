@@ -79,27 +79,6 @@ namespace HomeTicketWeb.Pages.Dashboard
         private TicketFilter filter = new TicketFilter();
 
         /*=======================================================================================*/
-        /* Classes                                                                               */
-        /*=======================================================================================*/
-        private class TicketFilter
-        {
-            [Required]
-            public string Title { get; set; }
-
-            [Required]
-            public string Status { get; set; }
-
-            [Required]
-            public string SystemName { get; set; }
-
-            [Required]
-            public string CategoryName { get; set; }
-
-            [Required]
-            public string Owner { get; set; }
-        }
-
-        /*=======================================================================================*/
         /* Methods                                                                               */
         /*=======================================================================================*/
         /*---------------------------------------------------------------------------------------*/
@@ -144,6 +123,18 @@ namespace HomeTicketWeb.Pages.Dashboard
             TaskBarMenuItem nextPage = new TaskBarMenuItem($"Details of #{id}", $"/dashboard/details/{id}", $"img/ticket-icon.png", $"Details of #{id}", null, $"Details{id}");
             Layout.Bar.AddOpenedApp(nextPage);
             NavManager.NavigateTo(nextPage.Route);
+        }
+
+        private void CloseFilterPopup()
+        {
+            DashboardPageState.IsPopUpShowed = false;
+            StateHasChanged();
+        }
+
+        public void FilterTicketSubmit()
+        {
+            DashboardPageState.filter = new TicketFilter();
+            DashboardPageState.IsPopUpShowed = false;
         }
     }
 }

@@ -7,6 +7,11 @@
     <div class="ati-full-window-content container">
         <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
         <hr class="ati-hr-normal" />
+
+        <div class="ati-dashboard-section">
+            asdasdsaasd
+        </div>
+
         <table style="width: 100%;">
             <thead>
                 <tr>
@@ -52,54 +57,67 @@
                 }
             </tbody>
         </table>
-        <h1 class="ati-h-blurpl">Filter tickets</h1>
+        <div class="row">
+            <div class="col-auto">
+                <h1 class="ati-h-blurpl">Filter tickets</h1>
+            </div>
+            <div class="col-auto mt-3">
+                <button class="btn ati-btn-primary" @onclick="() => DashboardPageState.IsPopUpShowed = true">Set filter</button>
+            </div>
+        </div>
         <hr class="ati-hr-normal" />
-        <EditForm Model="@filter">
-            <DataAnnotationsValidator />
-            <table style="margin-left: auto; margin-right: auto;" class="mb-3">
-                <tbody>
-                    <tr class="ati-login-element text-left">
-                        <td class="pr-3"><b>Title:</b></td>
-                        <td style="min-width: 300px;">
-                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.Title" />
-                        </td>
-                    </tr>
-                    <tr class="ati-login-element text-left">
-                        <td class="pr-3"><b>Role:</b></td>
-                        <td>
-                            <select class="ati-select" @bind="@filter.Status">
-                                <option selected></option>
-                                <option>Open</option>
-                                <option>Closed</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr class="ati-login-element text-left">
-                        <td class="pr-3"><b>System name:</b></td>
-                        <td style="min-width: 300px;">
-                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.SystemName" />
-                        </td>
-                    </tr>
-                    <tr class="ati-login-element text-left">
-                        <td class="pr-3"><b>Category:</b></td>
-                        <td style="min-width: 300px;">
-                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.CategoryName" />
-                        </td>
-                    </tr>
-                    <tr class="ati-login-element text-left">
-                        <td class="pr-3"><b>Owner:</b></td>
-                        <td style="min-width: 300px;">
-                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.Owner" />
-                        </td>
-                    </tr>
-                    <tr class="ati-login-element">
-                        <td colspan="2">
-                            <button type="submit" class="btn ati-btn-primary mt-3">Find tickets</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </EditForm>
+        @if (DashboardPageState.IsPopUpShowed)
+        {
+            <Popup>
+                <WindowTitle Title="Set filter" CloseAction="CloseFilterPopup" />
+                <EditForm Model="@filter" OnValidSubmit="FilterTicketSubmit">
+                    <DataAnnotationsValidator />
+                    <table class="m-3">
+                        <tbody>
+                            <tr class="ati-login-element text-left">
+                                <td class="pr-3"><b>Title:</b></td>
+                                <td style="min-width: 300px;">
+                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.Title" />
+                                </td>
+                            </tr>
+                            <tr class="ati-login-element text-left">
+                                <td class="pr-3"><b>Role:</b></td>
+                                <td>
+                                    <select class="ati-select" @bind="@DashboardPageState.filter.Status">
+                                        <option selected></option>
+                                        <option>Open</option>
+                                        <option>Closed</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr class="ati-login-element text-left">
+                                <td class="pr-3"><b>System name:</b></td>
+                                <td style="min-width: 300px;">
+                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.SystemName" />
+                                </td>
+                            </tr>
+                            <tr class="ati-login-element text-left">
+                                <td class="pr-3"><b>Category:</b></td>
+                                <td style="min-width: 300px;">
+                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.CategoryName" />
+                                </td>
+                            </tr>
+                            <tr class="ati-login-element text-left">
+                                <td class="pr-3"><b>Owner:</b></td>
+                                <td style="min-width: 300px;">
+                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.Owner" />
+                                </td>
+                            </tr>
+                            <tr class="ati-login-element">
+                                <td colspan="2">
+                                    <button type="submit" class="btn ati-btn-primary mt-3">Find tickets</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </EditForm>
+            </Popup>
+        }
         <table style="width: 100%;">
             <thead>
                 <tr>

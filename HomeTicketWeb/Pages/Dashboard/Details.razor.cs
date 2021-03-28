@@ -28,8 +28,9 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
-        [Parameter]
-        public int id { get; set; }
+        [Parameter] public int id { get; set; }
+        private string PageTitle;
+
 
         /*=======================================================================================*/
         /* Methods                                                                               */
@@ -49,6 +50,22 @@ namespace HomeTicketWeb.Pages.Dashboard
                         Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
                 NavManager.NavigateTo("/");
             }
+
+            PageTitle = $"Details of #{id}";
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: CloseWindow                                                            */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Eventcallback for 'WindowTitle' component. This defines what should happen if somebody*/
+        /* click to the 'X' in the right corner                                                  */
+        /*---------------------------------------------------------------------------------------*/
+        private void CloseWindow()
+        {
+            if (Layout != null)
+                if (Layout.Bar != null)
+                    Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
         }
     }
 }

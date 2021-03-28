@@ -1,4 +1,25 @@
 ﻿@page "/dashboard/details/{id:int}" 
 
-<h3>Details if @id</h3>
+<div class="ati-full-window">
+    <WindowTitle Title="@PageTitle" CloseAction="CloseWindow" />
+    <div class="ati-full-window-content container">
+        <div class="row">
+            <div class="col-auto">
+                <h1 class="ati-h-blurpl">Details of #@id</h1>
+            </div>
+            <div class="col-auto">
+                <button class="btn ati-btn-primary mt-2">Take the ticket</button>
+            </div>
+            <div class="col-auto">
+                <button class="btn ati-btn-secondary mt-2">Close the ticket</button>
+            </div>
+        </div>
+        <hr class="ati-hr-normal" />
+        <div class="ati-details-block">
+
+        </div>
+        <h5 class="ati-h-blurpl">Logs</h5>
+        <hr class="ati-hr-normal" />
+    </div>
+</div>
 
