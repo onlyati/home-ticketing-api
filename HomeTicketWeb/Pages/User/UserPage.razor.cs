@@ -7,7 +7,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -47,11 +50,17 @@ namespace HomeTicketWeb.Pages.User
         /*=======================================================================================*/
         private class ChangeUser
         {
+            [JsonPropertyName("username")]
+            public string UserName { get; set; }
+
+            [JsonPropertyName("email")]
             public string Email { get; set; }
 
+            [JsonPropertyName("password")]
             public string Password { get; set; }
 
             [Required]
+            [JsonIgnore]
             public string OldPassword { get; set; }
         }
 
@@ -169,37 +178,46 @@ namespace HomeTicketWeb.Pages.User
         /* Description:                                                                          */
         /* Adjust user information (email or password)                                           */
         /*---------------------------------------------------------------------------------------*/
-        private void ChangeUserInfo()
+        private async Task ChangeUserInfo()
         {
-            string oldpw = null;
-            if (User.UserName == "God")
-                oldpw = "admin";
-            if (User.UserName == "Béla")
-                oldpw = "user";
+            /*-----------------------------------------------------------------------------------*/
+            /* Check that old password is OK                                                     */
+            /*-----------------------------------------------------------------------------------*/
+            if(string.IsNullOrEmpty(ChangeInfo.OldPassword) || string.IsNullOrWhiteSpace(ChangeInfo.OldPassword))
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("User modification", "Old password is missing as verification", AlertBox.AlertBoxType.Warning);
+                return;
+            }
 
-            if(oldpw != ChangeInfo.OldPassword)
+            LoginInfo userPw = new LoginInfo();
+            userPw.UserName = User.UserName;
+            userPw.Password = ChangeInfo.OldPassword;
+            var userPwJson = JsonSerializer.Serialize<LoginInfo>(userPw);
+            var checkOldPw = await Http.PostAsync($"{Configuration["ServerAddress"]}/user/login", new StringContent(userPwJson, Encoding.UTF8, "application/json"));
+            if (checkOldPw.StatusCode != HttpStatusCode.OK)
             {
                 Layout.AlertBox.SetAlert("User modification", "Old password does not match", AlertBox.AlertBoxType.Error);
                 ChangeInfo = new ChangeUser();
                 return;
             }
 
-            bool changed = false;
-            if (!string.IsNullOrEmpty(ChangeInfo.Email) && !string.IsNullOrWhiteSpace(ChangeInfo.Email))
-            {
-                User.Email = ChangeInfo.Email;
-                changed = true;
-            }
+            /*-----------------------------------------------------------------------------------*/
+            /* Old password seemed nice, do the change                                           */
+            /*-----------------------------------------------------------------------------------*/
+            ChangeInfo.UserName = User.UserName;
 
-            if (!string.IsNullOrEmpty(ChangeInfo.Password) && !string.IsNullOrWhiteSpace(ChangeInfo.Password))
-            {
-                changed = true;
-            }
+            var changeJson = JsonSerializer.Serialize<ChangeUser>(ChangeInfo);
+            var checkChange = await Http.PutAsync($"{Configuration["ServerAddress"]}/user/change/general", new StringContent(changeJson, Encoding.UTF8, "application/json"));
 
-            if (changed)
+            if (checkChange.StatusCode == HttpStatusCode.OK)
                 Layout.AlertBox.SetAlert("User modification", "User information has been updated", AlertBox.AlertBoxType.Info);
             else
-                Layout.AlertBox.SetAlert("User modification", "Nothing has changed", AlertBox.AlertBoxType.Info);
+            {
+                var respond = JsonSerializer.Deserialize<GeneralMessage>(await checkChange.Content.ReadAsStringAsync());
+                Layout.AlertBox.SetAlert("User modification", $"Modification is failed: {respond.Message}", AlertBox.AlertBoxType.Info);
+            }
 
             ChangeInfo = new ChangeUser();
         }
