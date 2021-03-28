@@ -1,5 +1,20 @@
-﻿@page "/dashboard/details/{id:int}" 
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- Details.razor                                                                              -->
+<!--                                                                                            -->
+<!-- This page shows a detail about a selected ticket. Ticket number must be passed via URL. It -->
+<!-- has two parts: firs one is the ticket header and second one are the logs entries. On this  -->
+<!-- it is possible to take a ticket to the user or close it.                                   -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
 
+<!------------------------------------------------------------------------------------------------>
+<!-- Page defitions                                                                             -->
+<!------------------------------------------------------------------------------------------------>
+@page "/dashboard/details/{id:int}"
+
+<!------------------------------------------------------------------------------------------------>
+<!-- Content                                                                                    -->
+<!------------------------------------------------------------------------------------------------>
 <div class="ati-full-window">
     <WindowTitle Title="@PageTitle" CloseAction="CloseWindow" />
     <div class="ati-full-window-content container">

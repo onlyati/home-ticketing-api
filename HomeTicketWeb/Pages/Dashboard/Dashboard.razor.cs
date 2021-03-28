@@ -125,12 +125,24 @@ namespace HomeTicketWeb.Pages.Dashboard
             NavManager.NavigateTo(nextPage.Route);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: CloseFilterPopup                                                       */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method hide the popup window wherer ticket can be filtered                       */
+        /*---------------------------------------------------------------------------------------*/
         private void CloseFilterPopup()
         {
             DashboardPageState.IsPopUpShowed = false;
             StateHasChanged();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: FIlterTicketSubmit                                                     */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Request ticket listing based on filters                                               */
+        /*---------------------------------------------------------------------------------------*/
         public void FilterTicketSubmit()
         {
             DashboardPageState.filter = new TicketFilter();

@@ -1,42 +1,67 @@
-﻿@page "/dashboard"
+﻿<!------------------------------------------------------------------------------------------------>
+<!-- Dashboard.razor                                                                            -->
+<!--                                                                                            -->
+<!-- This page has two pars:                                                                    -->
+<!-- 1. Shows some basic ticket which can be interested for the user: open tickets which are    -->
+<!--    unassigned or assigned for the current user                                             -->
+<!-- 2. Function to list any tickets                                                            -->
+<!--                                                                                            -->
+<!-- From this page it is possible to check more details about a selected ticket, to get the    -->
+<!-- details about that in a new window.                                                        -->
+<!--                                                                                            -->
+<!------------------------------------------------------------------------------------------------>
 
+<!------------------------------------------------------------------------------------------------>
+<!-- Page definitions                                                                           -->
+<!------------------------------------------------------------------------------------------------>
+@page "/dashboard"
+
+<!------------------------------------------------------------------------------------------------>
+<!-- Content                                                                                    -->
+<!------------------------------------------------------------------------------------------------>
 <div class="ati-full-window">
     <!-- Show title of the page -->
     <WindowTitle Title="What is broken today?" CloseAction="@CloseWindow" />
     <!-- Here is the content -->
     <div class="ati-full-window-content container">
+        <!---------------------------------------------------------------------------------------->
+        <!-- 1. part: show some interesting tickets to user                                     -->
+        <!---------------------------------------------------------------------------------------->
         <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
         <hr class="ati-hr-normal" />
         <div class="ati-dashboard-container">
             @foreach (var item in tickets)
             {
-            <div class="ati-dashboard-section">
-                <div class="row m-1">
-                    <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
+                <div class="ati-dashboard-section">
+                    <div class="row m-1">
+                        <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
+                    </div>
+                    <div class="row m-1">
+                        <p class="ati-dashboard-property">Category: </p>
+                        <p>@item.Category.Name</p>
+                    </div>
+                    <div class="row m-1">
+                        <p class="ati-dashboard-property">Status: </p>
+                        <p>@item.Status</p>
+                    </div>
+                    <div class="row m-1">
+                        <p class="ati-dashboard-property">System: </p>
+                        <p>@item.System.Name</p>
+                    </div>
+                    <div class="row m-1">
+                        <p class="ati-dashboard-property">Opened at: </p>
+                        <p>@item.Time.ToString()</p>
+                    </div>
+                    <div class="ati-login-element">
+                        <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Edit ticket</button>
+                        <button class="btn ati-btn-secondary">Close ticket</button>
+                    </div>
                 </div>
-                <div class="row m-1">
-                    <p class="ati-dashboard-property">Category: </p>
-                    <p>@item.Category.Name</p>
-                </div>
-                <div class="row m-1">
-                    <p class="ati-dashboard-property">Status: </p>
-                    <p>@item.Status</p>
-                </div>
-                <div class="row m-1">
-                    <p class="ati-dashboard-property">System: </p>
-                    <p>@item.System.Name</p>
-                </div>
-                <div class="row m-1">
-                    <p class="ati-dashboard-property">Opened at: </p>
-                    <p>@item.Time.ToString()</p>
-                </div>
-                <div class="ati-login-element">
-                    <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Edit ticket</button>
-                    <button class="btn ati-btn-secondary">Close ticket</button>
-                </div>
-            </div>
             }
         </div>
+        <!---------------------------------------------------------------------------------------->
+        <!-- 2a part: Filter ticket popup window                                                -->
+        <!---------------------------------------------------------------------------------------->
         <div class="row">
             <div class="col-auto">
                 <h1 class="ati-h-blurpl">Filter tickets</h1>
@@ -98,6 +123,9 @@
                 </EditForm>
             </Popup>
         }
+        <!---------------------------------------------------------------------------------------->
+        <!-- 2b part: show the result of the listed tickets                                     -->
+        <!---------------------------------------------------------------------------------------->
         <table style="width: 100%;">
             <thead>
                 <tr>
