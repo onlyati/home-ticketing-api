@@ -27,7 +27,16 @@
         <!---------------------------------------------------------------------------------------->
         <!-- 1. part: show some interesting tickets to user                                     -->
         <!---------------------------------------------------------------------------------------->
-        <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
+        <div class="row">
+            <div class="col">
+                <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
+            </div>
+            <div class="col-auto">
+                <a data-tooltip="Refresh the list" @onclick="LoadPersonalTickets">
+                    <img src="img/refresh-icon.png" width="34" height="34" class="mt-3" />
+                </a>
+            </div>
+        </div>
         <hr class="ati-hr-normal" />
         <div class="ati-dashboard-container">
             @foreach (var item in tickets)
@@ -36,6 +45,20 @@
                     <div class="row m-1">
                         <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
                     </div>
+                    @if (item.User != null)
+                    {
+                        <div class="row m-1">
+                            <p class="ati-dashboard-property">Owner: </p>
+                            <p>@item.User.UserName</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row m-1">
+                            <p class="ati-dashboard-property">Owner: </p>
+                            <p>*Unassigned*</p>
+                        </div>
+                    }
                     <div class="row m-1">
                         <p class="ati-dashboard-property">Category: </p>
                         <p>@item.Category.Name</p>

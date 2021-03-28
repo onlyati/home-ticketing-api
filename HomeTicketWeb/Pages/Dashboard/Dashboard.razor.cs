@@ -7,6 +7,8 @@ using HomeTicketWeb.Components;
 using System.ComponentModel.DataAnnotations;
 using System.Timers;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Linq;
 
 namespace HomeTicketWeb.Pages.Dashboard
 {
@@ -30,54 +32,7 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
-        private List<TicketListElem> tickets = new List<TicketListElem>()
-        {
-            new TicketListElem()
-            {
-                Id = 1,
-                Reference = "test-01",
-                Status = "Open",
-                Time = DateTime.Now,
-                Title = "Test ticket",
-                Category = new Model.Category()
-                {
-                    Id = 1,
-                    Name = "System",
-                },
-                System = new Model.SystemElem()
-                {
-                    Id = 1,
-                    Name = "atihome",
-                },
-                User = new Model.User()
-                {
-                    Id = 1,
-                    UserName = "Béla",
-                    Email = "user@ize.com",
-                    Role = "User",
-                }
-            },
-            new TicketListElem()
-            {
-                Id = 2,
-                Reference = "test-02",
-                Status = "Open",
-                Time = DateTime.Now,
-                Title = "Another test ticket",
-                Category = new Model.Category()
-                {
-                    Id = 2,
-                    Name = "Network",
-                },
-                System = new Model.SystemElem()
-                {
-                    Id = 1,
-                    Name = "atihome",
-                },
-                User = null,
-            },
-        };
-
+        private List<TicketListElem> tickets = new List<TicketListElem>();
         private TicketFilter filter = new TicketFilter();
 
         /*=======================================================================================*/
@@ -94,6 +49,56 @@ namespace HomeTicketWeb.Pages.Dashboard
             bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
             if (!check)
                 CloseWindow();
+
+            await LoadPersonalTickets();
+
+            StateHasChanged();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: LoadPersonalTickets                                                    */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method filters the personal tickets and those which are unassigned and upload    */
+        /* them into a list                                                                      */
+        /*---------------------------------------------------------------------------------------*/
+        private async Task LoadPersonalTickets()
+        {
+            /*-----------------------------------------------------------------------------------*/
+            /* Get unassigned open tickets first                                                 */
+            /*-----------------------------------------------------------------------------------*/
+            var unassignedRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/ticket/list/filter?unassigned=true&status=Open");
+            if(unassignedRequest.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Ticket listing", "Personal ticket listing has failed", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var unassignedList = JsonSerializer.Deserialize<List<TicketListElem>>(await unassignedRequest.Content.ReadAsStringAsync());
+
+            /*-----------------------------------------------------------------------------------*/
+            /* Get personal tickets                                                              */
+            /*-----------------------------------------------------------------------------------*/
+            var ownedRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/ticket/list/filter?username={User.UserName}&status=Open");
+            if (ownedRequest.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Ticket listing", "Personal ticket listing has failed", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var ownedList = JsonSerializer.Deserialize<List<TicketListElem>>(await ownedRequest.Content.ReadAsStringAsync());
+
+            /*-----------------------------------------------------------------------------------*/
+            /* Create the final list                                                             */
+            /*-----------------------------------------------------------------------------------*/
+            tickets = new List<TicketListElem>();
+            tickets = tickets.Concat(unassignedList).ToList();
+            tickets = tickets.Concat(ownedList).ToList();
+            tickets = tickets.OrderBy(s => s.Id).Distinct().ToList();
 
             StateHasChanged();
         }
