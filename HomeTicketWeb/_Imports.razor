@@ -10,11 +10,13 @@
 @using HomeTicketWeb.Shared
 @using HomeTicketWeb.Components
 @using HomeTicketWeb.Model
-
+@using Microsoft.Extensions.Configuration
 
 @* DI some useful stuff *@
 @inject NavigationManager NavManager
 @inject IJSInProcessRuntime js
+@inject IConfiguration Configuration
+@inject HttpClient Http
 
 @* DI some class, which has purpose to save user data in memory during runtime *@
 @inject UserInfo User

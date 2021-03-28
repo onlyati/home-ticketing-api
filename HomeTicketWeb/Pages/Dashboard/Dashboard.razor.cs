@@ -89,8 +89,9 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         protected override void OnInitialized()
         {
-            if(User.Role == null || User.UserName == null)
+            if (User.Role == null || User.UserName == null)
             {
+                Console.WriteLine($"Dashboard Init #2: {User.UserName};{User.Email};{User.Role}");
                 if (Layout != null)
                     if (Layout.AlertBox != null)
                         Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);

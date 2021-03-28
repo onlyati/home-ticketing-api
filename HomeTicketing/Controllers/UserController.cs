@@ -313,6 +313,13 @@ namespace HomeTicketing.Controllers
                 else
                     return Unauthorized(new GeneralMessage() { Message = "Not authorized to list other users" });
             }
+
+            // If username and ID is null, return by requester
+            if(username == null && id == null)
+            {
+                return Ok(user);
+            }
+
             return BadRequest(new GeneralMessage() { Message = "Invalid inputs" });
         }
 

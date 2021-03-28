@@ -30,6 +30,24 @@ namespace HomeTicketWeb.Model
         {
             return _js.Invoke<BoundingClientRect>("GetDivInformation", element);
         }
+
+        // Save into the local storage
+        public void SetLocalStorage(string key, string value)
+        {
+            _js.InvokeVoid("localStorage.setItem", key, value);
+        }
+
+        // Load value from browser storage
+        public string GetLocalStorage(string key)
+        {
+            return _js.Invoke<string>("localStorage.getItem", key);
+        }
+
+        // Remove browser storage
+        public void RemoveLocalStorage(string key)
+        {
+            _js.InvokeVoid("localStorage.removeItem", key);
+        }
     }
 
     /*********************************************************************************************/
