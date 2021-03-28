@@ -42,7 +42,13 @@ namespace HomeTicketWeb.Pages
         /*=======================================================================================*/
         protected override async Task OnInitializedAsync()
         {
-            await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+            bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+            if(!check)
+            {
+                User.UserName = null;
+                User.Email = null;
+                User.Role = null;
+            }
             StateHasChanged();
         }
         /*---------------------------------------------------------------------------------------*/

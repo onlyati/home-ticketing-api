@@ -44,7 +44,6 @@
             // Start a refresh token timer
             if (!RefreshTimer.Enabled)
             {
-                Console.WriteLine($"Refresh timer is started {DateTime.Now}");
                 RefreshTimer.Interval = Convert.ToInt32(Configuration["RefreshInterval"]);
                 RefreshTimer.Elapsed += RefreshTimeOnElapsed;
                 RefreshTimer.Start();

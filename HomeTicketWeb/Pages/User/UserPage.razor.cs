@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -39,6 +40,7 @@ namespace HomeTicketWeb.Pages.User
             new TreeMenuItem() { Title = "Change your profile", Section = "User management", Id = 2 },
         };
         private ChangeUser ChangeInfo = new ChangeUser();                                // Use as model for EditForm
+        private List<Category> userCategories = new List<Category>();
 
         /*=======================================================================================*/
         /* Classes                                                                               */
@@ -85,21 +87,65 @@ namespace HomeTicketWeb.Pages.User
                 if (TMenu.ActMenu != null)
                     UserPageState.ActMenu = TMenu.ActMenu;
 
-            if(UserPageState.ActMenu.Id == 1)
+            await LoadData();
+
+            StateHasChanged();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: LoadData()                                                             */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method loads every data, depends which menupoint is active                       */
+        /*---------------------------------------------------------------------------------------*/
+        private async Task LoadData()
+        {
+            /*-----------------------------------------------------------------------------------*/
+            /* Load the first subpage (Display user data                                         */
+            /*-----------------------------------------------------------------------------------*/
+            if (UserPageState.ActMenu.Id == 1 || UserPageState.ActMenu.Id == 0)
             {
                 // Refresh all data on display data panel
                 var infoRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/user/info");
-                if(infoRequest.StatusCode == HttpStatusCode.OK)
+                if (infoRequest.StatusCode == HttpStatusCode.OK)
                 {
+                    var goodResponse = JsonSerializer.Deserialize<UserInfo>(await infoRequest.Content.ReadAsStringAsync());
+                    User.UserName = goodResponse.UserName;
+                    User.Email = goodResponse.Email;
+                    User.Role = goodResponse.Role;
 
+                    // Get categores which belongs to the user
+                    var allCategoryRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/user?value={User.UserName}");
+                    if (allCategoryRequest.StatusCode == HttpStatusCode.OK)
+                    {
+                        userCategories = JsonSerializer.Deserialize<List<Category>>(await allCategoryRequest.Content.ReadAsStringAsync());
+                        userCategories = userCategories.OrderBy(s => s.System.Name).ThenBy(s => s.Name).ToList();
+                    }
+                    else
+                    {
+                        // Categories could not be listed
+                        var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await infoRequest.Content.ReadAsStringAsync());
+                        if (Layout != null)
+                            if (Layout.AlertBox != null)
+                                Layout.AlertBox.SetAlert("User settings", $"Category fetch from server is failed: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                    }
                 }
                 else
                 {
-
+                    // User info could not be loaded
+                    var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await infoRequest.Content.ReadAsStringAsync());
+                    if (Layout != null)
+                        if (Layout.AlertBox != null)
+                            Layout.AlertBox.SetAlert("User settings", $"User data fetch from server is failed: {badResponse.Message}", AlertBox.AlertBoxType.Error);
                 }
             }
-
-            StateHasChanged();
+            /*-----------------------------------------------------------------------------------*/
+            /* Load the second subpage (change user data)                                        */
+            /*-----------------------------------------------------------------------------------*/
+            else if (UserPageState.ActMenu.Id == 2)
+            {
+                Console.WriteLine("Másik oldal vagyok");
+            }
         }
 
         /*---------------------------------------------------------------------------------------*/

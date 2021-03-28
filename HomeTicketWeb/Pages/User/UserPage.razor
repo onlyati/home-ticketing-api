@@ -48,22 +48,15 @@
                     </table>
                     <h1 class="ati-h-blurpl">Category connections</h1>
                     <hr class="ati-hr-normal" />
-                    <b>atihome:</b>
-                    <ul>
-                        <li>System</li>
-                        <li>Network</li>
-                        <li>Hardware</li>
-                        <li>Application</li>
-                        <li>Storage</li>
-                    </ul>
-                    <b>test-system-1:</b>
-                    <ul>
-                        <li>System</li>
-                        <li>Network</li>
-                        <li>Hardware</li>
-                        <li>Application</li>
-                        <li>Storage</li>
-                    </ul>
+                    <div class="ati-dashboard-container">
+                        @foreach (var item in userCategories)
+	                    {
+                            <div class="ati-drag-item" style="width: auto;">
+                                <div class="ati-drag-item-title">@item.Name</div>
+                                <div class="ati-drag-item-subtext">@item.System.Name</div>
+                            </div>
+	                    }
+                    </div>
                 </TreeMenuContent>
                 <TreeMenuContent ID="2" TreeMenuRef="TMenu">
                     <h1 class="ati-h-blurpl">Change your user information</h1>

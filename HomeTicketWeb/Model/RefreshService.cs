@@ -16,7 +16,6 @@ namespace HomeTicketWeb.Model
     {
         public static async Task<bool> RefreshToken(IJSInProcessRuntime js, UserInfo User, string link, HttpClient Http, NavigationManager NavManager)
         {
-            Console.WriteLine($"Token refresh has begun at {DateTime.Now}");
             JSCalls call = new JSCalls(js);
 
             // Check that user already logon
@@ -31,7 +30,6 @@ namespace HomeTicketWeb.Model
 
             Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refresh.AuthToken);
             var newTokenRequest = await Http.PostAsync($"{link}/user/refresh-token", new StringContent(tokenJson, Encoding.UTF8, "application/json"));
-            Console.WriteLine($"Refresh token, RC: {newTokenRequest.StatusCode}");
             switch (newTokenRequest.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -66,15 +64,24 @@ namespace HomeTicketWeb.Model
                     // Authorization error, go the main page
                     call.RemoveLocalStorage("AuthToken");
                     call.RemoveLocalStorage("RefreshToken");
+                    User.UserName = null;
+                    User.Email = null;
+                    User.Role = null;
                     return false;
                 case HttpStatusCode.NotFound:
                     // Authorization error, go the main page
                     call.RemoveLocalStorage("AuthToken");
                     call.RemoveLocalStorage("RefreshToken");
+                    User.UserName = null;
+                    User.Email = null;
+                    User.Role = null;
                     return false;
                 default:
                     call.RemoveLocalStorage("AuthToken");
                     call.RemoveLocalStorage("RefreshToken");
+                    User.UserName = null;
+                    User.Email = null;
+                    User.Role = null;
                     return false;
             }
         }
