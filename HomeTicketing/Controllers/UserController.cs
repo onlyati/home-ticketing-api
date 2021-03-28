@@ -552,8 +552,10 @@ namespace HomeTicketing.Controllers
                 return Unauthorized(new GeneralMessage() { Message = "Not authorized to change different user" });
             }
 
+            var targetUser = await _dbHandler.GetUserAsync(changedUser.Username);
+
             // Everything look cool, let change
-            var response = await _dbHandler.ChangeUserAsync(user.Id, new User() { Username = changedUser.Username, Email = changedUser.Email, Password = changedUser.Password });
+            var response = await _dbHandler.ChangeUserAsync(targetUser.Id, new User() { Username = changedUser.Username, Email = changedUser.Email, Password = changedUser.Password });
             if(response.MessageType == MessageType.NOK)
             {
                 return BadRequest(new GeneralMessage() { Message = response.MessageText });
