@@ -33,6 +33,7 @@ namespace HomeTicketWeb.Pages.Dashboard
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
         private List<TicketListElem> tickets = new List<TicketListElem>();
+        private List<TicketListElem> filteredTickets = new List<TicketListElem>();
         private TicketFilter filter = new TicketFilter();
 
         /*=======================================================================================*/
@@ -148,10 +149,16 @@ namespace HomeTicketWeb.Pages.Dashboard
         /* Description:                                                                          */
         /* Request ticket listing based on filters                                               */
         /*---------------------------------------------------------------------------------------*/
-        public void FilterTicketSubmit()
+        public async Task FilterTicketSubmit()
         {
             DashboardPageState.filter = new TicketFilter();
             DashboardPageState.IsPopUpShowed = false;
+
+            /*-----------------------------------------------------------------------------------*/
+            /* Build the parameters and send the request                                         */
+            /*-----------------------------------------------------------------------------------*/
+            var filterJson = JsonSerializer.Serialize<TicketFilter>(DashboardPageState.filter);
+            var filterRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/ticket/list/filter?username={User.UserName}&status=Open");
         }
     }
 }

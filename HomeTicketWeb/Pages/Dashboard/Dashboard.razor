@@ -41,52 +41,61 @@
         <div class="ati-dashboard-container">
             @foreach (var item in tickets)
             {
-                <div class="ati-dashboard-section">
-                    <div class="row m-1">
-                        <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
-                    </div>
-                    @if (item.User != null)
+            <div class="ati-dashboard-section">
+                <div class="row m-1">
+                    <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
+                </div>
+                <table>
+                    <tbody>
+                        <tr>
+                            @if (item.User != null)
+                            {
+                                <td class="pr-2"><strong>Owner:</strong></td>
+                                <td>@item.User.UserName</td>
+                            }
+                            else
+                            {
+                                <td class="pr-2"><strong>Owner:</strong></td>
+                                <td></td>
+                            }
+                        </tr>
+                        <tr>
+                            <td class="pr-2"><strong>Category:</strong></td>
+                            <td>@item.Category.Name</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-2"><strong>Status:</strong></td>
+                            <td>@item.Status</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-2"><strong>System:</strong></td>
+                            <td>@item.System.Name</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-2"><strong>Category:</strong></td>
+                            <td>@item.Time.ToString()</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="ati-login-element">
+                    <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Details</button>
+                    @if (item.User == null)
                     {
-                        <div class="row m-1">
-                            <p class="ati-dashboard-property">Owner: </p>
-                            <p>@item.User.UserName</p>
-                        </div>
+                        <button class="btn ati-btn-secondary ml-1">Assign to me</button>
                     }
                     else
                     {
-                        <div class="row m-1">
-                            <p class="ati-dashboard-property">Owner: </p>
-                            <p>*Unassigned*</p>
-                        </div>
+                        <button class="btn ati-btn-secondary ml-1">Close</button>
                     }
-                    <div class="row m-1">
-                        <p class="ati-dashboard-property">Category: </p>
-                        <p>@item.Category.Name</p>
-                    </div>
-                    <div class="row m-1">
-                        <p class="ati-dashboard-property">Status: </p>
-                        <p>@item.Status</p>
-                    </div>
-                    <div class="row m-1">
-                        <p class="ati-dashboard-property">System: </p>
-                        <p>@item.System.Name</p>
-                    </div>
-                    <div class="row m-1">
-                        <p class="ati-dashboard-property">Opened at: </p>
-                        <p>@item.Time.ToString()</p>
-                    </div>
-                    <div class="ati-login-element">
-                        <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Edit ticket</button>
-                        <button class="btn ati-btn-secondary">Close ticket</button>
-                    </div>
                 </div>
+            </div>
             }
         </div>
         <!---------------------------------------------------------------------------------------->
         <!-- 2a part: Filter ticket popup window                                                -->
         <!---------------------------------------------------------------------------------------->
         <div class="row">
-            <div class="col-auto">
+            <div class="col">
                 <h1 class="ati-h-blurpl">Filter tickets</h1>
             </div>
             <div class="col-auto mt-3">
@@ -161,7 +170,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in tickets)
+                @foreach (var item in filteredTickets)
                 {
                     <tr>
                         <td>@item.Title</td>

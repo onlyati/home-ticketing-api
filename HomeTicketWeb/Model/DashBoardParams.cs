@@ -38,6 +38,8 @@ namespace HomeTicketWeb.Model
 
         public string Owner { get; set; }
 
+        public bool? Unassigned { get; set; }
+
         public void SetNull()
         {
             Title = null;
