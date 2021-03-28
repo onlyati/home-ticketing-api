@@ -4,23 +4,110 @@ using System;
 using System.Collections.Generic;
 using HomeTicketWeb.Shared;
 using HomeTicketWeb.Components;
+using System.ComponentModel.DataAnnotations;
 
 namespace HomeTicketWeb.Pages.Dashboard
 {
+    /*********************************************************************************************/
+    /* This class is for handling stuff on dashboard (Dashboard.razor) component                 */
+    /*********************************************************************************************/
     public partial class Dashboard : ComponentBase
     {
-        LoginInfo _loginInfo = new LoginInfo();
-        string valami;
+        /*=======================================================================================*/
+        /* Variables and objects                                                                 */
+        /*=======================================================================================*/
+        /*---------------------------------------------------------------------------------------*/
+        /* Parameters                                                                            */
+        /*---------------------------------------------------------------------------------------*/
 
-        [CascadingParameter] MainLayout Layout { get; set; }
+        /*---------------------------------------------------------------------------------------*/
+        /* Get cascaded values                                                                   */
+        /*---------------------------------------------------------------------------------------*/
+        [CascadingParameter] public MainLayout Layout { get; set; }
 
-        public List<string> lista = new List<string>()
+        /*---------------------------------------------------------------------------------------*/
+        /* Private, local variables and objects                                                  */
+        /*---------------------------------------------------------------------------------------*/
+        private List<TicketListElem> tickets = new List<TicketListElem>()
         {
-            new string("Egy"),
-            new string("Kettő"),
-            new string("Mi az hogy kettű??")
+            new TicketListElem()
+            {
+                Id = 1,
+                Reference = "test-01",
+                Status = "Open",
+                Time = DateTime.Now,
+                Title = "Test ticket",
+                Category = new Model.Category()
+                {
+                    Id = 1,
+                    Name = "System",
+                },
+                System = new Model.SystemElem()
+                {
+                    Id = 1,
+                    Name = "atihome",
+                },
+                User = new Model.User()
+                {
+                    Id = 1,
+                    UserName = "Béla",
+                    Email = "user@ize.com",
+                    Role = "User",
+                }
+            },
+            new TicketListElem()
+            {
+                Id = 1,
+                Reference = "test-02",
+                Status = "Open",
+                Time = DateTime.Now,
+                Title = "Another test ticket",
+                Category = new Model.Category()
+                {
+                    Id = 2,
+                    Name = "Network",
+                },
+                System = new Model.SystemElem()
+                {
+                    Id = 1,
+                    Name = "atihome",
+                },
+                User = null,
+            },
         };
 
+        private TicketFilter filter = new TicketFilter();
+
+        /*=======================================================================================*/
+        /* Classes                                                                               */
+        /*=======================================================================================*/
+        private class TicketFilter
+        {
+            [Required]
+            public string Title { get; set; }
+
+            [Required]
+            public string Status { get; set; }
+
+            [Required]
+            public string SystemName { get; set; }
+
+            [Required]
+            public string CategoryName { get; set; }
+
+            [Required]
+            public string Owner { get; set; }
+        }
+
+        /*=======================================================================================*/
+        /* Methods                                                                               */
+        /*=======================================================================================*/
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: OnInitialized                                                          */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Check authority during component initailization. If failed, navigate the login screen */
+        /*---------------------------------------------------------------------------------------*/
         protected override void OnInitialized()
         {
             if(User.Role == null || User.UserName == null)
@@ -32,52 +119,31 @@ namespace HomeTicketWeb.Pages.Dashboard
             }
         }
 
-        public void DeleteFromLista()
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: CloseWindow                                                            */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Eventcallback for 'WindowTitle' component. This defines what should happen if somebody*/
+        /* click to the 'X' in the right corner                                                  */
+        /*---------------------------------------------------------------------------------------*/
+        private void CloseWindow()
         {
-            lista.Remove("Egy");
-            StateHasChanged();
+            if (Layout != null)
+                if (Layout.Bar != null)
+                    Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
         }
 
-        public void LoginRequest()
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: GetDetails                                                             */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method navigate inot a new window, where the details can be  seen about ticket   */
+        /*---------------------------------------------------------------------------------------*/
+        private void GetDetails(int id)
         {
-            valami = $"{_loginInfo.UserName} - {_loginInfo.Password}";
-        }
-
-        public void ShowAlert()
-        {
-            Console.WriteLine("ShowAlert() elkezdve");
-            Layout.AlertBox.SetAlert("Login failed", "Missing login credentials", AlertBox.AlertBoxType.Info);
-            Console.WriteLine("ShowAlert() befejezve");
-        }
-
-        public void TestAlert1()
-        {
-            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed info", AlertBox.AlertBoxType.Info, TestConfirm);
-        }
-
-        public void TestAlert2()
-        {
-            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed warning", AlertBox.AlertBoxType.Warning, TestConfirm);
-        }
-
-        public void TestAlert3()
-        {
-            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed error", AlertBox.AlertBoxType.Error, TestConfirm);
-        }
-
-        public void TestAlert4()
-        {
-            Layout.AlertBox.SetAlert("Test alert", "Call with Onconfirmed question", AlertBox.AlertBoxType.Question, DeleteFromLista, TestCancel);
-        }
-
-        public void TestConfirm()
-        {
-            Console.WriteLine("Hej, lefutottam");
-        }
-
-        public void TestCancel()
-        {
-            Console.WriteLine("Hej, én is lefutottam");
+            TaskBarMenuItem nextPage = new TaskBarMenuItem($"Details of #{id}", $"/dashboard/details/{id}", $"img/ticket-icon.png", $"Details of #{id}", null, $"Details{id}");
+            Layout.Bar.AddOpenedApp(nextPage);
+            NavManager.NavigateTo(nextPage.Route);
         }
     }
 }

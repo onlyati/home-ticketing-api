@@ -1,46 +1,149 @@
 ﻿@page "/dashboard"
 
-<div class="container-fluid bg-white">
-    <div class="row">
-        <h2 class="text-center">Login page</h2>
-    </div>
-    <EditForm Model="@_loginInfo" OnValidSubmit="@LoginRequest" OnInvalidSubmit="@ShowAlert">
-        <div class="row">
-            <label>Username:</label>
-            <input @bind="@_loginInfo.UserName" />
-        </div>
-        <div class="row">
-            <label>Password:</label>
-            <input @bind="@_loginInfo.Password" type="password" />
-        </div>
-        <div class="row">
-            <button type="submit">Login</button>
-        </div>
-        <DataAnnotationsValidator />
-        @*<ValidationSummary />*@
-    </EditForm>
-    <button @onclick="@TestAlert1">Test #1</button>
-    <button @onclick="@TestAlert2">Test #2</button>
-    <button @onclick="@TestAlert3">Test #3</button>
-    <button @onclick="@TestAlert4">Test #4</button>
-
-    <button @onclick="@DeleteFromLista">Törlés</button>
-
-    <p>@User.UserName</p>
-
-    @foreach (var item in lista)
-    {
-        <div>@item</div>
-    }
-
-    <button class="btn ati-btn-primary m-3">Ez egy teszt gomb</button>
-    <button class="btn ati-btn-primary m-3" disabled>Ez egy teszt gomb</button>
-    <button class="btn ati-btn-secondary m-3">Ez szintén egy teszt gomb</button>
-    <button class="btn ati-btn-secondary m-3" disabled>Ez szintén egy teszt gomb</button>
-
-    <div>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus velit lorem, eleifend eu nisl eget, pretium dignissim odio. Duis luctus eros eget libero malesuada, nec dapibus tellus finibus. Nullam ligula diam, pellentesque rutrum ullamcorper quis, ornare vel lacus. Praesent mollis, justo ut suscipit euismod, quam eros convallis orci, quis rutrum tortor metus nec tortor. Maecenas quis mi laoreet, blandit odio blandit, molestie tortor. Suspendisse efficitur tortor diam, cursus tristique est placerat vitae. Quisque convallis lorem sed congue cursus. Nunc consectetur turpis eget nunc lacinia consequat ut nec diam. Ut et felis at dui vulputate accumsan quis nec velit. Nunc at dolor ligula. In vitae tempus ligula. Ut blandit urna ut nunc ullamcorper vestibulum. Nullam pulvinar scelerisque tempus. Mauris placerat vehicula ante vestibulum euismod. Sed non est nulla. Praesent vitae ex vitae tellus tincidunt placerat vel sit amet ipsum.
-
-        Phasellus eget finibus lorem. Duis pretium rutrum ipsum, ut ultricies felis sodales sed. In enim justo, vulputate eget augue eget, pulvinar egestas quam. Donec condimentum lacus vel venenatis volutpat. Cras risus mi, iaculis nec tempor quis, consequat vel purus. Etiam sit amet aliquam magna, vel interdum mauris. Vestibulum interdum arcu in diam facilisis auctor. Donec imperdiet sollicitudin mauris et lobortis. Aliquam fermentum suscipit facilisis.
+<div class="ati-full-window">
+    <!-- Show title of the page -->
+    <WindowTitle Title="What is broken today?" CloseAction="@CloseWindow" />
+    <!-- Here is the content -->
+    <div class="ati-full-window-content container">
+        <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
+        <hr class="ati-hr-normal" />
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <td><b>Title</b></td>
+                    <td><b>Status</b></td>
+                    <td><b>System</b></td>
+                    <td><b>Category</b></td>
+                    <td><b>Owner</b></td>
+                    <td colspan="2"><b>Action</b></td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in tickets)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td>@item.Status</td>
+                        <td>@item.System.Name</td>
+                        <td>@item.Category.Name</td>
+                        @if (item.User != null)
+                        {
+                            <td>@item.User.UserName</td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                        <td>
+                            <div class="ati-change-btn-table">
+                                <a data-tooltip="Edit ticket" @onclick="() => GetDetails(item.Id)">
+                                    <img class="ati-change-img-table" src="img/change-icon.png">
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ati-change-btn-table">
+                                <a data-tooltip="Close ticket">
+                                    <img class="ati-change-img-table" src="img/remove-icon.png">
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <h1 class="ati-h-blurpl">Filter tickets</h1>
+        <hr class="ati-hr-normal" />
+        <EditForm Model="@filter">
+            <DataAnnotationsValidator />
+            <table style="margin-left: auto; margin-right: auto;" class="mb-3">
+                <tbody>
+                    <tr class="ati-login-element text-left">
+                        <td class="pr-3"><b>Title:</b></td>
+                        <td style="min-width: 300px;">
+                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.Title" />
+                        </td>
+                    </tr>
+                    <tr class="ati-login-element text-left">
+                        <td class="pr-3"><b>Role:</b></td>
+                        <td>
+                            <select class="ati-select" @bind="@filter.Status">
+                                <option selected></option>
+                                <option>Open</option>
+                                <option>Closed</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="ati-login-element text-left">
+                        <td class="pr-3"><b>System name:</b></td>
+                        <td style="min-width: 300px;">
+                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.SystemName" />
+                        </td>
+                    </tr>
+                    <tr class="ati-login-element text-left">
+                        <td class="pr-3"><b>Category:</b></td>
+                        <td style="min-width: 300px;">
+                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.CategoryName" />
+                        </td>
+                    </tr>
+                    <tr class="ati-login-element text-left">
+                        <td class="pr-3"><b>Owner:</b></td>
+                        <td style="min-width: 300px;">
+                            <input type="text" class="ati-login-input" placeholder="" @bind="@filter.Owner" />
+                        </td>
+                    </tr>
+                    <tr class="ati-login-element">
+                        <td colspan="2">
+                            <button type="submit" class="btn ati-btn-primary mt-3">Find tickets</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </EditForm>
+        <table style="width: 100%;">
+            <thead>
+                <tr>
+                    <td><b>Title</b></td>
+                    <td><b>Status</b></td>
+                    <td><b>System</b></td>
+                    <td><b>Category</b></td>
+                    <td><b>Owner</b></td>
+                    <td colspan="2"><b>Action</b></td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in tickets)
+                {
+                    <tr>
+                        <td>@item.Title</td>
+                        <td>@item.Status</td>
+                        <td>@item.System.Name</td>
+                        <td>@item.Category.Name</td>
+                        @if (item.User != null)
+                        {
+                            <td>@item.User.UserName</td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                        <td>
+                            <div class="ati-change-btn-table">
+                                <a data-tooltip="Edit ticket">
+                                    <img class="ati-change-img-table" src="img/change-icon.png">
+                                </a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ati-change-btn-table">
+                                <a data-tooltip="Close ticket">
+                                    <img class="ati-change-img-table" src="img/remove-icon.png">
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

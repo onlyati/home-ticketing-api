@@ -123,6 +123,22 @@ namespace HomeTicketWeb.Components
             StateHasChanged();
         }
 
+        public void AddOpenedApp(TaskBarMenuItem item)
+        {
+            // Change list accordingly
+            if (item != null)
+            {
+                var isContain = OpenedApps.Where(s => s.Title == item.Title).Select(s => s).FirstOrDefault();
+                if (isContain == null)
+                {
+                    var record = AppList.Where(s => s.Title == item.Title).Select(s => s).FirstOrDefault();
+                    OpenedApps.Add(record);
+                }
+            }
+
+            StateHasChanged();
+        }
+
         /*---------------------------------------------------------------------------------------*/
         /* Function name: RemoveOpenedApp                                                        */
         /*                                                                                       */
@@ -142,6 +158,20 @@ namespace HomeTicketWeb.Components
                 NavManager.NavigateTo(OpenedApps[OpenedApps.Count - 1].Route);
             }
 
+        }
+
+        public void RemoveOpenedApp(TaskBarMenuItem item)
+        {
+            RemoveOpenedAppNoNavigate(item);
+
+            if (OpenedApps.Count == 0)
+            {
+                NavManager.NavigateTo("/");
+            }
+            else
+            {
+                NavManager.NavigateTo(OpenedApps[OpenedApps.Count - 1].Route);
+            }
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -165,6 +195,23 @@ namespace HomeTicketWeb.Components
             if (app != null)
             {
                 var record = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
+                if (record != null)
+                {
+                    if (record.DataContainer != null)
+                        record.DataContainer.SetNull();
+
+                    OpenedApps.Remove(record);
+                }
+            }
+
+            StateHasChanged();
+        }
+
+        public void RemoveOpenedAppNoNavigate(TaskBarMenuItem item)
+        {
+            if (item != null)
+            {
+                var record = OpenedApps.Where(s => s.Title == item.Title).Select(s => s).FirstOrDefault();
                 if (record != null)
                 {
                     if (record.DataContainer != null)
