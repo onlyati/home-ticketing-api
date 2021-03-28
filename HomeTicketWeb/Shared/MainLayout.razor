@@ -16,7 +16,7 @@
 
     public List<TaskBarMenuItem> Apps;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         /*---------------------------------------------------------------------------------------*/
         /* Define the applications into the taskbar. Properties in each row:                     */
@@ -36,5 +36,25 @@
                 new TaskBarMenuItem("User settings", "/user", "img/user-icon.png", "This leads to the user settings window. There you are able to change your email address and password.", UserPageState, "UserScreenDiv"),
                 new TaskBarMenuItem("Admin settings", "/admin", "img/admin-icon.png", "This leads to admin page, where the tool can be administrated. You can perform actions like: add/remove/rename systems or categories and user mnagement", AdminPageState, "AdminScreenDiv")
             };
+
+        // If already logged on, then start a timer
+        bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+        if (check)
+        {
+            // Start a refresh token timer
+            if (!RefreshTimer.Enabled)
+            {
+                Console.WriteLine($"Refresh timer is started {DateTime.Now}");
+                RefreshTimer.Interval = Convert.ToInt32(Configuration["RefreshInterval"]);
+                RefreshTimer.Elapsed += RefreshTimeOnElapsed;
+                RefreshTimer.Start();
+            }
+        }
+    }
+
+    public async void RefreshTimeOnElapsed(object sender, ElapsedEventArgs e)
+    {
+        await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+        StateHasChanged();
     }
 }

@@ -293,14 +293,20 @@ namespace HomeTicketing.Controllers
 
             if(user == null)
             {
-                return BadRequest(new GeneralMessage() { Message = "User does not exist" });
+                return BadRequest(new GeneralMessage() { Message = "Requester does not exist" });
             }
 
             // If username specified
             if (username != null)
             {
                 if (user.Username == username || user.Role == UserRole.Admin)
-                    return Ok(await _dbHandler.GetUserAsync(username));
+                {
+                    var respondUser = await _dbHandler.GetUserAsync(username);
+                    if (respondUser != null)
+                        return Ok(respondUser);
+                    else
+                        return BadRequest(new GeneralMessage() { Message = "User does not exist" });
+                }
                 else
                     return Unauthorized(new GeneralMessage() { Message = "Not authorized to list other users" });
             }

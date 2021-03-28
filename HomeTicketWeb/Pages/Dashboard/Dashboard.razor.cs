@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using HomeTicketWeb.Shared;
 using HomeTicketWeb.Components;
 using System.ComponentModel.DataAnnotations;
+using System.Timers;
+using System.Threading.Tasks;
 
 namespace HomeTicketWeb.Pages.Dashboard
 {
@@ -87,16 +89,13 @@ namespace HomeTicketWeb.Pages.Dashboard
         /* Description:                                                                          */
         /* Check authority during component initailization. If failed, navigate the login screen */
         /*---------------------------------------------------------------------------------------*/
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            if (User.Role == null || User.UserName == null)
-            {
-                Console.WriteLine($"Dashboard Init #2: {User.UserName};{User.Email};{User.Role}");
-                if (Layout != null)
-                    if (Layout.AlertBox != null)
-                        Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
-                NavManager.NavigateTo("/");
-            }
+            bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+            if (!check)
+                CloseWindow();
+
+            StateHasChanged();
         }
 
         /*---------------------------------------------------------------------------------------*/

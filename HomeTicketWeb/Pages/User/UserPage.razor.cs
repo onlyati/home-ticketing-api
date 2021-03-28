@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace HomeTicketWeb.Pages.User
 {
@@ -60,20 +62,13 @@ namespace HomeTicketWeb.Pages.User
         /* Description:                                                                          */
         /* Check authority during component initailization. If failed, navigate the login screen */
         /*---------------------------------------------------------------------------------------*/
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            if (User.Role == null || User.UserName == null)
-            {
-                if (Layout != null)
-                    if (Layout.AlertBox != null)
-                        Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+            bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+            if (!check)
+                CloseWindow();
 
-                if (Layout != null)
-                    if (Layout.Bar != null)
-                        Layout.Bar.RemoveOpenedApp("/user");
-
-                NavManager.NavigateTo("/");
-            }
+            StateHasChanged();
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -83,12 +78,26 @@ namespace HomeTicketWeb.Pages.User
         /* Eventcallback for 'AfterClick' parameter of TreeMenu component. It runs after click   */
         /* has happened on an item in the menu                                                   */
         /*---------------------------------------------------------------------------------------*/
-        public void UpdateState()
+        public async Task UpdateState()
         {
             // Save the actual selected menu to the injected object
             if (TMenu != null)
                 if (TMenu.ActMenu != null)
                     UserPageState.ActMenu = TMenu.ActMenu;
+
+            if(UserPageState.ActMenu.Id == 1)
+            {
+                // Refresh all data on display data panel
+                var infoRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/user/info");
+                if(infoRequest.StatusCode == HttpStatusCode.OK)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
 
             StateHasChanged();
         }

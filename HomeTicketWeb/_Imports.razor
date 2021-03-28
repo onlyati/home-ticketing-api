@@ -11,12 +11,14 @@
 @using HomeTicketWeb.Components
 @using HomeTicketWeb.Model
 @using Microsoft.Extensions.Configuration
+@using System.Timers
 
 @* DI some useful stuff *@
 @inject NavigationManager NavManager
 @inject IJSInProcessRuntime js
 @inject IConfiguration Configuration
 @inject HttpClient Http
+@inject Timer RefreshTimer 
 
 @* DI some class, which has purpose to save user data in memory during runtime *@
 @inject UserInfo User

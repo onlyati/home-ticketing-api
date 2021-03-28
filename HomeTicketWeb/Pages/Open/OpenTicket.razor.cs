@@ -1,10 +1,12 @@
 ﻿using HomeTicketWeb.Components;
+using HomeTicketWeb.Model;
 using HomeTicketWeb.Shared;
 using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace HomeTicketWeb.Pages.Open
 {
@@ -38,20 +40,13 @@ namespace HomeTicketWeb.Pages.Open
         /* Description:                                                                          */
         /* Check authority during component initailization. If failed, navigate the login screen */
         /*---------------------------------------------------------------------------------------*/
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            if (User.Role == null || User.UserName == null)
-            {
-                if (Layout != null)
-                    if (Layout.AlertBox != null)
-                        Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+            bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+            if (!check)
+                CloseWindow();
 
-                if (Layout != null)
-                    if (Layout.Bar != null)
-                        Layout.Bar.RemoveOpenedApp("/open");
-
-                NavManager.NavigateTo("/");
-            }
+            StateHasChanged();
         }
 
         /*---------------------------------------------------------------------------------------*/

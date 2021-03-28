@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace HomeTicketWeb.Pages.Admin
 {
@@ -111,19 +112,24 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /* Check authority during component initailization. If failed, navigate the login screen */
         /*---------------------------------------------------------------------------------------*/
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
-            if (User.Role != UserRole.Admin || User.UserName == null)
+            bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
+            if (!check)
+                CloseWindow();
+
+            StateHasChanged();
+
+            if (check)
             {
-                if (Layout != null)
-                    if (Layout.AlertBox != null)
-                        Layout.AlertBox.SetAlert("Unathorized access", "You are not authorized. Login first if you want to do something", AlertBox.AlertBoxType.Error);
+                if (User.Role != UserRole.Admin)
+                {
+                    if (Layout != null)
+                        if (Layout.AlertBox != null)
+                            Layout.AlertBox.SetAlert("Insufficient access", "You are not an admin, there is nothing to see here", AlertBox.AlertBoxType.Info);
 
-                if (Layout != null)
-                    if (Layout.Bar != null)
-                        Layout.Bar.RemoveOpenedApp("/admin");
-
-                NavManager.NavigateTo("/");
+                    CloseWindow();
+                }
             }
         }
 

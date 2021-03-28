@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace HomeTicketWeb.Pages
 {
@@ -41,74 +42,9 @@ namespace HomeTicketWeb.Pages
         /*=======================================================================================*/
         protected override async Task OnInitializedAsync()
         {
-            JSCalls call = new JSCalls(js);
-            string link = $"{Configuration["ServerAddress"]}";
-
-            // Check that user already logon
-            TokenModel refresh = new TokenModel();
-            refresh.AuthToken = call.GetLocalStorage("AuthToken");
-            refresh.RefreshToken = call.GetLocalStorage("RefreshToken");
-            if (refresh.AuthToken == null || refresh.RefreshToken == null)
-                return;
-
-            Console.WriteLine("Token was not null");
-            var tokenJson = JsonSerializer.Serialize<TokenModel>(refresh);
-
-            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refresh.AuthToken);
-            var newTokenRequest = await Http.PostAsync($"{link}/user/refresh-token", new StringContent(tokenJson, Encoding.UTF8, "application/json"));
-            Console.WriteLine($"Refresh token, RC: {newTokenRequest.StatusCode}");
-            switch(newTokenRequest.StatusCode)
-            {
-                case HttpStatusCode.OK:
-                    // No action, token is OK
-                    // Update UserInfo
-                    var updUserInfo1 = await Http.GetAsync($"{link}/user/info");
-                    if (updUserInfo1.StatusCode == HttpStatusCode.OK)
-                    {
-                        var userTemp = JsonSerializer.Deserialize<UserInfo>(await updUserInfo1.Content.ReadAsStringAsync());
-                        User.UserName = userTemp.UserName;
-                        User.Email = userTemp.Email;
-                        User.Role = userTemp.Role;
-                    }
-                    break;
-                case HttpStatusCode.Continue:
-                    // New token was created
-                    var newToken = JsonSerializer.Deserialize<TokenModel>(await newTokenRequest.Content.ReadAsStringAsync());
-                    call.SetLocalStorage("AuthToken", newToken.AuthToken);
-                    call.SetLocalStorage("RefreshToken", newToken.RefreshToken);
-                    Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken.AuthToken);
-                    // Update UserInfo
-                    var updUserInfo2 = await Http.GetAsync($"{link}/user/info");
-                    if(updUserInfo2.StatusCode == HttpStatusCode.OK)
-                    {
-                        var userTemp = JsonSerializer.Deserialize<UserInfo>(await updUserInfo2.Content.ReadAsStringAsync());
-                        User.UserName = userTemp.UserName;
-                        User.Email = userTemp.Email;
-                        User.Role = userTemp.Role;
-                    }
-                    break;
-                case HttpStatusCode.Unauthorized:
-                    // Authorization error, go the main page
-                    call.RemoveLocalStorage("AuthToken");
-                    call.RemoveLocalStorage("RefreshToken");
-                    NavManager.NavigateTo("/");
-                    break;
-                case HttpStatusCode.NotFound:
-                    // Authorization error, go the main page
-                    call.RemoveLocalStorage("AuthToken");
-                    call.RemoveLocalStorage("RefreshToken");
-                    NavManager.NavigateTo("/");
-                    break;
-                default:
-                    call.RemoveLocalStorage("AuthToken");
-                    call.RemoveLocalStorage("RefreshToken");
-                    break;
-            }
-
-            Console.WriteLine($"Mainpage init CONTINUE: {User.UserName};{User.Email};{User.Role}");
+            await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
             StateHasChanged();
         }
-
         /*---------------------------------------------------------------------------------------*/
         /* Function name: Login                                                                  */
         /*                                                                                       */
@@ -151,6 +87,16 @@ namespace HomeTicketWeb.Pages
                 User.UserName = userTemp.UserName;
                 User.Email = userTemp.Email;
                 User.Role = userTemp.Role;
+
+                // Start a refresh token timer
+                if (!RefreshTimer.Enabled)
+                {
+                    Console.WriteLine($"Refresh timer is started {DateTime.Now}");
+                    RefreshTimer = new Timer();
+                    RefreshTimer.Interval = Convert.ToInt32(Configuration["RefreshInterval"]);
+                    RefreshTimer.Elapsed += Layout.RefreshTimeOnElapsed;
+                    RefreshTimer.Start();
+                }
             }
             else if(response.StatusCode == HttpStatusCode.Unauthorized)
             {
@@ -193,6 +139,8 @@ namespace HomeTicketWeb.Pages
             if (Layout != null)
                 if (Layout.Bar != null)
                     Layout.Bar.ClearOpenedApp();
+
+            RefreshTimer.Dispose();
 
             StateHasChanged();
         }

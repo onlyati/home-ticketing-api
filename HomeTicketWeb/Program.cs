@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace HomeTicketWeb
 {
@@ -27,6 +28,7 @@ namespace HomeTicketWeb
             builder.Services.AddSingleton<AdminStatus>();
             builder.Services.AddSingleton<UserStatus>();
             builder.Services.AddSingleton<DashBoardParams>();
+            builder.Services.AddSingleton<Timer>();
 
 
             // It is webassembly, so JS can run in non async mode, thus IJSProcessRuntime is used instaed of JSRuntime
