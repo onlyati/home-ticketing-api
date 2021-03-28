@@ -49,7 +49,7 @@ namespace HomeTicketWeb.Model
             else if (otherPath == "/index")
                 return this.Route == "/";
             else
-                return otherPath.StartsWith(this.Route);
+                return otherPath.Equals(this.Route);
         }
     }
 }

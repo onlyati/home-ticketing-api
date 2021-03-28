@@ -131,8 +131,7 @@ namespace HomeTicketWeb.Components
                 var isContain = OpenedApps.Where(s => s.Title == item.Title).Select(s => s).FirstOrDefault();
                 if (isContain == null)
                 {
-                    var record = AppList.Where(s => s.Title == item.Title).Select(s => s).FirstOrDefault();
-                    OpenedApps.Add(record);
+                    OpenedApps.Add(item);
                 }
             }
 
@@ -160,20 +159,6 @@ namespace HomeTicketWeb.Components
 
         }
 
-        public void RemoveOpenedApp(TaskBarMenuItem item)
-        {
-            RemoveOpenedAppNoNavigate(item);
-
-            if (OpenedApps.Count == 0)
-            {
-                NavManager.NavigateTo("/");
-            }
-            else
-            {
-                NavManager.NavigateTo(OpenedApps[OpenedApps.Count - 1].Route);
-            }
-        }
-
         /*---------------------------------------------------------------------------------------*/
         /* Function name: RemoveOpenedAppNoNavigate                                              */
         /*                                                                                       */
@@ -185,33 +170,9 @@ namespace HomeTicketWeb.Components
             if (route == "/index")
                 route = "/";
 
-            TaskBarMenuItem app = null;
-            foreach (var item in AppList)
+            if (route != null)
             {
-                if (item.CompareRoute(route))
-                    app = item;
-            }
-
-            if (app != null)
-            {
-                var record = OpenedApps.Where(s => s.Title == app.Title).Select(s => s).FirstOrDefault();
-                if (record != null)
-                {
-                    if (record.DataContainer != null)
-                        record.DataContainer.SetNull();
-
-                    OpenedApps.Remove(record);
-                }
-            }
-
-            StateHasChanged();
-        }
-
-        public void RemoveOpenedAppNoNavigate(TaskBarMenuItem item)
-        {
-            if (item != null)
-            {
-                var record = OpenedApps.Where(s => s.Title == item.Title).Select(s => s).FirstOrDefault();
+                var record = OpenedApps.Where(s => s.Route == route).Select(s => s).FirstOrDefault();
                 if (record != null)
                 {
                     if (record.DataContainer != null)
