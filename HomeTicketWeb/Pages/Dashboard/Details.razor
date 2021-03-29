@@ -18,19 +18,40 @@
 <div class="ati-full-window">
     <WindowTitle Title="@PageTitle" CloseAction="CloseWindow" />
     <div class="ati-full-window-content container">
-        <div class="row">
-            <div class="col">
-                <h1 class="ati-h-blurpl">Details of #@id</h1>
-            </div>
-            <div class="col-auto">
-                <button class="btn ati-btn-primary mt-3">Take the ticket</button>
-            </div>
-            <div class="col-auto">
-                <button class="btn ati-btn-secondary mt-3">Close the ticket</button>
-            </div>
-        </div>
         @if (details != null)
         {
+            <div class="row">
+                <div class="col">
+                    <h1 class="ati-h-blurpl">Details of #@id</h1>
+                </div>
+                @if (details.Header != null)
+                {
+                    @if (details.Header.User != null && details.Header.Status == "Open")
+                    {
+                        @if (details.Header.User.UserName != User.UserName)
+                        {
+                            <div class="col-auto p-0 mr-3">
+                                <button class="btn ati-btn-primary mt-3">Assign to me</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-auto p-0">
+                                <button class="btn ati-btn-primary mt-3">Close</button>
+                            </div>
+                            <div class="col-auto p-0 mr-3 ml-1">
+                                <button class="btn ati-btn-secondary mt-3">Unassign from me</button>
+                            </div>
+                        }
+                    }
+                    else if(details.Header.Status == "Open")
+                    {
+                        <div class="col-auto p-0 mr-3">
+                            <button class="btn ati-btn-primary mt-3">Assign to me</button>
+                        </div>
+                    }
+                }
+            </div>
             @if (details.Header != null)
             {
                 <div class="ati-details-section">
@@ -39,10 +60,20 @@
                     </div>
                     <table>
                         <tbody>
-                            <tr>
-                                <td class="pr-2"><strong>Owner: </strong></td>
-                                <td>@details.Header.User.UserName</td>
-                            </tr>
+                            @if (details.Header.User != null)
+                            {
+                                <tr>
+                                    <td class="pr-2"><strong>Owner: </strong></td>
+                                    <td>@details.Header.User.UserName</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td class="pr-2"><strong>Owner: </strong></td>
+                                    <td>*Unassigned*</td>
+                                </tr>
+                            }
                             <tr>
                                 <td class="pr-2"><strong>Category: </strong></td>
                                 <td>@details.Header.Category.Name</td>
@@ -67,9 +98,9 @@
                     </table>
                 </div>
             }
-            <h3 class="ati-h-blurpl">Logs</h3>
             @if (details.Logs != null)
             {
+                <h3 class="ati-h-blurpl">Logs</h3>
                 @foreach (var item in details.Logs)
                 {
                     <div class="ati-details-section">

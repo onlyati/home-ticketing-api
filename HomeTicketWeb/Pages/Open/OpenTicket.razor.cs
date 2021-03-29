@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -30,6 +33,9 @@ namespace HomeTicketWeb.Pages.Open
         /*---------------------------------------------------------------------------------------*/
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
+        private List<SystemElem> Systems = new List<SystemElem>();
+        private List<Category> Categories = new List<Category>();
+                
 
         /*=======================================================================================*/
         /* Methods                                                                               */
@@ -45,6 +51,57 @@ namespace HomeTicketWeb.Pages.Open
             bool check = await RefreshService.RefreshToken(js, User, Configuration["ServerAddress"], Http, NavManager);
             if (!check)
                 CloseWindow();
+
+            if(check)
+            {
+                await LoadSystems();
+                if (OpenPageState.SystemName != null)
+                    await LoadCategories(null);
+            }
+
+            StateHasChanged();
+        }
+
+        private async Task LoadSystems()
+        {
+            Systems = new List<SystemElem>();
+
+            var systemRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/system/list/all");
+            if(systemRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Create ticket", "Systems could not list", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            Systems = JsonSerializer.Deserialize<List<SystemElem>>(await systemRequest.Content.ReadAsStringAsync());
+            Systems = Systems.OrderBy(s => s.Name).ToList();
+
+            StateHasChanged();
+        }
+
+        private async Task LoadCategories(ChangeEventArgs e)
+        {
+            Categories = new List<Category>();
+
+            if(e != null)
+                if (e.Value == null)
+                    return;
+                else
+                    OpenPageState.SystemName = e.Value.ToString();
+
+            var categoryRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/system?value={OpenPageState.SystemName}");
+            if (categoryRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Create ticket", "Categories could not list", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            Categories = JsonSerializer.Deserialize<List<Category>>(await categoryRequest.Content.ReadAsStringAsync());
+            Categories = Categories.OrderBy(s => s.Name).ToList();
 
             StateHasChanged();
         }

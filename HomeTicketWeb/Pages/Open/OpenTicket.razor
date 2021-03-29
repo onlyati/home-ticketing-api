@@ -31,23 +31,27 @@
                 </div>
                 <!-- Ask system name -->
                 <div class="ati-login-element">
-                    <select class="ati-select" @bind="@OpenPageState.SystemName">
+                    <select class="ati-select" value="@OpenPageState.SystemName" @onchange="LoadCategories">
                         <option value="" selected></option>
-                        <option value="atihome">atihome</option>
-                        <option value="test-system-1">test-system-1</option>
+                        @foreach (var item in Systems)
+                        {
+                            <option>@item.Name</option>
+                        }
                     </select>
                 </div>
                 <!-- Ask category name -->
-                <div class="ati-login-element">
-                    <select class="ati-select" @bind="@OpenPageState.CategoryName">
-                        <option value="" selected></option>
-                        <option value="System">System</option>
-                        <option value="Network">Network</option>
-                        <option value="Storage">Storage</option>
-                        <option value="Database">Database</option>
-                        <option value="Application">Application</option>
-                    </select>
-                </div>
+                @if (OpenPageState.SystemName != null)
+                {
+                    <div class="ati-login-element">
+                        <select class="ati-select" @bind="@OpenPageState.CategoryName">
+                            <option value="" selected></option>
+                            @foreach (var item in Categories)
+                            {
+                                <option>@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                }
                 <!-- Ask details-->
                 <div class="ati-login-element">
                     <textarea class="ati-login-textarea" placeholder="If you want say more, write there" @bind="@OpenPageState.Details" />
