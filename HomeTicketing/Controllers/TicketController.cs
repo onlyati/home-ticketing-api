@@ -315,6 +315,15 @@ namespace HomeTicketing.Controllers
 
             input.ChangederUser = user;
 
+            if (input.CategoryName == null)
+                input.Category = null;
+            if (input.Refernce == null)
+                input.Refernce = "";
+            if (input.System == null)
+                input.System = "";
+            if (input.Title == null)
+                input.Title = "";
+
             var respond = await _dbHandler.ChangeTicketAsync(input);
             if(respond.MessageType == MessageType.NOK)
                 return BadRequest(new GeneralMessage() { Message = respond.MessageText });

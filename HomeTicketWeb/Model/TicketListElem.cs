@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -94,5 +95,24 @@ namespace HomeTicketWeb.Model
 
         [JsonPropertyName("logs")]
         public List<LogListElem> Logs { get; set; }
+    }
+
+    public class ChangeTicketTemplate
+    {
+        [Required]
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("title")]
+        public string Title { get; set; }
+
+        [JsonPropertyName("reference")]
+        public string Reference { get; set; }
+
+        [JsonPropertyName("system")]
+        public string SystemName { get; set; }
+
+        [JsonPropertyName("category_name")]
+        public string CategoryName { get; set; }
     }
 }

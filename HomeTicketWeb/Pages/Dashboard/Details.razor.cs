@@ -44,6 +44,11 @@ namespace HomeTicketWeb.Pages.Dashboard
 
         private bool Loading = false;
 
+        private bool ShowChangeWindow = false;
+        private ChangeTicketTemplate ChangeTicket;
+        private List<SystemElem> Systems;
+        private List<Category> Categories;
+
         /*=======================================================================================*/
         /* Methods                                                                               */
         /*=======================================================================================*/
@@ -83,7 +88,13 @@ namespace HomeTicketWeb.Pages.Dashboard
         protected override async Task OnParametersSetAsync()
         {
             ShowAddLogWindow = false;
+            ShowChangeWindow = false;
             AddLog.SetNull();
+
+            ChangeTicket = new ChangeTicketTemplate();
+            Systems = null;
+            Categories = null;
+
             details = new TicketDetails();
             PageTitle = $"Details of #{id}";
             Loading = true;
@@ -231,6 +242,91 @@ namespace HomeTicketWeb.Pages.Dashboard
             ShowAddLogWindow = false;
 
             await LoadDetails();
+        }
+
+        private async Task ChangeTicketSubmit()
+        {
+            if((string.IsNullOrWhiteSpace(ChangeTicket.CategoryName) || string.IsNullOrWhiteSpace(ChangeTicket.CategoryName)) &&
+               (string.IsNullOrWhiteSpace(ChangeTicket.SystemName) || string.IsNullOrWhiteSpace(ChangeTicket.SystemName)) &&
+               (string.IsNullOrWhiteSpace(ChangeTicket.Reference) || string.IsNullOrWhiteSpace(ChangeTicket.Reference)) &&
+               (string.IsNullOrWhiteSpace(ChangeTicket.Title) || string.IsNullOrWhiteSpace(ChangeTicket.Title)))
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change ticket", "Nothing is specified to change", AlertBox.AlertBoxType.Info);
+                return;
+            }
+
+            ChangeTicket.Id = id;
+
+            var changeJson = JsonSerializer.Serialize<ChangeTicketTemplate>(ChangeTicket);
+            var changeRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/change", new StringContent(changeJson, Encoding.UTF8, "application/json"));
+            if(changeRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await changeRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change ticket", $"Change failer: {badResponse.Message}", AlertBox.AlertBoxType.Warning);
+            }
+            else
+            {
+                var goodResponse = JsonSerializer.Deserialize<GeneralMessage>(await changeRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change ticket", $"Change is done: {goodResponse.Message}", AlertBox.AlertBoxType.Info);
+            }
+
+            ChangeTicket = new ChangeTicketTemplate();
+
+            await LoadDetails();
+
+            ShowChangeWindow = false;
+        }
+
+        private async Task LoadCategories(ChangeEventArgs e)
+        {
+            if(e.Value == null)
+            {
+                Categories = null;
+                return;
+            }
+
+            if(string.IsNullOrEmpty(e.Value.ToString()) || string.IsNullOrWhiteSpace(e.Value.ToString()))
+            {
+                Categories = null;
+                return;
+            }
+
+            ChangeTicket.SystemName = e.Value.ToString();
+
+            var categoriesRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/system?value={e.Value.ToString()}");
+            if(categoriesRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change ticket", "Fetching categories is failed", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            Categories = JsonSerializer.Deserialize<List<Category>>(await categoriesRequest.Content.ReadAsStringAsync());
+        }
+
+        private async Task DisplayChangeWindow()
+        {
+            var systemRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/system/get?id={details.Header.System.Id}");
+            if(systemRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change ticket", "Fetching systems is failed", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var selectedSystem = JsonSerializer.Deserialize<SystemElem>(await systemRequest.Content.ReadAsStringAsync());
+            Systems = new List<SystemElem>();
+            Systems.Add(selectedSystem);
+
+            ShowChangeWindow = true;
         }
     }
 }

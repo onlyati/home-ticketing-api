@@ -25,7 +25,6 @@ namespace HomeTicketWeb.Model
             if (refresh.AuthToken == null || refresh.RefreshToken == null)
                 return false;
 
-            Console.WriteLine("Token was not null");
             var tokenJson = JsonSerializer.Serialize<TokenModel>(refresh);
 
             Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", refresh.AuthToken);
