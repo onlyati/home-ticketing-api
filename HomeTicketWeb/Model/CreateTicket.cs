@@ -31,6 +31,9 @@ namespace HomeTicketWeb.Model
         [JsonPropertyName("category_name")]
         public string CategoryName { get; set; }
 
+        [JsonPropertyName("reference")]
+        public string Reference { get; set; }
+
         public void SetNull()
         {
             Title = null;
@@ -38,6 +41,7 @@ namespace HomeTicketWeb.Model
             Details = null;
             SystemName = null;
             CategoryName = null;
+            Reference = null;
         }
     }
 }

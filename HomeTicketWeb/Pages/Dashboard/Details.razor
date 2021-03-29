@@ -31,23 +31,23 @@
                         @if (details.Header.User.UserName != User.UserName)
                         {
                             <div class="col-auto p-0 mr-3">
-                                <button class="btn ati-btn-primary mt-3">Assign to me</button>
+                                <button class="btn ati-btn-primary mt-3" @onclick="() => AssignTicket(id)">Assign to me</button>
                             </div>
                         }
                         else
                         {
                             <div class="col-auto p-0">
-                                <button class="btn ati-btn-primary mt-3">Close</button>
+                                <button class="btn ati-btn-primary mt-3" @onclick="() => CloseTicket(id)">Close</button>
                             </div>
                             <div class="col-auto p-0 mr-3 ml-1">
-                                <button class="btn ati-btn-secondary mt-3">Unassign from me</button>
+                                <button class="btn ati-btn-secondary mt-3" @onclick="() => UnassignTicket(id)">Unassign from me</button>
                             </div>
                         }
                     }
                     else if(details.Header.Status == "Open")
                     {
                         <div class="col-auto p-0 mr-3">
-                            <button class="btn ati-btn-primary mt-3">Assign to me</button>
+                            <button class="btn ati-btn-primary mt-3" @onclick="() => AssignTicket(id)">Assign to me</button>
                         </div>
                     }
                 }

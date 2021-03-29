@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -34,8 +36,7 @@ namespace HomeTicketWeb.Pages.Open
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
         private List<SystemElem> Systems = new List<SystemElem>();
-        private List<Category> Categories = new List<Category>();
-                
+        private List<Category> Categories = new List<Category>();        
 
         /*=======================================================================================*/
         /* Methods                                                                               */
@@ -128,14 +129,31 @@ namespace HomeTicketWeb.Pages.Open
         /* Description:                                                                          */
         /* Send ticket open request to the server (actully just dummy)                           */
         /*---------------------------------------------------------------------------------------*/
-        private void SendRequest()
+        private async Task SendRequest()
         {
-            if (User.Role != null && User.UserName != null)
+            /*-----------------------------------------------------------------------------------*/
+            /* Build the request and send                                                        */
+            /*-----------------------------------------------------------------------------------*/
+            OpenPageState.Reference = $"{User.UserName}-{DateTime.Now.Year}{DateTime.Now.Month}{DateTime.Now.Day}-{DateTime.Now.Hour}{DateTime.Now.Minute}{DateTime.Now.Second}";
+            var createJson = JsonSerializer.Serialize<CreateTicket>(OpenPageState);
+            var createRequest = await Http.PostAsync($"{Configuration["ServerAddress"]}/ticket/create", new StringContent(createJson, Encoding.UTF8, "application/json"));
+            if(createRequest.StatusCode != HttpStatusCode.OK)
             {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await createRequest.Content.ReadAsStringAsync());
                 if (Layout != null)
                     if (Layout.AlertBox != null)
-                        Layout.AlertBox.SetAlert("Successfully request", "Ticket has been opened", AlertBox.AlertBoxType.Info);
+                        Layout.AlertBox.SetAlert("Successfully request", $"Request failed: {badResponse.Message}", AlertBox.AlertBoxType.Error);
             }
+
+            /*-----------------------------------------------------------------------------------*/
+            /* It seems, everythign was fine                                                     */
+            /*-----------------------------------------------------------------------------------*/
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Successfully request", "Ticket has been opened", AlertBox.AlertBoxType.Info);
+
+            OpenPageState.SetNull();
+            StateHasChanged();
         }
 
         /*---------------------------------------------------------------------------------------*/

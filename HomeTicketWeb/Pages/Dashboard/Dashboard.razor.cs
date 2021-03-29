@@ -200,5 +200,50 @@ namespace HomeTicketWeb.Pages.Dashboard
 
             StateHasChanged();
         }
+
+        private async Task AssignTicket(int id)
+        {
+            var assignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/assign?ticketid={id}&username={User.UserName}", null);
+            if(assignRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponde = JsonSerializer.Deserialize<GeneralMessage>(await assignRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Ticket assigment", $"Assignment failed: {badResponde.Message}", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            await LoadPersonalTickets();
+        }
+
+        private async Task UnassignTicket(int id)
+        {
+            var unassignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/unassign?ticketid={id}", null);
+            if (unassignRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponde = JsonSerializer.Deserialize<GeneralMessage>(await unassignRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Ticket assigment", $"Assignment failed: {badResponde.Message}", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            await LoadPersonalTickets();
+        }
+
+        private async Task CloseTicket(int id)
+        {
+            var deleteRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/close?id={id}", null);
+            if (deleteRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponde = JsonSerializer.Deserialize<GeneralMessage>(await deleteRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Ticket assigment", $"Assignment failed: {badResponde.Message}", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            await LoadPersonalTickets();
+        }
     }
 }

@@ -241,6 +241,9 @@ namespace HomeTicketing.Controllers
             template.Summary = info.Summary;
             template.Title = info.Title;
 
+            if (info.Details == null)
+                template.Details = info.Summary;
+
             // Get user who wants remove user
             var re = Request;
             var headers = re.Headers;

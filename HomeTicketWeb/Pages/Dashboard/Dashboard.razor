@@ -81,12 +81,12 @@
                     <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Details</button>
                     @if (item.User == null)
                     {
-                        <button class="btn ati-btn-secondary ml-1">Assign to me</button>
+                        <button class="btn ati-btn-secondary ml-1" @onclick="() => AssignTicket(item.Id)">Assign to me</button>
                     }
                     else
                     {
-                        <button class="btn ati-btn-secondary ml-1">Close</button>
-                        <button class="btn ati-btn-secondary">Drop it</button>
+                        <button class="btn ati-btn-secondary ml-1" @onclick="() => CloseTicket(item.Id)">Close</button>
+                        <button class="btn ati-btn-secondary" @onclick="() => UnassignTicket(item.Id)">Drop it</button>
                     }
                 </div>
             </div>
