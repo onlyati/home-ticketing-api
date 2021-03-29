@@ -82,10 +82,13 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         protected override async Task OnParametersSetAsync()
         {
+            ShowAddLogWindow = false;
+            AddLog.SetNull();
             details = new TicketDetails();
             PageTitle = $"Details of #{id}";
             Loading = true;
-            await Task.Delay(500);                                                       // Need some wait, else the async process will be chatoci between page change
+            // Need some wait, else the async process will be chatoci between page change
+            await Task.Delay(500);
             await LoadDetails();
             Loading = false;
         }
