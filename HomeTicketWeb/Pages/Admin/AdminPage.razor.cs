@@ -261,12 +261,20 @@ namespace HomeTicketWeb.Pages.Admin
         #endregion
 
         #region User-Category Assignment
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AssignSystemChanged                                                    */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AssignSystemChanged(ChangeEventArgs e)
         {
+            // Save value into singletion
             AdminPageState.AdminUsrCat.SelectedSystem = e.Value.ToString();
 
             if(e.Value != null)
             {
+                // If it was called from EditForm
                 if (!string.IsNullOrEmpty(e.Value.ToString()))
                 {
                     categoryList = new List<string>()
@@ -288,6 +296,12 @@ namespace HomeTicketWeb.Pages.Admin
             StateHasChanged();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AssignUserChanged(ChangeEventArgs e)
         {
             AdminPageState.AdminUsrCat.SelectedUser = e.Value.ToString();
@@ -314,12 +328,24 @@ namespace HomeTicketWeb.Pages.Admin
             StateHasChanged();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AssignCategoryDrag(DragEventArgs e, string item)
         {
             moveCategory = item;
             
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AssignCategoryDropped(DragEventArgs e)
         {
             if(AdminPageState.AdminUsrCat.SelectedUser != null)
@@ -335,6 +361,12 @@ namespace HomeTicketWeb.Pages.Admin
             StateHasChanged();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void UnassignCategory(string cat, string sys)
         {
             AssignCategory find = new AssignCategory()
@@ -354,7 +386,12 @@ namespace HomeTicketWeb.Pages.Admin
         #endregion
 
         #region System adjustment
-
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AddSystemSubmit()
         {
             AddSystem = new NewSystem();
@@ -363,6 +400,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("System adjustment", $"New system ({AddSystem.SystemName}) has been added", AlertBox.AlertBoxType.Info);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AddSystemSubmitMissing()
         {
             if (Layout != null)
@@ -370,6 +413,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("System adjustment", $"Missing input parameters", AlertBox.AlertBoxType.Error);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void ChangeSystemVerify()
         {
             if (Layout != null)
@@ -377,6 +426,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("System adjustment", "Do you really want to change the system?", AlertBox.AlertBoxType.Question, ChangeSystem);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void ChangeSystem()
         {
             if (Layout != null)
@@ -384,6 +439,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("System adjustment", "System is changed", AlertBox.AlertBoxType.Info);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void DeleteSystemVerify()
         {
             if (Layout != null)
@@ -391,6 +452,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("System adjustment", "Do you really want to delete the system?", AlertBox.AlertBoxType.Question, DeleteSystem);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void DeleteSystem()
         {
             if (Layout != null)
@@ -401,7 +468,12 @@ namespace HomeTicketWeb.Pages.Admin
         #endregion
 
         #region Category adjustment
-
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AddCategorySubmit()
         {
             if (Layout != null)
@@ -409,6 +481,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("Adjust category", $"New category ({AddCategory.SystemName}->{AddCategory.CategoryName}) has been added", AlertBox.AlertBoxType.Info);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void AddCategorySubmitMissing()
         {
             if (Layout != null)
@@ -416,6 +494,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("Adjust category", "Missing input values", AlertBox.AlertBoxType.Error);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void ChangeCategoryVerify()
         {
             if (Layout != null)
@@ -423,6 +507,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("Adjust category", "Do you really want to change this record?", AlertBox.AlertBoxType.Question, ChangeCategory);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void ChangeCategory()
         {
             if (Layout != null)
@@ -430,6 +520,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("Adjust category", "Category is changed", AlertBox.AlertBoxType.Info);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void DeleteCategoryVerify()
         {
             if (Layout != null)
@@ -437,6 +533,12 @@ namespace HomeTicketWeb.Pages.Admin
                     Layout.AlertBox.SetAlert("Adjust category", "Do you really want to delete this record?", AlertBox.AlertBoxType.Question, DeleteCategory);
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
         public void DeleteCategory()
         {
             if (Layout != null)

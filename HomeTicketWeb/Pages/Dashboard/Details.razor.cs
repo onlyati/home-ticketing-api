@@ -6,6 +6,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
@@ -23,7 +25,9 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         /* Parameters                                                                            */
         /*---------------------------------------------------------------------------------------*/
-
+        [Parameter]
+        public int id { get; set; }
+        
         /*---------------------------------------------------------------------------------------*/
         /* Get cascaded values                                                                   */
         /*---------------------------------------------------------------------------------------*/
@@ -32,10 +36,13 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
-        [Parameter] public int id { get; set; }
         private TicketDetails details = new TicketDetails();
         private string PageTitle;
 
+        private CreateTicket AddLog = new CreateTicket();
+        private bool ShowAddLogWindow = false;
+
+        private bool Loading = false;
 
         /*=======================================================================================*/
         /* Methods                                                                               */
@@ -61,12 +68,26 @@ namespace HomeTicketWeb.Pages.Dashboard
                             NavManager.NavigateTo("/");
                             return;
                         }
-
-                PageTitle = $"Details of #{id}";
-                await LoadDetails();
             }
 
             StateHasChanged();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: OnParameterSetAsync                                                    */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Because OnInitialiezedAsync runs only once when the component is created thsu that    */
+        /* not able to refresh details in case of multiple Details component navigation.         */
+        /*---------------------------------------------------------------------------------------*/
+        protected override async Task OnParametersSetAsync()
+        {
+            details = new TicketDetails();
+            PageTitle = $"Details of #{id}";
+            Loading = true;
+            await Task.Delay(500);                                                       // Need some wait, else the async process will be chatoci between page change
+            await LoadDetails();
+            Loading = false;
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -77,7 +98,6 @@ namespace HomeTicketWeb.Pages.Dashboard
         /*---------------------------------------------------------------------------------------*/
         private async Task LoadDetails()
         {
-            details = new TicketDetails();
             var detailsRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/ticket/details?id={id}");
             if(detailsRequest.StatusCode != HttpStatusCode.OK)
             {
@@ -110,6 +130,12 @@ namespace HomeTicketWeb.Pages.Dashboard
                     Layout.Bar.RemoveOpenedApp(NavManager.Uri.Substring(NavManager.BaseUri.Length - 1));
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AssignTicket                                                           */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Assign ticket to they who wants to claim it                                           */
+        /*---------------------------------------------------------------------------------------*/
         private async Task AssignTicket(int id)
         {
             var assignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/assign?ticketid={id}&username={User.UserName}", null);
@@ -125,6 +151,12 @@ namespace HomeTicketWeb.Pages.Dashboard
             await LoadDetails();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: UnassignTicket                                                         */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Methid is called if user want to get rid of from the ticket                           */
+        /*---------------------------------------------------------------------------------------*/
         private async Task UnassignTicket(int id)
         {
             var unassignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/unassign?ticketid={id}", null);
@@ -140,6 +172,12 @@ namespace HomeTicketWeb.Pages.Dashboard
             await LoadDetails();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: CloseTicket                                                            */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Close ticket if it is already assigned to the user                                    */
+        /*---------------------------------------------------------------------------------------*/
         private async Task CloseTicket(int id)
         {
             var deleteRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/close?id={id}", null);
@@ -151,6 +189,43 @@ namespace HomeTicketWeb.Pages.Dashboard
                         Layout.AlertBox.SetAlert("Ticket assigment", $"Assignment failed: {badResponde.Message}", AlertBox.AlertBoxType.Warning);
                 return;
             }
+
+            await LoadDetails();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AddLogRecord                                                           */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method append a new log entry for the selected ticket                            */
+        /*---------------------------------------------------------------------------------------*/
+        private async Task AddLogRecord()
+        {
+            // Data validation
+            if(AddLog.Summary == null)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Add new log record", "Summary is missing", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            // Assemble the request and send it
+            AddLog.CategoryName = details.Header.Category.Name;
+            AddLog.Reference = details.Header.Reference;
+            AddLog.SystemName = details.Header.System.Name;
+            AddLog.Title = details.Header.Title;
+            var requestJson = JsonSerializer.Serialize<CreateTicket>(AddLog);
+            var request = await Http.PostAsync($"{Configuration["ServerAddress"]}/ticket/create", new StringContent(requestJson, Encoding.UTF8, "application/json"));
+            if(request.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await request.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Add new log record", $"Add log record is failed: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+            }
+
+            ShowAddLogWindow = false;
 
             await LoadDetails();
         }

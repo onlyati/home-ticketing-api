@@ -209,6 +209,12 @@ namespace HomeTicketWeb.Pages.Dashboard
             StateHasChanged();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AssignTicket                                                           */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called if suer want to take the ticket the they name                   */
+        /*---------------------------------------------------------------------------------------*/
         private async Task AssignTicket(int id)
         {
             var assignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/assign?ticketid={id}&username={User.UserName}", null);
@@ -224,6 +230,12 @@ namespace HomeTicketWeb.Pages.Dashboard
             await LoadPersonalTickets();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: UnassignedTicket                                                       */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called if user want to get rid of ticket                               */
+        /*---------------------------------------------------------------------------------------*/
         private async Task UnassignTicket(int id)
         {
             var unassignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/unassign?ticketid={id}", null);
@@ -239,6 +251,12 @@ namespace HomeTicketWeb.Pages.Dashboard
             await LoadPersonalTickets();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: CloseTicket                                                            */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Close the already assigned ticket                                                     */
+        /*---------------------------------------------------------------------------------------*/
         private async Task CloseTicket(int id)
         {
             var deleteRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/ticket/close?id={id}", null);
