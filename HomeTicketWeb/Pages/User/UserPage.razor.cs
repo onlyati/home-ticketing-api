@@ -79,6 +79,14 @@ namespace HomeTicketWeb.Pages.User
             if (!check)
                 CloseWindow();
 
+            if (Layout != null)
+                if (Layout.Bar != null)
+                    if (Layout.Bar.OpenedAppsCount() == 0)
+                    {
+                        NavManager.NavigateTo("/");
+                        return;
+                    }
+
             StateHasChanged();
         }
 

@@ -122,6 +122,14 @@ namespace HomeTicketWeb.Pages.Admin
 
             if (check)
             {
+                if (Layout != null)
+                    if (Layout.Bar != null)
+                        if (Layout.Bar.OpenedAppsCount() == 0)
+                        {
+                            NavManager.NavigateTo("/");
+                            return;
+                        }
+
                 if (User.Role != UserRole.Admin)
                 {
                     if (Layout != null)

@@ -54,6 +54,14 @@ namespace HomeTicketWeb.Pages.Dashboard
 
             if (check)
             {
+                if (Layout != null)
+                    if (Layout.Bar != null)
+                        if (Layout.Bar.OpenedAppsCount() == 0)
+                        {
+                            NavManager.NavigateTo("/");
+                            return;
+                        }
+
                 await LoadPersonalTickets();
 
                 if (DashboardPageState.FilterFindDone)

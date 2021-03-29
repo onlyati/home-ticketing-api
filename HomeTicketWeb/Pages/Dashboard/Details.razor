@@ -44,7 +44,7 @@
                             </div>
                         }
                     }
-                    else if(details.Header.Status == "Open")
+                    else if (details.Header.Status == "Open")
                     {
                         <div class="col-auto p-0 mr-3">
                             <button class="btn ati-btn-primary mt-3" @onclick="() => AssignTicket(id)">Assign to me</button>
@@ -97,10 +97,21 @@
                         </tbody>
                     </table>
                 </div>
+
+                <div class="row">
+                    <div class="col">
+                        <h3 class="ati-h-blurpl">Logs</h3>
+                    </div>
+                    @if (details.Header.Status == "Open")
+                    {
+                        <div class="col-auto p-0 mr-3 mt-3">
+                            <button class="btn ati-btn-primary mt-3">Add log</button>
+                        </div>
+                    }
+                </div>
             }
             @if (details.Logs != null)
             {
-                <h3 class="ati-h-blurpl">Logs</h3>
                 @foreach (var item in details.Logs)
                 {
                     <div class="ati-details-section">

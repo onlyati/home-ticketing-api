@@ -252,5 +252,18 @@ namespace HomeTicketWeb.Components
             StateHasChanged();
         }
 
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: OpenedAppsCount()                                                      */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Return by the number of OpenedApplications                                            */
+        /*---------------------------------------------------------------------------------------*/
+        public int OpenedAppsCount()
+        {
+            if (OpenedApps == null)
+                return 0;
+            return OpenedApps.Count;
+        }
+
     }
 }

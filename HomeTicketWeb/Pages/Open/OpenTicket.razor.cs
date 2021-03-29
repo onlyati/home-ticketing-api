@@ -55,6 +55,14 @@ namespace HomeTicketWeb.Pages.Open
 
             if(check)
             {
+                if (Layout != null)
+                    if (Layout.Bar != null)
+                        if (Layout.Bar.OpenedAppsCount() == 0)
+                        {
+                            NavManager.NavigateTo("/");
+                            return;
+                        }
+
                 await LoadSystems();
                 if (OpenPageState.SystemName != null)
                     await LoadCategories(null);
