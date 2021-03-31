@@ -7,8 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Timers;
+using HomeTicketWeb.Model;
+using System.Text.Json.Serialization;
 
 namespace HomeTicketWeb.Pages.Admin
 {
@@ -41,6 +47,8 @@ namespace HomeTicketWeb.Pages.Admin
             new TreeMenuItem() { Title = "Category adjustment", Section = "Category management", Id = 4 },
         };
         private NewUser AddUser = new NewUser();                                         // Model for EditForm
+        private List<NewUser> Users;
+        private NewUser ChangeInfo;
 
         private List<string> categoryList;
         private List<AssignCategory> userCategoryList;
@@ -62,15 +70,19 @@ namespace HomeTicketWeb.Pages.Admin
         private class NewUser
         {
             [Required]
+            [JsonPropertyName("username")]
             public string UserName { get; set; }
 
             [Required]
+            [JsonPropertyName("password")]
             public string Password { get; set; }
 
             [Required]
+            [JsonPropertyName("email")]
             public string Email { get; set; }
 
             [Required]
+            [JsonPropertyName("role")]
             public string Role { get; set; }
         }
 
@@ -141,6 +153,43 @@ namespace HomeTicketWeb.Pages.Admin
             }
         }
 
+        protected override async Task OnParametersSetAsync()
+        {
+            await LoadUsers();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: LoadUsers                                                              */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This methof load the users and refresh the list which is displayed on the screen      */
+        /*---------------------------------------------------------------------------------------*/
+        public async Task LoadUsers()
+        {
+            User = null;
+            var usersRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/user/list/all");
+            if(usersRequest.StatusCode != HttpStatusCode.OK)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Error during loading", "Error occured during loading users", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var tempUsers = JsonSerializer.Deserialize<List<Model.User>>(await usersRequest.Content.ReadAsStringAsync());
+
+            Users = new List<NewUser>();
+            foreach (var item in tempUsers)
+            {
+                Users.Add(new NewUser() { Email = item.Email, Role = item.Role, UserName = item.UserName, Password = "" });
+            }
+
+            Users = Users.OrderBy(s => s.Role).ThenBy(s => s.UserName).ToList();
+
+            StateHasChanged();
+        }
+
+
         /*---------------------------------------------------------------------------------------*/
         /* Function name: UpdateState                                                            */
         /*                                                                                       */
@@ -180,11 +229,19 @@ namespace HomeTicketWeb.Pages.Admin
         /* and if if it is verified it calls the change function                                 */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        private void ChangeUserVerify()
+        private void ChangeUserVerify(string username, string password, string email, string role)
         {
+            ChangeInfo = new NewUser()
+            {
+                Email = email,
+                UserName = username,
+                Password = password,
+                Role = role,
+            };
+
             if (Layout != null)
                 if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser);
+                    Layout.AlertBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser, () => ChangeInfo = null);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -194,11 +251,38 @@ namespace HomeTicketWeb.Pages.Admin
         /* This method is called after admin verified user change.                               */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        private void ChangeUser()
+        private async Task ChangeUser()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust user", "User change is done", AlertBox.AlertBoxType.Info);
+            Console.WriteLine("Change is starting...");
+
+            var changeJson = JsonSerializer.Serialize<NewUser>(ChangeInfo);
+            var changeRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/user/change/general", new StringContent(changeJson, Encoding.UTF8, "application/json"));
+            if(changeRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await changeRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Adjust user", $"User change is failed: {badResponse.Message}", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            Console.WriteLine("Change for role...");
+
+            var promoteRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/user/change/role?username={ChangeInfo.UserName}&role={ChangeInfo.Role}", null);
+            if(promoteRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await changeRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Adjust user", $"User change is failed: {badResponse.Message}", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            Console.WriteLine("Change is done...");
+
+            await LoadUsers();
+
+            Console.WriteLine("Change is verified...");
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -237,11 +321,38 @@ namespace HomeTicketWeb.Pages.Admin
         /* New user request has been submitted from the admin page.                              */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        private void AddUserSubmit()
+        private async Task AddUserSubmit()
         {
+            // Build the JSON
+            var registerJson = JsonSerializer.Serialize<NewUser>(AddUser);
+            var registerRequest = await Http.PostAsync($"{Configuration["ServerAddress"]}/user/register", new StringContent(registerJson, Encoding.UTF8, "application/json"));
+            if(registerRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await registerRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Add user", $"Add user is failed: {badResponse.Message}", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            if(AddUser.Role == UserRole.Admin.ToString())
+            {
+                var roleRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/user/change/role?username={AddUser.UserName}&role=admin", null);
+                if(roleRequest.StatusCode != HttpStatusCode.OK)
+                {
+                    var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await registerRequest.Content.ReadAsStringAsync());
+                    if (Layout != null)
+                        if (Layout.AlertBox != null)
+                            Layout.AlertBox.SetAlert("Add user", $"Promoting to admin is failed: {badResponse.Message}", AlertBox.AlertBoxType.Warning);
+                    return;
+                }
+            }
+
             if (Layout != null)
                 if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust user", "User is added", AlertBox.AlertBoxType.Info);
+                    Layout.AlertBox.SetAlert("Add user", "User is added", AlertBox.AlertBoxType.Info);
+
+            await LoadUsers();
         }
 
         /*---------------------------------------------------------------------------------------*/

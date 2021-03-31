@@ -87,56 +87,37 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>God</td>
-                                <td><input type="password" placeholder="New password" /></td>
-                                <td><input type="text" value="god@ize.com" /></td>
-                                <td>
-                                    <select>
-                                        <option selected>Admin</option>
-                                        <option>User</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="ChangeUserVerify">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteUserVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Béla</td>
-                                <td><input type="password" placeholder="New password" /></td>
-                                <td><input type="text" value="user@ize.com" /></td>
-                                <td>
-                                    <select>
-                                        <option>Admin</option>
-                                        <option selected>User</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="ChangeUserVerify">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteUserVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                            @if(Users != null)
+                            {
+                                @foreach (var item in Users)
+                                {
+                                <tr>
+                                    <td>@item.UserName</td>
+                                    <td><input type="password" placeholder="New password" @bind="item.Password" /></td>
+                                    <td><input type="text" @bind="item.Email" /></td>
+                                    <td>
+                                        <select class="ati-select" @bind="@item.Role">
+                                            <option>Admin</option>
+                                            <option>User</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <div class="ati-change-btn-table">
+                                            <a data-tooltip="Change user" @onclick="() => ChangeUserVerify(item.UserName, item.Password, item.Email, item.Role)">
+                                                <img class="ati-change-img-table" src="img/change-icon.png">
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="ati-change-btn-table">
+                                            <a data-tooltip="Remove user" @onclick="DeleteUserVerify">
+                                                <img class="ati-change-img-table" src="img/remove-icon.png">
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </TreeMenuContent>

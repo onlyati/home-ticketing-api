@@ -34,6 +34,9 @@ namespace HomeTicketWeb.Components
         private ConfirmMethod OnConfirm = null;                                          // What should be executed after confirmation
         private ConfirmMethod OnCancel = null;                                           // What should be executed if question answer is no
 
+        Func<Task> OnConfirmAsync = null;
+        Func<Task> OnCancelAsync = null;
+
         /*=======================================================================================*/
         /* Methods                                                                               */
         /*=======================================================================================*/
@@ -68,6 +71,16 @@ namespace HomeTicketWeb.Components
             StateHasChanged();
         }
 
+        public void SetAlert(string title, string text, AlertBoxType type, Func<Task> func)
+        {
+            OnConfirmAsync = func;
+            Title = title;
+            Text = text;
+            Type = type;
+            IsVisible = true;
+            StateHasChanged();
+        }
+
         /*---------------------------------------------------------------------------------------*/
         /* Function name: SetAlert                                                               */
         /*                                                                                       */
@@ -85,16 +98,52 @@ namespace HomeTicketWeb.Components
             StateHasChanged();
         }
 
+        public void SetAlert(string title, string text, AlertBoxType type, Func<Task> onConfirm, ConfirmMethod onCancel)
+        {
+            OnConfirmAsync = onConfirm;
+            OnCancel = onCancel;
+            Title = title;
+            Text = text;
+            Type = type;
+            IsVisible = true;
+            StateHasChanged();
+        }
+
+        public void SetAlert(string title, string text, AlertBoxType type, ConfirmMethod onConfirm, Func<Task> onCancel)
+        {
+            OnConfirm = onConfirm;
+            OnCancelAsync = onCancel;
+            Title = title;
+            Text = text;
+            Type = type;
+            IsVisible = true;
+            StateHasChanged();
+        }
+
+        public void SetAlert(string title, string text, AlertBoxType type, Func<Task> onConfirm, Func<Task> onCancel)
+        {
+            OnConfirmAsync = onConfirm;
+            OnCancelAsync = onCancel;
+            Title = title;
+            Text = text;
+            Type = type;
+            IsVisible = true;
+            StateHasChanged();
+        }
+
         /*---------------------------------------------------------------------------------------*/
         /* Function name: HideQuestionNo                                                         */
         /*                                                                                       */
         /* Description:                                                                          */
         /* Executed if type was 'Question' and user cancelled it.                                */
         /*---------------------------------------------------------------------------------------*/
-        public void HideQuestionNo()
+        public async Task HideQuestionNo()
         {
             if (OnCancel != null)
                 OnCancel.Invoke();
+
+            if (OnCancelAsync != null)
+                await OnCancelAsync.Invoke();
 
             OnConfirm = null;
             OnCancel = null;
@@ -108,13 +157,16 @@ namespace HomeTicketWeb.Components
         /* Description:                                                                          */
         /* Executed after confirmation                                                           */
         /*---------------------------------------------------------------------------------------*/
-        public void Hide()
+        public async Task Hide()
         {
             IsVisible = false;
             StateHasChanged();
 
             if (OnConfirm != null)
                 OnConfirm.Invoke();
+
+            if (OnConfirmAsync != null)
+                await OnConfirmAsync.Invoke();
 
             OnConfirm = null;
             OnCancel = null;
