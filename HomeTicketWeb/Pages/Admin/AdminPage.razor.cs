@@ -38,6 +38,8 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         /* Private, local variables and objects                                                  */
         /*---------------------------------------------------------------------------------------*/
+        private AlertBox QuestionBox;
+
         private TreeMenu TMenu;                                                          // Reference for TreeMenu component
         private List<TreeMenuItem> UserMenu = new List<TreeMenuItem>()                   // Feed TreeMenu component with data, what menu is required
         {
@@ -239,9 +241,8 @@ namespace HomeTicketWeb.Pages.Admin
                 Role = role,
             };
 
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser, () => ChangeInfo = null);
+            if(QuestionBox != null)
+                QuestionBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser, () => ChangeInfo = null);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -282,6 +283,10 @@ namespace HomeTicketWeb.Pages.Admin
 
             await LoadUsers();
 
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust user", $"User change is done", AlertBox.AlertBoxType.Info);
+
             Console.WriteLine("Change is verified...");
         }
 
@@ -295,9 +300,8 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         private void DeleteUserVerify()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust user", "Are you sure you want remove this user?", AlertBox.AlertBoxType.Question, DeleteUser);
+            if(QuestionBox != null)
+                QuestionBox.SetAlert("Adjust user", "Are you sure you want remove this user?", AlertBox.AlertBoxType.Question, DeleteUser);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -532,9 +536,8 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         public void ChangeSystemVerify()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("System adjustment", "Do you really want to change the system?", AlertBox.AlertBoxType.Question, ChangeSystem);
+            if(QuestionBox != null)
+                QuestionBox.SetAlert("System adjustment", "Do you really want to change the system?", AlertBox.AlertBoxType.Question, ChangeSystem);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -558,9 +561,8 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         public void DeleteSystemVerify()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("System adjustment", "Do you really want to delete the system?", AlertBox.AlertBoxType.Question, DeleteSystem);
+            if(QuestionBox != null)
+                QuestionBox.SetAlert("System adjustment", "Do you really want to delete the system?", AlertBox.AlertBoxType.Question, DeleteSystem);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -613,9 +615,8 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         public void ChangeCategoryVerify()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust category", "Do you really want to change this record?", AlertBox.AlertBoxType.Question, ChangeCategory);
+            if(QuestionBox != null)
+                QuestionBox.SetAlert("Adjust category", "Do you really want to change this record?", AlertBox.AlertBoxType.Question, ChangeCategory);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -639,9 +640,8 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         public void DeleteCategoryVerify()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust category", "Do you really want to delete this record?", AlertBox.AlertBoxType.Question, DeleteCategory);
+            if(QuestionBox != null)
+                QuestionBox.SetAlert("Adjust category", "Do you really want to delete this record?", AlertBox.AlertBoxType.Question, DeleteCategory);
         }
 
         /*---------------------------------------------------------------------------------------*/

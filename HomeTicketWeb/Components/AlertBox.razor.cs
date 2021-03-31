@@ -146,7 +146,9 @@ namespace HomeTicketWeb.Components
                 await OnCancelAsync.Invoke();
 
             OnConfirm = null;
+            OnConfirmAsync = null;
             OnCancel = null;
+            OnCancelAsync = null;
             IsVisible = false;
             StateHasChanged();
         }
@@ -159,9 +161,6 @@ namespace HomeTicketWeb.Components
         /*---------------------------------------------------------------------------------------*/
         public async Task Hide()
         {
-            IsVisible = false;
-            StateHasChanged();
-
             if (OnConfirm != null)
                 OnConfirm.Invoke();
 
@@ -169,7 +168,11 @@ namespace HomeTicketWeb.Components
                 await OnConfirmAsync.Invoke();
 
             OnConfirm = null;
+            OnConfirmAsync = null;
             OnCancel = null;
+            OnCancelAsync = null;
+            IsVisible = false;
+            StateHasChanged();
         }
 
         /*=======================================================================================*/
