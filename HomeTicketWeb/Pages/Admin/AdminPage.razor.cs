@@ -242,7 +242,20 @@ namespace HomeTicketWeb.Pages.Admin
             };
 
             if(QuestionBox != null)
-                QuestionBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser, () => ChangeInfo = null);
+                QuestionBox.SetAlert("Adjust user", "Are you sure you want change it?", AlertBox.AlertBoxType.Question, ChangeUser, ChangeUserCancel);
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: ChangeUserCancel                                                       */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method is called after admin cancelled the change.                               */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        private async Task ChangeUserCancel()
+        {
+            ChangeInfo = null;
+            await LoadUsers();
         }
 
         /*---------------------------------------------------------------------------------------*/
