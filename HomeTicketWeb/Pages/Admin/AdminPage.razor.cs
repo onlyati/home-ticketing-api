@@ -55,6 +55,8 @@ namespace HomeTicketWeb.Pages.Admin
         private List<string> categoryList;
         private List<AssignCategory> userCategoryList;
         private string moveCategory;
+        private List<SystemElem> systemList;
+        private List<Model.User> userList;
 
         private NewSystem AddSystem = new NewSystem();
 
@@ -157,7 +159,15 @@ namespace HomeTicketWeb.Pages.Admin
 
         protected override async Task OnParametersSetAsync()
         {
-            await LoadUsers();
+            if (TMenu.IsSelected(1))
+            {
+                await LoadUsers();
+            }
+
+            if(TMenu.IsSelected(2))
+            {
+                await LoadCategoryAssignment();
+            }
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -199,11 +209,21 @@ namespace HomeTicketWeb.Pages.Admin
         /* Eventcallback for 'AfterClick' parameter of TreeMenu component. It runs after click   */
         /* has happened on an item in the menu                                                   */
         /*---------------------------------------------------------------------------------------*/
-        public void UpdateState()
+        public async Task UpdateState()
         {
             if (TMenu != null)
                 if (TMenu.ActMenu != null)
                     AdminPageState.ActMenu = TMenu.ActMenu;
+
+            if (TMenu.IsSelected(1))
+            {
+                await LoadUsers();
+            }
+
+            if (TMenu.IsSelected(2))
+            {
+                await LoadCategoryAssignment();
+            }
 
             StateHasChanged();
         }
@@ -389,37 +409,117 @@ namespace HomeTicketWeb.Pages.Admin
         #endregion
 
         #region User-Category Assignment
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: LoadCategoryAssigment                                                  */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* This method load the lists based on what is selected                                  */
+        /*---------------------------------------------------------------------------------------*/
+        public async Task LoadCategoryAssignment()
+        {
+            /*-----------------------------------------------------------------------------------*/
+            /* Load system list                                                                  */
+            /*-----------------------------------------------------------------------------------*/
+            // Load all categores
+            var allSystemRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/system/list/all");
+            if(allSystemRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await allSystemRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Load systems", $"Error occured during loading system: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            systemList = JsonSerializer.Deserialize<List<SystemElem>>(await allSystemRequest.Content.ReadAsStringAsync());
+            systemList = systemList.OrderBy(s => s.Name).ToList();
+
+            if (systemList.Count == 0)
+                return;
+
+            // If no system selected, set the first system
+            if (string.IsNullOrEmpty(AdminPageState.AdminUsrCat.SelectedSystem) || string.IsNullOrWhiteSpace(AdminPageState.AdminUsrCat.SelectedSystem))
+                AdminPageState.AdminUsrCat.SelectedSystem = systemList[0].Name;
+
+            // Load categories
+            var categoryRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/system?value={AdminPageState.AdminUsrCat.SelectedSystem}");
+            if (categoryRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await categoryRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Load systems", $"Error occured during loading system: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var allCategoryList = JsonSerializer.Deserialize<List<Category>>(await categoryRequest.Content.ReadAsStringAsync());
+            categoryList = allCategoryList.Select(s => s.Name).OrderBy(s => s).ToList();
+
+            /*-----------------------------------------------------------------------------------*/
+            /* Load user list                                                                    */
+            /*-----------------------------------------------------------------------------------*/
+            // Load user list
+            var allUserRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/user/list/all");
+            if (allUserRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await allUserRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Load users", $"Error occured during loading users: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            userList = JsonSerializer.Deserialize<List<Model.User>>(await allUserRequest.Content.ReadAsStringAsync());
+            userList = userList.OrderBy(s => s.UserName).ToList();
+            if (userList.Count == 0)
+                return;
+
+            // If no user selected, set the first user
+            if (string.IsNullOrEmpty(AdminPageState.AdminUsrCat.SelectedUser) || string.IsNullOrWhiteSpace(AdminPageState.AdminUsrCat.SelectedUser))
+                AdminPageState.AdminUsrCat.SelectedUser = userList[0].UserName;
+
+            // Load categories for user
+            var userCatRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/user?value={AdminPageState.AdminUsrCat.SelectedUser}");
+            if (userCatRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await userCatRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Load users", $"Error occured during loading users: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var userCatList = JsonSerializer.Deserialize<List<Category>>(await userCatRequest.Content.ReadAsStringAsync());
+            userCategoryList = userCatList.Select(s => new AssignCategory() { CategoryName = s.Name, SystemName = s.System.Name }).OrderBy(s => s.SystemName).ThenBy(s => s.CategoryName).ToList();
+
+            StateHasChanged();
+        }
+
         /*---------------------------------------------------------------------------------------*/
         /* Function name: AssignSystemChanged                                                    */
         /*                                                                                       */
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void AssignSystemChanged(ChangeEventArgs e)
+        public async Task AssignSystemChanged(ChangeEventArgs e)
         {
             // Save value into singletion
             AdminPageState.AdminUsrCat.SelectedSystem = e.Value.ToString();
 
-            if(e.Value != null)
+            // Load categories
+            var categoryRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/system?value={AdminPageState.AdminUsrCat.SelectedSystem}");
+            if (categoryRequest.StatusCode != HttpStatusCode.OK)
             {
-                // If it was called from EditForm
-                if (!string.IsNullOrEmpty(e.Value.ToString()))
-                {
-                    categoryList = new List<string>()
-                    {
-                        "System",
-                        "Network",
-                        "Storage",
-                        "Application"
-                    };
-                }
-                else
-                    categoryList = null;
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await categoryRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Load systems", $"Error occured during loading system: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
             }
-            else
-            {
-                categoryList = null;
-            }
+
+            var allCategoryList = JsonSerializer.Deserialize<List<Category>>(await categoryRequest.Content.ReadAsStringAsync());
+            categoryList = allCategoryList.Select(s => s.Name).OrderBy(s => s).ToList();
 
             StateHasChanged();
         }
@@ -430,28 +530,23 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void AssignUserChanged(ChangeEventArgs e)
+        public async Task AssignUserChanged(ChangeEventArgs e)
         {
             AdminPageState.AdminUsrCat.SelectedUser = e.Value.ToString();
 
-            if(e.Value != null)
+            // Load categories for user
+            var userCatRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/user?value={AdminPageState.AdminUsrCat.SelectedUser}");
+            if (userCatRequest.StatusCode != HttpStatusCode.OK)
             {
-                if(!string.IsNullOrEmpty(e.Value.ToString()))
-                {
-                    userCategoryList = new List<AssignCategory>()
-                    {
-                        new AssignCategory() {SystemName = "atihome", CategoryName = "Network" }
-                    };
-                }
-                else
-                {
-                    userCategoryList = null;
-                }
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await userCatRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Load users", $"Error occured during loading users: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
             }
-            else
-            {
-                userCategoryList = null;
-            }
+
+            var userCatList = JsonSerializer.Deserialize<List<Category>>(await userCatRequest.Content.ReadAsStringAsync());
+            userCategoryList = userCatList.Select(s => new AssignCategory() { CategoryName = s.Name, SystemName = s.System.Name }).OrderBy(s => s.SystemName).ThenBy(s => s.CategoryName).ToList();
 
             StateHasChanged();
         }
@@ -465,7 +560,39 @@ namespace HomeTicketWeb.Pages.Admin
         public void AssignCategoryDrag(DragEventArgs e, string item)
         {
             moveCategory = item;
-            
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AssignCategoryDropped                                                  */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Categrory elem has been dropped, try to assign category for user                      */
+        /*---------------------------------------------------------------------------------------*/
+        public async Task AssignCategoryDropped(DragEventArgs e)
+        {
+            var checkExist = userCategoryList.Where(s => s.Equals(new AssignCategory() { CategoryName = moveCategory, SystemName = AdminPageState.AdminUsrCat.SelectedSystem })).FirstOrDefault();
+            if(checkExist != null)
+            {
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Assign category", $"Category is already assigned", AlertBox.AlertBoxType.Warning);
+                return;
+            }
+
+            if(AdminPageState.AdminUsrCat.SelectedUser != null)
+            {
+                var assignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/category/assign?userName={AdminPageState.AdminUsrCat.SelectedUser}&categoryName={moveCategory}&systemName={AdminPageState.AdminUsrCat.SelectedSystem}", null);
+                if(assignRequest.StatusCode != HttpStatusCode.OK)
+                {
+                    var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await assignRequest.Content.ReadAsStringAsync());
+                    if (Layout != null)
+                        if (Layout.AlertBox != null)
+                            Layout.AlertBox.SetAlert("Assign category", $"Error occured during assign category: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                    return;
+                }
+
+                await LoadCategoryAssignment();
+            }
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -474,42 +601,22 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void AssignCategoryDropped(DragEventArgs e)
+        public async Task UnassignCategory(string cat, string sys)
         {
             if(AdminPageState.AdminUsrCat.SelectedUser != null)
             {
-                var checkExist = userCategoryList.Where(s => s.CategoryName == moveCategory && s.SystemName == AdminPageState.AdminUsrCat.SelectedSystem).Select(s => s).FirstOrDefault();
-                if(checkExist == null)
+                var assignRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/category/unassign?userName={AdminPageState.AdminUsrCat.SelectedUser}&categoryName={cat}&systemName={sys}", null);
+                if (assignRequest.StatusCode != HttpStatusCode.OK)
                 {
-                    userCategoryList.Add(new AssignCategory() { CategoryName = moveCategory, SystemName = AdminPageState.AdminUsrCat.SelectedSystem });
-                    userCategoryList = userCategoryList.OrderBy(o => o.CategoryName).ToList();
+                    var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await assignRequest.Content.ReadAsStringAsync());
+                    if (Layout != null)
+                        if (Layout.AlertBox != null)
+                            Layout.AlertBox.SetAlert("Unassign category", $"Error occured during unassign category: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                    return;
                 }
+
+                await LoadCategoryAssignment();
             }
-
-            StateHasChanged();
-        }
-
-        /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
-        /*                                                                                       */
-        /* Description:                                                                          */
-        /*                                                                                       */
-        /*---------------------------------------------------------------------------------------*/
-        public void UnassignCategory(string cat, string sys)
-        {
-            AssignCategory find = new AssignCategory()
-            {
-                CategoryName = cat,
-                SystemName = sys,
-            };
-
-            var record = userCategoryList.Where(s => s.Equals(find)).FirstOrDefault();
-            if(record != null)
-            {
-                userCategoryList.Remove(record);
-            }
-
-            StateHasChanged();
         }
         #endregion
 

@@ -127,9 +127,13 @@
                     <div class="row">
                         <div class="col">
                             <select class="ati-select" value="@AdminPageState.AdminUsrCat.SelectedSystem" @onchange="AssignSystemChanged">
-                                <option></option>
-                                <option>atihome</option>
-                                <option>test-system-1</option>
+                                @if (systemList != null)
+                                {
+                                    @foreach (var item in systemList)
+                                    {
+                                        <option>@item.Name</option>
+                                    }
+                                }
                             </select>
                             <div>
                                 @if (categoryList != null)
@@ -146,9 +150,13 @@
                         </div>
                         <div class="col">
                             <select class="ati-select" value="@AdminPageState.AdminUsrCat.SelectedUser" @onchange="AssignUserChanged">
-                                <option></option>
-                                <option>God</option>
-                                <option>Béla</option>
+                                @if(userList != null)
+                                {
+                                    @foreach (var item in userList)
+	                                {
+		                                 <option>@item.UserName</option>
+	                                }
+                                }
                             </select>
                             <div class="ati-drag-item-add" @ondrop="AssignCategoryDropped" ondragover="event.preventDefault();">
                                 Drag here to assign new category
