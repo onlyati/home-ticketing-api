@@ -23,185 +23,187 @@
     <!-- Show title of the page -->
     <WindowTitle Title="What is broken today?" CloseAction="@CloseWindow" />
     <!-- Here is the content -->
-    <div class="ati-full-window-content container">
+    <div class="ati-full-window-content container" style="background-color: transparent;">
         <!---------------------------------------------------------------------------------------->
         <!-- 1. part: show some interesting tickets to user                                     -->
         <!---------------------------------------------------------------------------------------->
-        <div class="row">
-            <div class="col">
-                <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
-            </div>
-            <div class="col-auto">
-                <a data-tooltip="Refresh the list" @onclick="LoadPersonalTickets">
-                    <img src="img/refresh-icon.png" width="34" height="34" class="mt-3" />
-                </a>
-            </div>
-        </div>
-        <hr class="ati-hr-normal" />
-        <div class="ati-dashboard-container">
-            @if(tickets == null || tickets.Count == 0)
-            {
-                <div class="text-center" style="margin-left: auto; margin-right: auto;">
-                    <h3>There is nothing to see here :-)</h3>
+        <div class="ati-inwindow-box">
+            <div class="row">
+                <div class="col">
+                    <h1 class="ati-h-blurpl">Open or unassigned tickets</h1>
                 </div>
-            }
-            @foreach (var item in tickets)
-            {
-            <div class="ati-dashboard-section">
-                <div class="row m-1">
-                    <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
+                <div class="col-auto">
+                    <a data-tooltip="Refresh the list" @onclick="LoadPersonalTickets">
+                        <img src="img/refresh-icon.png" width="34" height="34" class="mt-3" />
+                    </a>
                 </div>
-                <table>
-                    <tbody>
-                        <tr>
-                            @if (item.User != null)
+            </div>
+            <div class="ati-dashboard-container">
+                @if (tickets == null || tickets.Count == 0)
+                {
+                    <div class="text-center" style="margin-left: auto; margin-right: auto;">
+                        <h3>There is nothing to see here :-)</h3>
+                    </div>
+                }
+                @foreach (var item in tickets)
+                {
+                    <div class="ati-dashboard-section">
+                        <div class="row m-1">
+                            <h4 class="ati-dashboard-property text-wrap">@(item.Title)</h4>
+                        </div>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    @if (item.User != null)
+                                    {
+                                        <td class="pr-2"><strong>Owner:</strong></td>
+                                        <td>@item.User.UserName</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="pr-2"><strong>Owner:</strong></td>
+                                        <td>*Unassigned*</td>
+                                    }
+                                </tr>
+                                <tr>
+                                    <td class="pr-2"><strong>Category:</strong></td>
+                                    <td>@item.Category.Name</td>
+                                </tr>
+                                <tr>
+                                    <td class="pr-2"><strong>Status:</strong></td>
+                                    <td>@item.Status</td>
+                                </tr>
+                                <tr>
+                                    <td class="pr-2"><strong>System:</strong></td>
+                                    <td>@item.System.Name</td>
+                                </tr>
+                                <tr>
+                                    <td class="pr-2"><strong>Category:</strong></td>
+                                    <td>@item.Time.ToString()</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="ati-login-element">
+                            <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Details</button>
+                            @if (item.User == null)
                             {
-                                <td class="pr-2"><strong>Owner:</strong></td>
-                                <td>@item.User.UserName</td>
+                                <button class="btn ati-btn-secondary ml-1" @onclick="() => AssignTicket(item.Id)">Assign to me</button>
                             }
                             else
                             {
-                                <td class="pr-2"><strong>Owner:</strong></td>
-                                <td>*Unassigned*</td>
+                                <button class="btn ati-btn-secondary ml-1" @onclick="() => CloseTicket(item.Id)">Close</button>
+                                <button class="btn ati-btn-secondary" @onclick="() => UnassignTicket(item.Id)">Drop it</button>
                             }
-                        </tr>
-                        <tr>
-                            <td class="pr-2"><strong>Category:</strong></td>
-                            <td>@item.Category.Name</td>
-                        </tr>
-                        <tr>
-                            <td class="pr-2"><strong>Status:</strong></td>
-                            <td>@item.Status</td>
-                        </tr>
-                        <tr>
-                            <td class="pr-2"><strong>System:</strong></td>
-                            <td>@item.System.Name</td>
-                        </tr>
-                        <tr>
-                            <td class="pr-2"><strong>Category:</strong></td>
-                            <td>@item.Time.ToString()</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="ati-login-element">
-                    <button class="btn ati-btn-primary" @onclick="() => GetDetails(item.Id)">Details</button>
-                    @if (item.User == null)
-                    {
-                        <button class="btn ati-btn-secondary ml-1" @onclick="() => AssignTicket(item.Id)">Assign to me</button>
-                    }
-                    else
-                    {
-                        <button class="btn ati-btn-secondary ml-1" @onclick="() => CloseTicket(item.Id)">Close</button>
-                        <button class="btn ati-btn-secondary" @onclick="() => UnassignTicket(item.Id)">Drop it</button>
-                    }
-                </div>
+                        </div>
+                    </div>
+                }
             </div>
-            }
         </div>
         <!---------------------------------------------------------------------------------------->
         <!-- 2a part: Filter ticket popup window                                                -->
         <!---------------------------------------------------------------------------------------->
-        <div class="row">
-            <div class="col">
-                <h1 class="ati-h-blurpl">Filter tickets</h1>
+        <div class="ati-inwindow-box">
+            <div class="row">
+                <div class="col">
+                    <h1 class="ati-h-blurpl">Filter tickets</h1>
+                </div>
+                <div class="col-auto mt-3">
+                    <button class="btn ati-btn-primary" @onclick="() => DashboardPageState.IsPopUpShowed = true">Set filter</button>
+                </div>
             </div>
-            <div class="col-auto mt-3">
-                <button class="btn ati-btn-primary" @onclick="() => DashboardPageState.IsPopUpShowed = true">Set filter</button>
-            </div>
-        </div>
-        <hr class="ati-hr-normal" />
-        @if (DashboardPageState.IsPopUpShowed)
-        {
-            <Popup>
-                <WindowTitle Title="Set filter" CloseAction="CloseFilterPopup" />
-                <EditForm Model="@filter" OnValidSubmit="FilterTicketSubmit">
-                    <DataAnnotationsValidator />
-                    <table class="m-3">
-                        <tbody>
-                            <tr class="ati-login-element text-left">
-                                <td class="pr-3"><b>Title:</b></td>
-                                <td style="min-width: 300px;">
-                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.Title" />
-                                </td>
-                            </tr>
-                            <tr class="ati-login-element text-left">
-                                <td class="pr-3"><b>Status:</b></td>
-                                <td>
-                                    <select class="ati-select" @bind="@DashboardPageState.filter.Status">
-                                        <option selected></option>
-                                        <option>Open</option>
-                                        <option>Closed</option>
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr class="ati-login-element text-left">
-                                <td class="pr-3"><b>System name:</b></td>
-                                <td style="min-width: 300px;">
-                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.SystemName" />
-                                </td>
-                            </tr>
-                            <tr class="ati-login-element text-left">
-                                <td class="pr-3"><b>Category:</b></td>
-                                <td style="min-width: 300px;">
-                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.CategoryName" />
-                                </td>
-                            </tr>
-                            <tr class="ati-login-element text-left">
-                                <td class="pr-3"><b>Owner:</b></td>
-                                <td style="min-width: 300px;">
-                                    <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.Owner" />
-                                </td>
-                            </tr>
-                            <tr class="ati-login-element">
-                                <td colspan="2">
-                                    <button type="submit" class="btn ati-btn-primary mt-3">Find tickets</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </EditForm>
-            </Popup>
-        }
-        <!---------------------------------------------------------------------------------------->
-        <!-- 2b part: show the result of the listed tickets                                     -->
-        <!---------------------------------------------------------------------------------------->
-        <table style="width: 100%;">
-            <thead>
-                <tr>
-                    <td><b>Title</b></td>
-                    <td><b>Status</b></td>
-                    <td><b>System</b></td>
-                    <td><b>Category</b></td>
-                    <td><b>Owner</b></td>
-                    <td><b>Action</b></td>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in filteredTickets)
-                {
+            @if (DashboardPageState.IsPopUpShowed)
+            {
+                <Popup>
+                    <WindowTitle Title="Set filter" CloseAction="CloseFilterPopup" />
+                    <EditForm Model="@filter" OnValidSubmit="FilterTicketSubmit">
+                        <DataAnnotationsValidator />
+                        <table class="m-3">
+                            <tbody>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Title:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.Title" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Status:</b></td>
+                                    <td>
+                                        <select class="ati-select" @bind="@DashboardPageState.filter.Status">
+                                            <option selected></option>
+                                            <option>Open</option>
+                                            <option>Closed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>System name:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.SystemName" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Category:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.CategoryName" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element text-left">
+                                    <td class="pr-3"><b>Owner:</b></td>
+                                    <td style="min-width: 300px;">
+                                        <input type="text" class="ati-login-input" placeholder="" @bind="@DashboardPageState.filter.Owner" />
+                                    </td>
+                                </tr>
+                                <tr class="ati-login-element">
+                                    <td colspan="2">
+                                        <button type="submit" class="btn ati-btn-primary mt-3">Find tickets</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </EditForm>
+                </Popup>
+            }
+            <!---------------------------------------------------------------------------------------->
+            <!-- 2b part: show the result of the listed tickets                                     -->
+            <!---------------------------------------------------------------------------------------->
+            <table style="width: 100%;">
+                <thead>
                     <tr>
-                        <td>@item.Title</td>
-                        <td>@item.Status</td>
-                        <td>@item.System.Name</td>
-                        <td>@item.Category.Name</td>
-                        @if (item.User != null)
-                        {
-                            <td>@item.User.UserName</td>
-                        }
-                        else
-                        {
-                            <td>*Unassigned*</td>
-                        }
-                        <td>
-                            <div class="ati-change-btn-table">
-                                <a data-tooltip="Edit ticket" @onclick="() => GetDetails(item.Id)">
-                                    <img class="ati-change-img-table" src="img/change-icon.png">
-                                </a>
-                            </div>
-                        </td>
+                        <td><b>Title</b></td>
+                        <td><b>Status</b></td>
+                        <td><b>System</b></td>
+                        <td><b>Category</b></td>
+                        <td><b>Owner</b></td>
+                        <td><b>Action</b></td>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in filteredTickets)
+                    {
+                        <tr>
+                            <td>@item.Title</td>
+                            <td>@item.Status</td>
+                            <td>@item.System.Name</td>
+                            <td>@item.Category.Name</td>
+                            @if (item.User != null)
+                            {
+                                <td>@item.User.UserName</td>
+                            }
+                            else
+                            {
+                                <td>*Unassigned*</td>
+                            }
+                            <td>
+                                <div class="ati-change-btn-table">
+                                    <a data-tooltip="Edit ticket" @onclick="() => GetDetails(item.Id)">
+                                        <img class="ati-change-img-table" src="img/change-icon.png">
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

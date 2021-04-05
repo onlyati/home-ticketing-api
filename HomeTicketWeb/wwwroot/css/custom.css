@@ -439,3 +439,11 @@
     padding: 8px 13px;
     margin: 8px 5px;
 }
+
+.ati-inwindow-box {
+    background-color: white;
+    margin-top: 13px;
+    margin-bottom: 13px;
+    padding: 8px 13px;
+    border-radius: 5px;
+}

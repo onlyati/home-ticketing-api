@@ -17,13 +17,14 @@
 <!------------------------------------------------------------------------------------------------>
 <div class="ati-full-window">
     <WindowTitle Title="@PageTitle" CloseAction="CloseWindow" />
-    <div class="ati-full-window-content container">
+    <div class="ati-full-window-content container" style="background-color: transparent;">
         @if (Loading)
         {
             <div id="app"><img src="img/loading.gif" class="ati-center-loading" /></div>
         }
-        @if (details != null)
+        @if (details != null && Loading == false)
         {
+            <div class="ati-inwindow-box">
             <div class="row">
                 <div class="col">
                     <h1 class="ati-h-blurpl">Ticket header</h1>
@@ -56,7 +57,6 @@
                     }
                 }
             </div>
-            <hr class="ati-hr-normal" />
             @if (details.Header != null)
             {
                 <div class="ati-details-section">
@@ -155,76 +155,82 @@
                         </tbody>
                     </table>
                 </div>
+            }
+            </div>
 
-                <div class="row">
-                    <div class="col">
-                        <h1 class="ati-h-blurpl">Ticket log</h1>
+            <div class="ati-inwindow-box">
+                @if (details.Header != null)
+                {
+                    <div class="row">
+                        <div class="col">
+                            <h1 class="ati-h-blurpl">Ticket log</h1>
+                        </div>
+                        @if (details.Header.Status == "Open")
+                        {
+                            <div class="col-auto p-0 mr-3 mb-2">
+                                <button class="btn ati-btn-primary mt-3" @onclick="() => ShowAddLogWindow = true">Add log</button>
+                            </div>
+                        }
                     </div>
-                    @if (details.Header.Status == "Open")
+
+                    @if (ShowAddLogWindow)
                     {
-                        <div class="col-auto p-0 mr-3 mb-2">
-                            <button class="btn ati-btn-primary mt-3" @onclick="() => ShowAddLogWindow = true">Add log</button>
+                        <Popup>
+                            <WindowTitle Title="Add log record" CloseAction="() => ShowAddLogWindow = false" />
+                            <div style="width: 550px">
+                                <EditForm Model="AddLog" OnValidSubmit="AddLogRecord">
+                                    <div class="ati-login-element">
+                                        <input type="text" class="ati-login-input" placeholder="Short description" @bind="@AddLog.Summary" />
+                                    </div>
+                                    <div class="ati-login-element">
+                                        <textarea class="ati-login-textarea" placeholder="If you want to share more details, write here" @bind="@AddLog.Details" />
+                                    </div>
+                                    <div class="ati-login-element">
+                                        <button type="submit" class="btn ati-btn-primary">Submit</button>
+                                    </div>
+                                </EditForm>
+                            </div>
+                        </Popup>
+                    }
+                }
+
+                @if (details.Logs != null)
+                {
+                    @foreach (var item in details.Logs)
+                    {
+                        <div class="ati-details-section">
+                            <div class="row ml-1 mr-1">
+                                <p class="ati-dashboard-property">Created at: </p>
+                                <p>@item.Time.ToString()</p>
+                            </div>
+                            @if (item.User != null)
+                            {
+                                <div class="row ml-1 mr-1">
+                                    <p class="ati-dashboard-property">Created by: </p>
+                                    <p>@item.User.UserName</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row ml-1 mr-1">
+                                    <p class="ati-dashboard-property">Created by: </p>
+                                    <p>*bot*</p>
+                                </div>
+                            }
+                            <div class="row ml-1 mr-1">
+                                <p class="ati-dashboard-property">Summary: </p>
+                                <p>@item.Summary</p>
+                            </div>
+                            <div class="row ml-1 mr-1">
+                                <p class="ati-dashboard-property">Details: </p>
+                            </div>
+                            <div class="row ml-1 mr-1">
+                                <pre class="text-monospace">@((MarkupString)item.Details)</pre>
+                            </div>
                         </div>
                     }
-                </div>
-                <hr class="ati-hr-normal" />
-
-                @if (ShowAddLogWindow)
-                {
-                    <Popup>
-                        <WindowTitle Title="Add log record" CloseAction="() => ShowAddLogWindow = false" />
-                        <div style="width: 550px">
-                            <EditForm Model="AddLog" OnValidSubmit="AddLogRecord">
-                                <div class="ati-login-element">
-                                    <input type="text" class="ati-login-input" placeholder="Short description" @bind="@AddLog.Summary" />
-                                </div>
-                                <div class="ati-login-element">
-                                    <textarea class="ati-login-textarea" placeholder="If you want to share more details, write here" @bind="@AddLog.Details" />
-                                </div>
-                                <div class="ati-login-element">
-                                    <button type="submit" class="btn ati-btn-primary">Submit</button>
-                                </div>
-                            </EditForm>
-                        </div>
-                    </Popup>
-                }
             }
-            @if (details.Logs != null)
-            {
-                @foreach (var item in details.Logs)
-                {
-                    <div class="ati-details-section">
-                        <div class="row ml-1 mr-1">
-                            <p class="ati-dashboard-property">Created at: </p>
-                            <p>@item.Time.ToString()</p>
-                        </div>
-                        @if (item.User != null)
-                        {
-                            <div class="row ml-1 mr-1">
-                                <p class="ati-dashboard-property">Created by: </p>
-                                <p>@item.User.UserName</p>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="row ml-1 mr-1">
-                                <p class="ati-dashboard-property">Created by: </p>
-                                <p>*bot*</p>
-                            </div>
-                        }
-                        <div class="row ml-1 mr-1">
-                            <p class="ati-dashboard-property">Summary: </p>
-                            <p>@item.Summary</p>
-                        </div>
-                        <div class="row ml-1 mr-1">
-                            <p class="ati-dashboard-property">Details: </p>
-                        </div>
-                        <div class="row ml-1 mr-1">
-                            <pre class="text-monospace">@((MarkupString)item.Details)</pre>
-                        </div>
-                    </div>
-                }
-            }
+            </div>
         }
     </div>
 </div>
