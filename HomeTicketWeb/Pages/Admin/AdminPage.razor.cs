@@ -60,8 +60,8 @@ namespace HomeTicketWeb.Pages.Admin
         private List<Model.User> userList;
 
         private NewSystem AddSystem = new NewSystem();
-        private List<SystemElem> allSystem;
-        private SystemElem ChangeSystemItem;
+        private List<SystemChangeElem> allSystem;
+        private SystemChangeElem ChangeSystemItem;
 
         private AssignCategory AddCategory = new AssignCategory();
 
@@ -120,6 +120,11 @@ namespace HomeTicketWeb.Pages.Admin
             {
                 return HashCode.Combine(SystemName, CategoryName);
             }
+        }
+
+        private class SystemChangeElem : SystemElem
+        {
+            public string NewName { get; set; }
         }
 
         /*=======================================================================================*/
@@ -367,7 +372,7 @@ namespace HomeTicketWeb.Pages.Admin
         /*---------------------------------------------------------------------------------------*/
         private async Task DeleteUser()
         {
-            var removeUserRequest = await Http.PostAsync($"{Configuration["ServerAddress"]}/user/remove?username={ChangeInfo.UserName}", null);
+            var removeUserRequest = await Http.DeleteAsync($"{Configuration["ServerAddress"]}/user/remove?username={ChangeInfo.UserName}");
             if (removeUserRequest.StatusCode != HttpStatusCode.OK)
             {
                 var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await removeUserRequest.Content.ReadAsStringAsync());
@@ -417,6 +422,8 @@ namespace HomeTicketWeb.Pages.Admin
             if (Layout != null)
                 if (Layout.AlertBox != null)
                     Layout.AlertBox.SetAlert("Add user", "User is added", AlertBox.AlertBoxType.Info);
+
+            AddUser = new NewUser();
 
             await LoadUsers();
         }
@@ -668,7 +675,8 @@ namespace HomeTicketWeb.Pages.Admin
                 return;
             }
 
-            allSystem = JsonSerializer.Deserialize<List<SystemElem>>(await allSystemRequest.Content.ReadAsStringAsync());
+            var allSystemTemp = JsonSerializer.Deserialize<List<SystemElem>>(await allSystemRequest.Content.ReadAsStringAsync());
+            allSystem = allSystemTemp.Select(s => new SystemChangeElem() { Id = s.Id, Name = s.Name, NewName = "" }).ToList();
             allSystem = allSystem.OrderBy(s => s.Name).ToList();
 
             StateHasChanged();
@@ -714,10 +722,16 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void ChangeSystemVerify()
+        public void ChangeSystemVerify(string currentName, string newName)
         {
+            ChangeSystemItem = new SystemChangeElem()
+            {
+                Name = currentName,
+                NewName = newName,
+            };
+
             if(QuestionBox != null)
-                QuestionBox.SetAlert("System adjustment", "Do you really want to change the system?", AlertBox.AlertBoxType.Question, ChangeSystem);
+                QuestionBox.SetAlert("System adjustment", "Do you really want to change the system?", AlertBox.AlertBoxType.Question, ChangeSystem, CancelSystemChange);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -726,11 +740,10 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void ChangeSystem()
+        public async Task CancelSystemChange()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("System adjustment", "System is changed", AlertBox.AlertBoxType.Info);
+            ChangeSystemItem = null;
+            await LoadSystems();
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -739,10 +752,37 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void DeleteSystemVerify()
+        public async Task ChangeSystem()
         {
+            var changeRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/system/change?name={ChangeSystemItem.Name}&newName={ChangeSystemItem.NewName}", null);
+            if (changeRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await changeRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("System change", $"Error occured during system change: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            ChangeSystemItem = null;
+            await LoadSystems();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name:                                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /*                                                                                       */
+        /*---------------------------------------------------------------------------------------*/
+        public void DeleteSystemVerify(string currentName)
+        {
+            ChangeSystemItem = new SystemChangeElem()
+            {
+                Name = currentName,
+            };
+
             if(QuestionBox != null)
-                QuestionBox.SetAlert("System adjustment", "Do you really want to delete the system?", AlertBox.AlertBoxType.Question, DeleteSystem);
+                QuestionBox.SetAlert("System adjustment", "Do you really want to delete the system?", AlertBox.AlertBoxType.Question, DeleteSystem, CancelSystemChange);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -751,11 +791,20 @@ namespace HomeTicketWeb.Pages.Admin
         /* Description:                                                                          */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void DeleteSystem()
+        public async Task DeleteSystem()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("System adjustment", "System is deleted", AlertBox.AlertBoxType.Info);
+            var deleteRequest = await Http.DeleteAsync($"{Configuration["ServerAddress"]}/system/remove?name={ChangeSystemItem.Name}");
+            if (deleteRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await deleteRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Delete system", $"Error occured during system delete: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            ChangeSystemItem = null;
+            await LoadSystems();
         }
 
         #endregion
