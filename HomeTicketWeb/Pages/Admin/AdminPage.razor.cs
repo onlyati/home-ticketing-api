@@ -48,6 +48,7 @@ namespace HomeTicketWeb.Pages.Admin
             new TreeMenuItem() { Title = "System adjustment", Section = "Sytem management", Id = 3 },
             new TreeMenuItem() { Title = "Category adjustment", Section = "Category management", Id = 4 },
         };
+
         private NewUser AddUser = new NewUser();                                         // Model for EditForm
         private List<NewUser> Users;
         private NewUser ChangeInfo;
@@ -59,6 +60,8 @@ namespace HomeTicketWeb.Pages.Admin
         private List<Model.User> userList;
 
         private NewSystem AddSystem = new NewSystem();
+        private List<SystemElem> allSystem;
+        private SystemElem ChangeSystemItem;
 
         private AssignCategory AddCategory = new AssignCategory();
 
@@ -168,6 +171,11 @@ namespace HomeTicketWeb.Pages.Admin
             {
                 await LoadCategoryAssignment();
             }
+
+            if(TMenu.IsSelected(3))
+            {
+                await LoadSystems();
+            }
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -223,6 +231,11 @@ namespace HomeTicketWeb.Pages.Admin
             if (TMenu.IsSelected(2))
             {
                 await LoadCategoryAssignment();
+            }
+
+            if(TMenu.IsSelected(3))
+            {
+                await LoadSystems();
             }
 
             StateHasChanged();
@@ -331,10 +344,18 @@ namespace HomeTicketWeb.Pages.Admin
         /* and if it is verified it calls the delete user function                               */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        private void DeleteUserVerify()
+        private void DeleteUserVerify(string username, string password, string email, string role)
         {
-            if(QuestionBox != null)
-                QuestionBox.SetAlert("Adjust user", "Are you sure you want remove this user?", AlertBox.AlertBoxType.Question, DeleteUser);
+            ChangeInfo = new NewUser()
+            {
+                Email = email,
+                UserName = username,
+                Password = password,
+                Role = role,
+            };
+
+            if (QuestionBox != null)
+                QuestionBox.SetAlert("Adjust user", "Are you sure you want remove this user?", AlertBox.AlertBoxType.Question, DeleteUser, ChangeUserCancel);
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -344,11 +365,19 @@ namespace HomeTicketWeb.Pages.Admin
         /* This method is called if admin verified a user remove question                        */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        private void DeleteUser()
+        private async Task DeleteUser()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust user", "User has been deleted", AlertBox.AlertBoxType.Info);
+            var removeUserRequest = await Http.PostAsync($"{Configuration["ServerAddress"]}/user/remove?username={ChangeInfo.UserName}", null);
+            if (removeUserRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await removeUserRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Delete user", $"User remove is failed: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            await LoadUsers();
         }
 
         /*---------------------------------------------------------------------------------------*/
@@ -500,7 +529,7 @@ namespace HomeTicketWeb.Pages.Admin
         /* Function name: AssignSystemChanged                                                    */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* System select has been changed, needs to be updated the displayed categories.         */
         /*---------------------------------------------------------------------------------------*/
         public async Task AssignSystemChanged(ChangeEventArgs e)
         {
@@ -525,10 +554,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: AssignUserChange                                                       */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* User select has been changed, needs to be updated the displayed categories.           */
         /*---------------------------------------------------------------------------------------*/
         public async Task AssignUserChanged(ChangeEventArgs e)
         {
@@ -552,10 +581,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: AssignCategoryDrag                                                     */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Category element has been picked up.                                                  */
         /*---------------------------------------------------------------------------------------*/
         public void AssignCategoryDrag(DragEventArgs e, string item)
         {
@@ -596,10 +625,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: UnassignCategory                                                       */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* It runs if the selected category needs to be removed from the user                    */
         /*---------------------------------------------------------------------------------------*/
         public async Task UnassignCategory(string cat, string sys)
         {
@@ -622,24 +651,55 @@ namespace HomeTicketWeb.Pages.Admin
 
         #region System adjustment
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: LoadSystems                                                            */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Load all systems into a list if 'System Management' panel is displayed.               */
         /*---------------------------------------------------------------------------------------*/
-        public void AddSystemSubmit()
+        public async Task LoadSystems()
         {
+            var allSystemRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/system/list/all");
+            if (allSystemRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await allSystemRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Unassign category", $"Error occured during unassign category: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            allSystem = JsonSerializer.Deserialize<List<SystemElem>>(await allSystemRequest.Content.ReadAsStringAsync());
+            allSystem = allSystem.OrderBy(s => s.Name).ToList();
+
+            StateHasChanged();
+        }
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AddSystemSubmit                                                        */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Editform is valid, and new category will try to be added                              */
+        /*---------------------------------------------------------------------------------------*/
+        public async Task AddSystemSubmit()
+        {
+            var addSystemRequest = await Http.PostAsync($"{Configuration["ServerAddress"]}/system/create?name={AddSystem.SystemName}", null);
+            if (addSystemRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await addSystemRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Unassign category", $"Error occured during unassign category: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
             AddSystem = new NewSystem();
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("System adjustment", $"New system ({AddSystem.SystemName}) has been added", AlertBox.AlertBoxType.Info);
+            await LoadSystems();
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: AddSystemSubmitMissing                                                 */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Editform is invalid                                                                   */
         /*---------------------------------------------------------------------------------------*/
         public void AddSystemSubmitMissing()
         {

@@ -110,7 +110,7 @@
                                     </td>
                                     <td>
                                         <div class="ati-change-btn-table">
-                                            <a data-tooltip="Remove user" @onclick="DeleteUserVerify">
+                                            <a data-tooltip="Remove user" @onclick="() => DeleteUserVerify(item.UserName, item.Password, item.Email, item.Role)">
                                                 <img class="ati-change-img-table" src="img/remove-icon.png">
                                             </a>
                                         </div>
@@ -199,7 +199,7 @@
                                 <tr class="ati-login-element text-left">
                                     <td class="pr-3"><b>Username:</b></td>
                                     <td style="min-width: 300px;">
-                                        <input type="text" class="ati-login-input" placeholder="ABC123" @bind="@AddSystem.SystemName" />
+                                        <input type="text" class="ati-login-input" placeholder="Random-System" @bind="@AddSystem.SystemName" />
                                     </td>
                                 </tr>
                                 <tr class="ati-login-element">
@@ -221,42 +221,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>atihome</td>
-                                <td><input type="text" placeholder="Changed system name" /></td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="() => ChangeSystemVerify()">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteSystemVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>test-system-1</td>
-                                <td><input type="text" placeholder="Changed system name" /></td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="ChangeSystemVerify">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteSystemVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                            @if (allSystem != null)
+                            {
+                                @foreach (var item in allSystem)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td><input type="text" placeholder="Changed system name" /></td>
+                                        <td>
+                                            <div class="ati-change-btn-table">
+                                                <a data-tooltip="Change user" @onclick="() => ChangeSystemVerify()">
+                                                    <img class="ati-change-img-table" src="img/change-icon.png">
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ati-change-btn-table">
+                                                <a data-tooltip="Remove user" @onclick="DeleteSystemVerify">
+                                                    <img class="ati-change-img-table" src="img/remove-icon.png">
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </TreeMenuContent>

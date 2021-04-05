@@ -367,8 +367,11 @@ namespace HomeTicketing.Controllers
             {
                 if (username == user.Username || user.Role == UserRole.Admin)
                 {
-                    await _dbHandler.RemoveUserAsync(username);
-                    return Ok(new GeneralMessage() { Message = "User has been removed" });
+                    var respond = await _dbHandler.RemoveUserAsync(username);
+                    if (respond.MessageType == MessageType.OK)
+                        return Ok(new GeneralMessage() { Message = "User has been removed" });
+                    else
+                        return BadRequest(new GeneralMessage() { Message = respond.MessageText });
                 }
                 else
                 {
