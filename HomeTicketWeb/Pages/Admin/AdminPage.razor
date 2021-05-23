@@ -197,7 +197,7 @@
                         <table>
                             <tbody>
                                 <tr class="ati-login-element text-left">
-                                    <td class="pr-3"><b>Username:</b></td>
+                                    <td class="pr-3"><b>System name:</b></td>
                                     <td style="min-width: 300px;">
                                         <input type="text" class="ati-login-input" placeholder="Random-System" @bind="@AddSystem.SystemName" />
                                     </td>
@@ -230,14 +230,14 @@
                                         <td><input type="text" placeholder="Changed system name" @bind="item.NewName" /></td>
                                         <td>
                                             <div class="ati-change-btn-table">
-                                                <a data-tooltip="Change user" @onclick="() => ChangeSystemVerify(item.Name, item.NewName)">
+                                                <a data-tooltip="Change system" @onclick="() => ChangeSystemVerify(item.Name, item.NewName)">
                                                     <img class="ati-change-img-table" src="img/change-icon.png">
                                                 </a>
                                             </div>
                                         </td>
                                         <td>
                                             <div class="ati-change-btn-table">
-                                                <a data-tooltip="Remove user" @onclick="() => DeleteSystemVerify(item.Name)">
+                                                <a data-tooltip="Remove category" @onclick="() => DeleteSystemVerify(item.Name)">
                                                     <img class="ati-change-img-table" src="img/remove-icon.png">
                                                 </a>
                                             </div>
@@ -256,18 +256,23 @@
                         <table>
                             <tbody>
                                 <tr class="ati-login-element text-left">
-                                    <td class="pr-3"><b>Username:</b></td>
+                                    <td class="pr-3"><b>Caregory name:</b></td>
                                     <td style="min-width: 300px;">
-                                        <input type="text" class="ati-login-input" placeholder="ABC123" @bind="@AddCategory.SystemName" />
+                                        <input type="text" class="ati-login-input" placeholder="ABC123" @bind="@AddCategory.CategoryName" />
                                     </td>
                                 </tr>
                                 <tr class="ati-login-element text-left">
                                     <td class="pr-3"><b>System:</b></td>
                                     <td style="min-width: 300px;">
-                                        <select @bind="@AddCategory.CategoryName">
+                                        <select @bind="@AddCategory.SystemName">
                                             <option></option>
-                                            <option>atihome</option>
-                                            <option>test-system-1</option>
+                                            @if(allSystem != null)
+                                            {
+                                                @foreach (var item in allSystem)
+	                                            {
+		                                             <option>@item.Name</option>
+	                                            }
+                                            }
                                         </select>
                                     </td>
                                 </tr>
@@ -287,89 +292,35 @@
                                 <td><b>System name</b></td>
                                 <td><b>Category name</b></td>
                                 <td><b>New category name</b></td>
-                                <td><b>New system name</b></td>
                                 <td><b>Action</b></td>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>atihome</td>
-                                <td>System</td>
-                                <td><input type="text" placeholder="Changed category name" /></td>
-                                <td>
-                                    <select>
-                                        <option></option>
-                                        <option>atihome</option>
-                                        <option>test-system-1</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="ChangeCategoryVerify">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteCategoryVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>atihome</td>
-                                <td>Network</td>
-                                <td><input type="text" placeholder="Changed category name" /></td>
-                                <td>
-                                    <select>
-                                        <option></option>
-                                        <option>atihome</option>
-                                        <option>test-system-1</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="ChangeCategoryVerify">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteCategoryVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>test-system-1</td>
-                                <td>System</td>
-                                <td><input type="text" placeholder="Changed category name" /></td>
-                                <td>
-                                    <select>
-                                        <option></option>
-                                        <option>atihome</option>
-                                        <option>test-system-1</option>
-                                    </select>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Change user" @onclick="ChangeCategoryVerify">
-                                            <img class="ati-change-img-table" src="img/change-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="ati-change-btn-table">
-                                        <a data-tooltip="Remove user" @onclick="DeleteCategoryVerify">
-                                            <img class="ati-change-img-table" src="img/remove-icon.png">
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                            @if (allCategories != null)
+                            {
+                                @foreach (var item in allCategories)
+                                {
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td>@item.System.Name</td>
+                                        <td><input type="text" placeholder="Changed category name" @bind="@item.NewCategoryName" /></td>
+                                        <td>
+                                            <div class="ati-change-btn-table">
+                                                <a data-tooltip="Change category" @onclick="() => ChangeCategoryVerify(item.System.Name, item.Name, item.NewCategoryName)">
+                                                    <img class="ati-change-img-table" src="img/change-icon.png">
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="ati-change-btn-table">
+                                                <a data-tooltip="Remove category" @onclick="() => DeleteCategoryVerify(item.System.Name, item.Name)">
+                                                    <img class="ati-change-img-table" src="img/remove-icon.png">
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
                         </tbody>
                     </table>
                 </TreeMenuContent>

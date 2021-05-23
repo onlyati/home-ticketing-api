@@ -64,6 +64,8 @@ namespace HomeTicketWeb.Pages.Admin
         private SystemChangeElem ChangeSystemItem;
 
         private AssignCategory AddCategory = new AssignCategory();
+        private List<ChangeCategories> allCategories;
+        private ChangeCategories changeCategory;
 
         /*=======================================================================================*/
         /* Classes                                                                               */
@@ -127,6 +129,11 @@ namespace HomeTicketWeb.Pages.Admin
             public string NewName { get; set; }
         }
 
+        private class ChangeCategories : Category
+        {
+            public string NewCategoryName { get; set; } = null;
+        }
+
         /*=======================================================================================*/
         /* Methods                                                                               */
         /*=======================================================================================*/
@@ -180,6 +187,11 @@ namespace HomeTicketWeb.Pages.Admin
             if(TMenu.IsSelected(3))
             {
                 await LoadSystems();
+            }
+
+            if(TMenu.IsSelected(4))
+            {
+                await LoadCategores();
             }
         }
 
@@ -241,6 +253,11 @@ namespace HomeTicketWeb.Pages.Admin
             if(TMenu.IsSelected(3))
             {
                 await LoadSystems();
+            }
+
+            if (TMenu.IsSelected(4))
+            {
+                await LoadCategores();
             }
 
             StateHasChanged();
@@ -717,10 +734,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: ChangeSystemVerify                                                     */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Ask for verification before issue any changes                                         */
         /*---------------------------------------------------------------------------------------*/
         public void ChangeSystemVerify(string currentName, string newName)
         {
@@ -735,10 +752,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: CancelSystemChange                                                     */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* System change or remove has been cancelled during verification                        */
         /*---------------------------------------------------------------------------------------*/
         public async Task CancelSystemChange()
         {
@@ -747,10 +764,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: CangeSystem                                                            */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Change system verification has been verified. This method make the changes.           */
         /*---------------------------------------------------------------------------------------*/
         public async Task ChangeSystem()
         {
@@ -769,10 +786,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: DeleteSystemVerify                                                     */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Ask verification before to any remove.                                                */
         /*---------------------------------------------------------------------------------------*/
         public void DeleteSystemVerify(string currentName)
         {
@@ -786,10 +803,10 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: DeleteSystem                                                           */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Delete system verification has been verified. This method invoke the proper http call */
         /*---------------------------------------------------------------------------------------*/
         public async Task DeleteSystem()
         {
@@ -811,23 +828,79 @@ namespace HomeTicketWeb.Pages.Admin
 
         #region Category adjustment
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: LoadCatagories                                                         */
         /*                                                                                       */
         /* Description:                                                                          */
+        /* This method load all categories and upload them into a list. That list is displayed   */
+        /* on the panel of category management in Admin Page.                                    */
         /*                                                                                       */
         /*---------------------------------------------------------------------------------------*/
-        public void AddCategorySubmit()
+        public async Task LoadCategores()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust category", $"New category ({AddCategory.SystemName}->{AddCategory.CategoryName}) has been added", AlertBox.AlertBoxType.Info);
+            var loadSyTask = LoadSystems();
+
+            var listRequest = await Http.GetAsync($"{Configuration["ServerAddress"]}/category/list/all");
+            if (listRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await listRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Delete system", $"Error occured during system delete: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            allCategories = JsonSerializer.Deserialize<List<ChangeCategories>>(await listRequest.Content.ReadAsStringAsync());
+            allCategories = allCategories.OrderBy(o => o.System.Name).ThenBy(o => o.Name).ToList();
+
+            await loadSyTask;
+
+            StateHasChanged();
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: CancelCategoryCange                                                    */
         /*                                                                                       */
         /* Description:                                                                          */
+        /* Category change or remove has been cancelled during verification                      */
+        /*---------------------------------------------------------------------------------------*/
+        public async Task CancelCategoryChange()
+        {
+            changeCategory = null;
+            await LoadCategores();
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AddCategorySubmit                                                      */
         /*                                                                                       */
+        /* Description:                                                                          */
+        /* Request if somebody add new category. It invokes the proper http call                 */
+        /*---------------------------------------------------------------------------------------*/
+        public async Task AddCategorySubmit()
+        {
+            var addCategoryRequest = await Http.PostAsync($"{Configuration["ServerAddress"]}/category/create?system={AddCategory.SystemName}&name={AddCategory.CategoryName}", null);
+            if(addCategoryRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await addCategoryRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Add new category", $"Error occured during system delete: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            var loadTask = LoadCategores();
+
+            if (Layout != null)
+                if (Layout.AlertBox != null)
+                    Layout.AlertBox.SetAlert("Adjust category", $"New category ({AddCategory.SystemName}->{AddCategory.CategoryName}) has been added", AlertBox.AlertBoxType.Info);
+
+            await loadTask;
+        }
+
+        /*---------------------------------------------------------------------------------------*/
+        /* Function name: AddCategorySubmitMissing                                               */
+        /*                                                                                       */
+        /* Description:                                                                          */
+        /* Not every field has been filled during adding new category                            */
         /*---------------------------------------------------------------------------------------*/
         public void AddCategorySubmitMissing()
         {
@@ -837,53 +910,84 @@ namespace HomeTicketWeb.Pages.Admin
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: ChangeCategoryVerify                                                   */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Ask verification before do any changes with categories                                */
         /*---------------------------------------------------------------------------------------*/
-        public void ChangeCategoryVerify()
+        public void ChangeCategoryVerify(string sysname, string catname, string newname)
         {
+            changeCategory = new ChangeCategories()
+            {
+                Name = catname,
+                System = new SystemElem() { Name = sysname },
+                NewCategoryName = newname
+            };
+
             if(QuestionBox != null)
-                QuestionBox.SetAlert("Adjust category", "Do you really want to change this record?", AlertBox.AlertBoxType.Question, ChangeCategory);
+                QuestionBox.SetAlert("Adjust category", "Do you really want to change this record?", AlertBox.AlertBoxType.Question, ChangeCategory, CancelCategoryChange);
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: ChangeCategory                                                         */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Verification has been verified. This method invokes the proper http call              */
         /*---------------------------------------------------------------------------------------*/
-        public void ChangeCategory()
+        public async Task ChangeCategory()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust category", "Category is changed", AlertBox.AlertBoxType.Info);
+            var changeCategoryRequest = await Http.PutAsync($"{Configuration["ServerAddress"]}/category/change?system={changeCategory.System.Name}&current={changeCategory.Name}&to={changeCategory.NewCategoryName}", null);
+            if(changeCategoryRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await changeCategoryRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change system", $"Error occured during system delete: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            changeCategory = null;
+            await LoadCategores();
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: DeleteCategoryVerify                                                   */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Ask verification before remove any categories                                         */
         /*---------------------------------------------------------------------------------------*/
-        public void DeleteCategoryVerify()
+        public void DeleteCategoryVerify(string sysname, string catname)
         {
+            changeCategory = new ChangeCategories()
+            {
+                Name = catname,
+                System = new SystemElem() { Name = sysname }
+            };
+
             if(QuestionBox != null)
-                QuestionBox.SetAlert("Adjust category", "Do you really want to delete this record?", AlertBox.AlertBoxType.Question, DeleteCategory);
+                QuestionBox.SetAlert("Adjust category", "Do you really want to delete this record?", AlertBox.AlertBoxType.Question, DeleteCategory, CancelCategoryChange);
         }
 
         /*---------------------------------------------------------------------------------------*/
-        /* Function name:                                                                        */
+        /* Function name: DeleteCategory                                                         */
         /*                                                                                       */
         /* Description:                                                                          */
-        /*                                                                                       */
+        /* Verification is done. This method invokes the proper http call                        */
         /*---------------------------------------------------------------------------------------*/
-        public void DeleteCategory()
+        public async Task DeleteCategory()
         {
-            if (Layout != null)
-                if (Layout.AlertBox != null)
-                    Layout.AlertBox.SetAlert("Adjust category", "Category is deleted", AlertBox.AlertBoxType.Info);
+            var deleteCategoryRequest = await Http.DeleteAsync($"{Configuration["ServerAddress"]}/category/remove?system={changeCategory.System.Name}&name={changeCategory.Name}");
+            if (deleteCategoryRequest.StatusCode != HttpStatusCode.OK)
+            {
+                var badResponse = JsonSerializer.Deserialize<GeneralMessage>(await deleteCategoryRequest.Content.ReadAsStringAsync());
+                if (Layout != null)
+                    if (Layout.AlertBox != null)
+                        Layout.AlertBox.SetAlert("Change system", $"Error occured during system delete: {badResponse.Message}", AlertBox.AlertBoxType.Error);
+                return;
+            }
+
+            changeCategory = null;
+            await LoadCategores();
         }
 
         #endregion
