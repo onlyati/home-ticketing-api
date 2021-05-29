@@ -31,6 +31,7 @@ namespace DatabaseControllerTest
             Assert.AreEqual(186, respond[0].Id, "Final: Not the 3. element is the first one");
         }
 
+        /*
         [TestMethod]
         public async Task List_Ticket_4()
         {
@@ -56,6 +57,7 @@ namespace DatabaseControllerTest
             var respond3 = await ticket.ListTicketsAsync(filter3);
             Assert.AreNotEqual(0, respond2.Count, "Final #3: Filter with multiple filters is failed");
         }
+        */
 
         [TestMethod]
         public async Task List_Ticket_5()
