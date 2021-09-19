@@ -119,7 +119,7 @@ namespace HomeTicketing.Controllers
 
                 var log = await _dbHandler.GetFirstLogEntry(item.Id);
 
-                listItem.Summary = log.Summary;
+                listItem.Summary = log?.Summary;
 
                 respond.Add(listItem);
             }
