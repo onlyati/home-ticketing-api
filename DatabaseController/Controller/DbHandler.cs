@@ -1585,6 +1585,14 @@ namespace DatabaseController.Controller
             DataModel.System sys = await GetSystemAsync(sysname);
             return await _context.Tickets.Where(s => s.Reference.Equals(reference) && s.SystemId.Equals(sys.Id)).Select(s => s).ToListAsync();
         }
+
+        /// <summary>
+        /// Return with the first log file in a ticket
+        /// </summary>
+        /// <param name="id">ID of the ticket</param>
+        /// <returns>Log entry</returns>
+        public async Task<Log> GetFirstLogEntry(int id) => await _context.Logs.Select(s => s).Where(w => w.TicketId.Equals(id)).OrderBy(o => o.Time).FirstOrDefaultAsync();
+
         #endregion
 
         #region User stuff

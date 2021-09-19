@@ -92,6 +92,8 @@ namespace DatabaseController.Interface
         Task<Message> ChangeTicketAsync(TicketChangeTemplate newValues);
 
         Task<TicketDetails> GetDetailsAsync(int id);
+
+        Task<Log> GetFirstLogEntry(int id);
         #endregion
 
         #region User stuff

@@ -80,6 +80,92 @@ namespace HomeTicketing.Controllers
             if (unassigned)
                 user = null;
 
+            List<Ticket> baseTickets;
+            if (skip != -1 && count != -1)
+            {
+                if(username == null && !unassigned)
+                    baseTickets = await _dbHandler.ListTicketsAsync(skip, count, filter);
+                else
+                    baseTickets = await _dbHandler.ListTicketsAsync(skip, count, filter, user);
+            }
+            else
+            {
+                if (username == null && !unassigned)
+                    baseTickets = await _dbHandler.ListTicketsAsync(filter);
+                else
+                    baseTickets = await _dbHandler.ListTicketsAsync(filter, user);
+            }
+
+            if(baseTickets == null)
+            {
+                return BadRequest(new GeneralMessage() { Message = "Ticket listing has failed" });
+            }
+
+            List<TicketListItem> respond = new();
+            foreach (var item in baseTickets)
+            {
+                TicketListItem listItem = new();
+                listItem.Category = item.Category;
+                listItem.CategoryId = item.CategoryId;
+                listItem.Id = item.Id;
+                listItem.Reference = item.Reference;
+                listItem.Status = item.Status;
+                listItem.System = item.System;
+                listItem.SystemId = item.SystemId;
+                listItem.Time = item.Time;
+                listItem.Title = item.Title;
+                listItem.User = item.User;
+                listItem.UserId = item.UserId;
+
+                var log = await _dbHandler.GetFirstLogEntry(item.Id);
+
+                listItem.Summary = log.Summary;
+
+                respond.Add(listItem);
+            }
+
+            return Ok(respond);
+        }
+
+        /// <summary>
+        /// Endpoint for counting tickets
+        /// </summary>
+        /// <param name="category">Category for filtering</param>
+        /// <param name="system">System name for filtering</param>
+        /// <param name="status">Status for filtering</param>
+        /// <param name="reference">Reference value for filtering</param>
+        /// <param name="title">Title for filtering</param>
+        /// <param name="skip">How much entry you want skip?</param>
+        /// <param name="count">How much entry you want get?</param>
+        /// <param name="unassigned">Do you want list unassigned tickets?</param>
+        /// <param name="username">Do you want list tickets which owned by someone?</param>
+        /// <returns></returns>
+        /// <response code="200">Counter has sent back</response>
+        /// <response code="400">Counting has failed</response>
+        /// <response code="401">Authorization failed</response>
+        /// <response code="403">Authorization failed</response>
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [HttpGet("list/filter/count")]
+        public async Task<IActionResult> ListTicketsCounts(string username = null, bool unassigned = false, string category = null, string system = null, string status = null, string reference = null, string title = null, int skip = -1, int count = -1)
+        {
+            TicketFilterTemplate filter = new TicketFilterTemplate();
+            if (!string.IsNullOrEmpty(category)) filter.Category = category;
+            if (!string.IsNullOrEmpty(reference)) filter.Reference = reference;
+            if (!string.IsNullOrEmpty(status)) filter.Status = status;
+            if (!string.IsNullOrEmpty(system)) filter.System = system;
+            if (!string.IsNullOrEmpty(title)) filter.Title = title;
+
+            User user = null;
+            if (username != null)
+                user = await _dbHandler.GetUserAsync(username);
+
+            if (unassigned)
+                user = null;
+
             List<Ticket> respond;
             if (skip != -1 && count != -1)
             {
@@ -101,9 +187,10 @@ namespace HomeTicketing.Controllers
                 return BadRequest(new GeneralMessage() { Message = "Ticket listing has failed" });
             }
 
-            return Ok(respond);
+            Counter numbers = new();
+            numbers.Count = respond.Count;
+            return Ok(numbers);
         }
-
 
         /// <summary>
         /// Endpoint to get every details (header + logs) about a ticket
