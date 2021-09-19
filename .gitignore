@@ -341,3 +341,5 @@ healthchecksdb
 
 # Ignore local logs
 *.log
+
+appsettings.*.json
